@@ -1,0 +1,126 @@
+{
+  "manifestVersion": 1,
+  "id": "cxsast",
+  "version": "0.4.80",
+  "name": "Checkmarx",
+  "publisher": "ilandayan",
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "description": "Add Secure Static Source Code Analysis inside your build process",
+  "icons": {
+    "default": "extension-icon.png"
+  },
+  "categories": [
+    "Build and release"
+  ],
+  "tags": [
+    "Security",
+    "SCA",
+    "Static Code Analysis",
+    "Scan",
+    "SAST",
+    "Checkmarx",
+    "CxSAST"
+  ],
+  "content": {
+    "details": {
+      "path": "overview.md"
+    },
+    "license": {
+      "path": "checkmarx-license-terms.md"
+    }
+  },
+  "links": {
+    "getstarted": {
+      "uri": "https://info.checkmarx.com/cx-microsoft-vs-team-services"
+    },
+    "learn": {
+      "uri": "https://www.checkmarx.com"
+    },
+    "support": {
+      "uri": "https://www.checkmarx.com"
+    }
+  },
+  "branding": {
+    "color": "rgb(81, 53, 124)",
+    "theme": "dark"
+  },
+  "files": [
+    {
+      "path": "CxScan"
+    },
+    {
+      "path": "CxScan/Images/sample1.png",
+      "addressable": true
+    },
+    {
+      "path": "CxScan/Images/sample2.png",
+      "addressable": true
+    },
+    {
+      "path": "CxScan/Images/sample3.png",
+      "addressable": true
+    },
+    {
+      "path": "CxScan/Images/sample5.png",
+      "addressable": true
+    }
+  ],
+  "contributions": [
+    {
+      "id": "cx-scan-task",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "CxScan"
+      }
+    },
+    {
+      "id": "CxEndpoint",
+      "description": "Service Endpoint type for all Cx connections",
+      "type": "ms.vss-endpoint.service-endpoint-type",
+      "targets": [
+        "ms.vss-endpoint.endpoint-types"
+      ],
+      "properties": {
+        "name": "Checkmarx-Endpoint",
+        "displayName": "Checkmarx",
+        "authenticationSchemes": [
+          {
+            "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
+            "inputDescriptors": [
+              {
+                "id": "username",
+                "name": "Username",
+                "description": "Checkmarx username",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "isRequired": true,
+                  "dataType": "string"
+                }
+              },
+              {
+                "id": "password",
+                "name": "Password",
+                "description": "Checkmarx user password",
+                "inputMode": "textbox",
+                "isConfidential": true,
+                "validation": {
+                  "isRequired": true,
+                  "dataType": "string"
+                }
+              }
+            ]
+          }
+        ],
+        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"5\">Don't have a Checkmarx account? </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"5\">Register</font></span></a></span>"
+      }
+    }
+  ]
+}
