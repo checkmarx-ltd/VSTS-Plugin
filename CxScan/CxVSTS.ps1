@@ -111,10 +111,16 @@ Else{
     $LocalCodeContainerType = ($namespace  + '.LocalCodeContainer')
     $CliScanArgs.SrcCodeSettings.PackagedCode =  New-Object ($LocalCodeContainerType)
 
-    $SourceFilterPatternsType = ($namespace  + '.SourceFilterPatterns')
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists =  New-Object ($SourceFilterPatternsType)
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = $fileExtension
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = $folderExclusion
+    If((!([string]::IsNullOrEmpty($fileExtension))) -or (!([string]::IsNullOrEmpty($folderExclusion)))){
+        $SourceFilterPatternsType = ($namespace  + '.SourceFilterPatterns')
+        $CliScanArgs.SrcCodeSettings.SourceFilterLists =  New-Object ($SourceFilterPatternsType)
+        If(!([string]::IsNullOrEmpty($fileExtension))){
+            $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = $fileExtension
+        }
+        If(!([string]::IsNullOrEmpty($folderExclusion))){
+            $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = $folderExclusion
+        }
+    }
 
 	$CliScanArgs.IsPrivateScan = 0
 
