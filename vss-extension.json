@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "cxsast",
-  "version": "0.4.80",
+  "version": "0.4.85",
   "name": "Checkmarx",
   "publisher": "ilandayan",
   "targets": [
