@@ -253,6 +253,13 @@ Else{
                         [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                         [Int]$resLow = [convert]::ToInt32($resLow, 10)
 
+                        Write-Host ("High threshold: {0}" –f $highNum)
+                        Write-Host ("High result: {0}" –f $resHigh)
+                        Write-Host ("Medium threshold: {0}" –f $mediumNum)
+                        Write-Host ("Medium result: {0}" –f $resMedium)
+                        Write-Host ("Low threshold: {0}" –f $lowNum)
+                        Write-Host ("Low result: {0}" –f $resLow)
+
                         if($resHigh -gt $highNum){
                             Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
