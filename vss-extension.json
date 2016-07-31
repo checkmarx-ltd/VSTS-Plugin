@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "cxsast",
-  "version": "0.4.86",
+  "version": "0.4.87",
   "name": "Checkmarx",
   "publisher": "ilandayan",
   "targets": [
@@ -38,7 +38,7 @@
       "uri": "https://info.checkmarx.com/cx-microsoft-vs-team-services"
     },
     "learn": {
-      "uri": "https://www.checkmarx.com"
+      "uri": "https://checkmarx.atlassian.net/wiki/display/KC/Checkmarx+Plug-in+with+Microsoft+VSTS"
     },
     "support": {
       "uri": "https://www.checkmarx.com"

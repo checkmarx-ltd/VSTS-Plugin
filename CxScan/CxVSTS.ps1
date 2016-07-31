@@ -192,7 +192,8 @@ Else{
     $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
 
     If(-Not $scanResponse.IsSuccesfull)	{
-		write-host "An Error occurred while scanning : " ,  $scanResponse.ErrorMessage  -foregroundcolor "red"
+		Write-Host "##vso[task.logissue type=error;]An Error occurred while scanning: " ,  $scanResponse.ErrorMessage
+        Write-Host "##vso[task.complete result=Failed;]DONE"
     }
     Else {
         if([System.Convert]::ToBoolean($syncMode)){
@@ -207,13 +208,14 @@ Else{
                 $scanStatusResponse.CurrentStatus -ne "Canceled"  -and
                 $scanStatusResponse.CurrentStatus -ne "Deleted"
                 ) {
-                write-host ("Scan status is : {0}, {1}%" –f $scanStatusResponse.CurrentStatus, $scanStatusResponse.TotalPercent) -foregroundcolor "green"
-                $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
-                Start-Sleep -s 10 # wait 10 seconds
+                    write-host ("Scan status is : {0}, {1}%" –f $scanStatusResponse.CurrentStatus, $scanStatusResponse.TotalPercent) -foregroundcolor "green"
+                    $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
+                    Start-Sleep -s 10 # wait 10 seconds
                 }
 
                 If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -ne "Finished") {
-                    write-host "Scan failed :" , $scanStatusResponse.ErrorMessage -foregroundcolor "red"
+                    Write-Host "##vso[task.logissue type=error;]Scan failed: " ,  $scanStatusResponse.ErrorMessage
+                    Write-Host "##vso[task.complete result=Failed;]DONE"
                 }
                 Else {
                     [String]$scanId = $scanStatusResponse.ScanId
@@ -251,15 +253,15 @@ Else{
                         [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                         [Int]$resLow = [convert]::ToInt32($resLow, 10)
 
-                        if($resHigh -ge $highNum){
+                        if($highNum -ge $resHigh){
                             Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
-                        if($resMedium -ge $mediumNum){
+                        if($mediumNum -ge $resMedium){
                             Write-Host "##vso[task.logissue type=error;]Threshold for Medium result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
-                        if($resLow -ge $lowNum){
+                        if($lowNum -ge $resLow){
                             Write-Host "##vso[task.logissue type=error;]Threshold for Low result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
