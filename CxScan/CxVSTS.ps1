@@ -236,41 +236,34 @@ Else{
 
                     if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
                         if([string]::IsNullOrEmpty($high)){
-                            $high = '0'
+                            Write-Host "High threshold is not set."
+                        } else {
+                            [Int]$highNum = [convert]::ToInt32($high, 10)
+                            [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
+                            if($resHigh -gt $highNum){
+                                Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
+                                Write-Host "##vso[task.complete result=Failed;]DONE"
+                            }
                         }
                         if([string]::IsNullOrEmpty($medium)){
-                            $medium = '0'
+                             Write-Host "Medium threshold is not set."
+                        } else {
+                            [Int]$mediumNum = [convert]::ToInt32($medium, 10)
+                            [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
+                            if($resMedium -gt $mediumNum){
+                                Write-Host "##vso[task.logissue type=error;]Threshold for Medium result exceeded."
+                                Write-Host "##vso[task.complete result=Failed;]DONE"
+                            }
                         }
                         if([string]::IsNullOrEmpty($low)){
-                            $low = '0'
-                        }
-
-                        [Int]$highNum = [convert]::ToInt32($high, 10)
-                        [Int]$mediumNum = [convert]::ToInt32($medium, 10)
-                        [Int]$lowNum = [convert]::ToInt32($low, 10)
-
-                        [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
-                        [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
-                        [Int]$resLow = [convert]::ToInt32($resLow, 10)
-
-                        Write-Host ("High threshold: {0}" –f $highNum)
-                        Write-Host ("High result: {0}" –f $resHigh)
-                        Write-Host ("Medium threshold: {0}" –f $mediumNum)
-                        Write-Host ("Medium result: {0}" –f $resMedium)
-                        Write-Host ("Low threshold: {0}" –f $lowNum)
-                        Write-Host ("Low result: {0}" –f $resLow)
-
-                        if($resHigh -gt $highNum){
-                            Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
-                            Write-Host "##vso[task.complete result=Failed;]DONE"
-                        }
-                        if($resMedium -gt $mediumNum){
-                            Write-Host "##vso[task.logissue type=error;]Threshold for Medium result exceeded."
-                            Write-Host "##vso[task.complete result=Failed;]DONE"
-                        }
-                        if($resLow -gt $lowNum){
-                            Write-Host "##vso[task.logissue type=error;]Threshold for Low result exceeded."
-                            Write-Host "##vso[task.complete result=Failed;]DONE"
+                             Write-Host "Low threshold is not set."
+                        } else {
+                            [Int]$lowNum = [convert]::ToInt32($low, 10)
+                            [Int]$resLow = [convert]::ToInt32($resLow, 10)
+                            if($resLow -gt $lowNum){
+                                Write-Host "##vso[task.logissue type=error;]Threshold for Low result exceeded."
+                                Write-Host "##vso[task.complete result=Failed;]DONE"
+                            }
                         }
                     }
                 }
