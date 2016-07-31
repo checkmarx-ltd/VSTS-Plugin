@@ -253,15 +253,15 @@ Else{
                         [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                         [Int]$resLow = [convert]::ToInt32($resLow, 10)
 
-                        if($highNum -ge $resHigh){
+                        if($resHigh -gt $highNum){
                             Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
-                        if($mediumNum -ge $resMedium){
+                        if($resMedium -gt $mediumNum){
                             Write-Host "##vso[task.logissue type=error;]Threshold for Medium result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
-                        if($lowNum -ge $resLow){
+                        if($resLow -gt $lowNum){
                             Write-Host "##vso[task.logissue type=error;]Threshold for Low result exceeded."
                             Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
