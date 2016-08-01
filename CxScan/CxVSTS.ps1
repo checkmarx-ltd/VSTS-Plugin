@@ -234,6 +234,7 @@ Else{
 
                     CreateScanReport $reportPath $resHigh $resMedium $resLow $cxLink
 
+                    [bool]$thresholdExceeded=$false
                     if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
                         if([string]::IsNullOrEmpty($high)){
                             Write-Host "High threshold is not set."
@@ -242,7 +243,7 @@ Else{
                             [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
                             if($resHigh -gt $highNum){
                                 Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
-                                Write-Host "##vso[task.complete result=Failed;]DONE"
+                                $thresholdExceeded=$true
                             }
                         }
                         if([string]::IsNullOrEmpty($medium)){
@@ -252,7 +253,7 @@ Else{
                             [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                             if($resMedium -gt $mediumNum){
                                 Write-Host "##vso[task.logissue type=error;]Threshold for Medium result exceeded."
-                                Write-Host "##vso[task.complete result=Failed;]DONE"
+                                $thresholdExceeded=$true
                             }
                         }
                         if([string]::IsNullOrEmpty($low)){
@@ -262,8 +263,11 @@ Else{
                             [Int]$resLow = [convert]::ToInt32($resLow, 10)
                             if($resLow -gt $lowNum){
                                 Write-Host "##vso[task.logissue type=error;]Threshold for Low result exceeded."
-                                Write-Host "##vso[task.complete result=Failed;]DONE"
+                                $thresholdExceeded=$true
                             }
+                        }
+                        if($thresholdExceeded){
+                            Write-Host "##vso[task.complete result=Failed;]DONE"
                         }
                     }
                 }
