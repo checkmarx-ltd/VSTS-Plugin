@@ -26,7 +26,7 @@ $ErrorActionPreference = "Stop"
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
 [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
 if($srcRepoType -Match 'git' -And !($branchName -Like 'master')){
-    Write-Error "Checkmarx scans runs only on Master branch in Git."
+    Write-Host "##vso[task.complete result=Failed;]Checkmarx scans runs only on Master branch in Git."
     Exit
 }
 
