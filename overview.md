@@ -62,7 +62,7 @@ The following steps are required to get started.
 
 
 
-#Configure CxSAST Build Step
+#Configure Checkmarx Build Step
 
 ![image](CxScan/Images/sample4.png)
 
@@ -71,14 +71,14 @@ To complete this step:
 1.	CxServer
     a.	Select a Checkmarx Endpoint from the drop-down list or click Manage to associate a new Endpoint (described in the next section).
     b.	Enter a Project Name: Either select an existing project from the list, or type in any name to create a new scan project
-    c.	Preset -- predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets.
+    c.	Preset - predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets.
     d.	Team – which group the project is associated
     e.	Enable the Incremental Scan checkbox if you want to reduce time between scans
     f.	Enter how often a full scan is executed between incremental scans
     g.	Folder Exclusions – comma delineated list of the folders to exclude from the scan
     h.	File Exclusions – comma delineated list of the file extensions to exclude from the scan
-    i.	Enable synchronous mode – enabling this option you can see the scan results inside the CxSAST plug-in results window. If disabled, the results are only displayed inside the CXSAST application
-    j.	Enable vulnerability Threshold – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
+    i.	Synchronous Mode – enabling this option will cause the build step to wait for scan results, you can see the scan results inside the Checkmarx plug-in results window. If disabled, the results are only displayed inside the Checkmarx web-application.
+    j.	Vulnerability Threshold – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
 2.	Control options
     a.	Enabled - Clear this check box if you want to disable a step. This is a handy option if a step is not working correctly or if you need to focus on other parts of the process.
     b.	Continue on error –
@@ -95,7 +95,7 @@ To complete this step:
 ![image](CxScan/Images/sample5.png)
 
 **To complete this step:**
-1.	Enter Connection Name – Free text, for example: CxSAST
+1.	Enter Connection Name – Free text, for example: Checkmarx
 2.	Enter Server URL – URL is provided by Checkmarx following registration
 3.	Enter Username – is provided by Checkmarx following registration
 4.	Enter Password – is provided by Checkmarx following registration

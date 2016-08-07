@@ -242,7 +242,7 @@ Else{
                             [Int]$highNum = [convert]::ToInt32($high, 10)
                             [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
                             if($resHigh -gt $highNum){
-                                Write-Host "##vso[task.logissue type=error;]Threshold for High result exceeded."
+                                Write-Host  ("##vso[task.logissue type=error;]Threshold for high result exceeded. Threshold:  {0} , Detected: {1}" –f $highNum, $resHigh)
                                 $thresholdExceeded=$true
                             }
                         }
@@ -252,7 +252,7 @@ Else{
                             [Int]$mediumNum = [convert]::ToInt32($medium, 10)
                             [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                             if($resMedium -gt $mediumNum){
-                                Write-Host "##vso[task.logissue type=error;]Threshold for Medium result exceeded."
+                                Write-Host  ("##vso[task.logissue type=error;]Threshold for medium result exceeded. Threshold:  {0} , Detected: {1}" –f $mediumNum, $resMedium)
                                 $thresholdExceeded=$true
                             }
                         }
@@ -262,7 +262,7 @@ Else{
                             [Int]$lowNum = [convert]::ToInt32($low, 10)
                             [Int]$resLow = [convert]::ToInt32($resLow, 10)
                             if($resLow -gt $lowNum){
-                                Write-Host "##vso[task.logissue type=error;]Threshold for Low result exceeded."
+                                Write-Host  ("##vso[task.logissue type=error;]Threshold for low result exceeded. Threshold:  {0} , Detected: {1}" –f $lowNum, $resLow)
                                 $thresholdExceeded=$true
                             }
                         }
