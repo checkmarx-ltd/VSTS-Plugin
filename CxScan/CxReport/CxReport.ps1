@@ -19,7 +19,7 @@ function FormatScanResultContent{
     Write-Verbose "Formatting the scan result report"
 
     $template  = '<div style="padding:5px 0px">
-                      <span>Vulnerabilities founded summary:</span>
+                      <span>Vulnerabilities Summary:</span>
                   </div>
                   <table border="0" style="border-top: 1px solid #eee;border-collapse: separate;border-spacing: 0 2px;">
                       <tr>
