@@ -24,10 +24,21 @@ import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
 $ErrorActionPreference = "Stop"
 
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
-[String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
-if($srcRepoType -Match 'git' -And !($branchName -Like 'master')){
-    Write-Host "##vso[task.complete result=Skipped;]Checkmarx scans runs only on Master branch in Git."
-    Exit
+if($srcRepoType -Match 'git'){
+    if(!([string]::IsNullOrEmpty($env:SYSTEM_ACCESSTOKEN))){
+        $resource = "$($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)$env:SYSTEM_TEAMPROJECTID/_apis/build/definitions/$($env:SYSTEM_DEFINITIONID)?api-version=2.0"
+        Write-Host "URL: $resource"
+        $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
+        [String]$defaultBranch = $response.defaultBranch
+        $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
+        [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
+
+        Write-Host ("Default branch: '{0}', Current Branch: '{1}'" –f $defaultBranch, $branchName)
+        if(!($branchName -Like $defaultBranch)){
+            Write-Host "##vso[task.complete result=Skipped;]Default branch not equal to branch that source was push to."
+            Exit
+        }
+    }
 }
 
 #Get-Variable | Out-String
