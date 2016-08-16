@@ -39,6 +39,10 @@ if($srcRepoType -Match 'git'){
             Exit
         }
     }
+    if(!($branchName -Like 'master')){
+        Write-Host "##vso[task.complete result=Skipped;]Access to OAuth token is not given and not running on 'master' branch."
+        Exit
+    }
 }
 
 #Get-Variable | Out-String
