@@ -45,7 +45,6 @@ if($srcRepoType -Match 'git'){
     }
 }
 
-#Get-Variable | Out-String
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
