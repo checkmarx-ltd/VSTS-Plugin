@@ -38,10 +38,11 @@ if($srcRepoType -Match 'git'){
             Write-Host "##vso[task.complete result=Skipped;]Default branch not equal to branch that source was push to."
             Exit
         }
-    }
-    if(!($branchName -Like 'master')){
-        Write-Host "##vso[task.complete result=Skipped;]Access to OAuth token is not given and not running on 'master' branch."
-        Exit
+    } else{
+        if(!($branchName -Like 'master')){
+            Write-Host "##vso[task.complete result=Skipped;]Access to OAuth token is not given and not running on 'master' branch."
+            Exit
+        }
     }
 }
 
