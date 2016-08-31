@@ -25,21 +25,22 @@ $ErrorActionPreference = "Stop"
 
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
 if($srcRepoType -Match 'git'){
+    [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
     if(!([string]::IsNullOrEmpty($env:SYSTEM_ACCESSTOKEN))){
         $resource = "$($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)$env:SYSTEM_TEAMPROJECTID/_apis/build/definitions/$($env:SYSTEM_DEFINITIONID)?api-version=2.0"
         Write-Host "URL: $resource"
         $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
         [String]$defaultBranch = $response.defaultBranch
         $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
-        [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
 
         Write-Host ("Default branch: '{0}', Current Branch: '{1}'" –f $defaultBranch, $branchName)
         if(!($branchName -Like $defaultBranch)){
             Write-Host "##vso[task.complete result=Skipped;]Default branch not equal to branch that source was push to."
             Exit
         }
-    } else{
+    } Else {
         if(!($branchName -Like 'master')){
+            Write-Host "Access to OAuth token is not given and not running on 'master' branch."
             Write-Host "##vso[task.complete result=Skipped;]Access to OAuth token is not given and not running on 'master' branch."
             Exit
         }
