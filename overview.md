@@ -30,7 +30,7 @@ Works with all IDEs, build management servers, bug tracking tools and source rep
 #Before You Start:
 
 If you are a new user please submit the trial request registration form.
-[link to HubSpot registration page](https://info.checkmarx.com/cx-microsoft-vs-team-services)
+[link to Checkmarx registration page](https://info.checkmarx.com/cx-microsoft-vs-team-services)
 
 
 

@@ -54,7 +54,7 @@
       "required": true,
       "groupName": "serverSettings",
       "defaultValue": "Default",
-      "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets.",
+      "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).",
       "options": {
         "Default 2014": "Default 2014",
         "Default": "Default",
@@ -92,7 +92,7 @@
       "label": "Incremental Scan",
       "required": true,
       "defaultValue": "true",
-      "helpMarkDown": "Set true for incremental scan.",
+      "helpMarkDown": "Set true for incremental scan. If no scan was done yet, the scan will be a full scan and the following ones will be incremental.",
       "groupName": "scanSettings"
     },
     {
@@ -126,7 +126,7 @@
       "label": "Vulnerability Threshold Level:",
       "required": false,
       "defaultValue": "true",
-      "helpMarkDown": "Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails",
+      "helpMarkDown": "Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities of given severity before the scan fails.",
       "groupName": "scanSettings",
       "visibleRule": "syncMode = true"
     },

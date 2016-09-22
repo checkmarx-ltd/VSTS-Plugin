@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "cxsast",
-  "version": "0.5.21",
+  "version": "0.5.22",
   "name": "Checkmarx",
   "publisher": "ilandayan",
   "targets": [
@@ -41,7 +41,7 @@
       "uri": "https://checkmarx.atlassian.net/wiki/display/KC/Checkmarx+Plug-in+for+Microsoft+Visual+Studio+Team+Services"
     },
     "support": {
-      "uri": "https://www.checkmarx.com"
+      "uri": "https://support.checkmarx.com/home"
     }
   },
   "branding": {
@@ -123,7 +123,7 @@
             ]
           }
         ],
-        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"5\">Don't have a Checkmarx account? </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"5\">Register</font></span></a></span>"
+        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"4\">Don’t have a Checkmarx cloud account? </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"4\">Register</font></span></a></span>"
       }
     }
   ]
