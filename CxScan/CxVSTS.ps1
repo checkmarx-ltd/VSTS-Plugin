@@ -71,7 +71,10 @@ $password = [string]$serviceEndpoint.Authorization.Parameters.Password # cx user
 write-host 'Entering CxScanner ......' -foregroundcolor "green"
 
 $serviceUrl = $serviceUrl.TrimStart().TrimEnd()
-
+$serviceUrl = $serviceUrl.Replace('CxWebClient', '').trim()
+if ($serviceUrl.EndsWith('//')){
+    $serviceUrl = $serviceUrl.Substring(0,$serviceUrl.Length -1)
+}
 if (-Not $serviceUrl.EndsWith('/')){
     $serviceUrl = $serviceUrl + '/'
 }
