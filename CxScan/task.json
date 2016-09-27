@@ -3,7 +3,7 @@
   "name": "Security static source code analysis",
   "friendlyName": "Checkmarx",
   "description": "Security static source code analysis",
-  "helpMarkDown": "[Information] http://checkmarx.com/vsoplugin",
+  "helpMarkDown": "[Information] https://checkmarx.atlassian.net/wiki/display/KC/CxSAST+VSTS+Plugin",
   "category": "Build",
   "visibility": [
     "Build"
