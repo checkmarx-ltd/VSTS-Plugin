@@ -1,13 +1,17 @@
 {
   "manifestVersion": 1,
   "id": "cxsast",
-  "version": "0.5.23",
+  "version": "0.5.24",
   "name": "Checkmarx",
-  "publisher": "ilandayan",
+  "publisher": "Checkmarx",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
+  ],
+  "public": true,
+  "galleryFlags": [
+    "Preview"
   ],
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
