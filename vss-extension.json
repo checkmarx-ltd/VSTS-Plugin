@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "cxsast",
-  "version": "0.5.25",
+  "version": "0.5.26",
   "name": "Checkmarx",
   "publisher": "Checkmarx",
   "targets": [
@@ -11,7 +11,7 @@
   ],
   "public": true,
   "galleryFlags": [
-    "Preview"
+    "Free"
   ],
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
