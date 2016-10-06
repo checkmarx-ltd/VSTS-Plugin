@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "cxsast",
-  "version": "0.5.26",
+  "version": "0.5.27",
   "name": "Checkmarx",
   "publisher": "Checkmarx",
   "targets": [
@@ -39,7 +39,7 @@
       "uri": "https://info.checkmarx.com/cx-microsoft-vs-team-services"
     },
     "learn": {
-      "uri": "https://checkmarx.atlassian.net/wiki/display/KC/CxSAST+VSTS+Plugin"
+      "uri": "https://checkmarx.atlassian.net/wiki/display/KC/CxSAST+MS-VSTS+Plugin"
     },
     "support": {
       "uri": "https://support.checkmarx.com/home"
@@ -114,7 +114,7 @@
                 "id": "password",
                 "name": "Password",
                 "description": "Checkmarx user password",
-                "inputMode": "textbox",
+                "inputMode": "passwordbox",
                 "isConfidential": true,
                 "validation": {
                   "isRequired": true,
