@@ -33,7 +33,7 @@ if($srcRepoType -Match 'git'){
         [String]$defaultBranch = $response.defaultBranch
         $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
 
-        Write-Host ("Default branch: '{0}', Current Branch: '{1}'" –f $defaultBranch, $branchName)
+        Write-Host ("Default branch: '{0}', Current Branch: '{1}'" -f $defaultBranch, $branchName)
         if(!($branchName -Like $defaultBranch)){
             Write-Host "##vso[task.complete result=Skipped;]Default branch not equal to branch that source was push to."
             Exit
@@ -50,7 +50,7 @@ if($srcRepoType -Match 'git'){
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
-Write-Host ("Source location: {0}" –f $sourceLocation)
+Write-Host ("Source location: {0}" -f $sourceLocation)
 
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $connectedServiceName
 
@@ -155,13 +155,18 @@ Else{
     $CliScanArgs.IgnoreScanWithUnchangedCode = 0
     $CliScanArgs.ClientOrigin = "SDK"
 
+    $fullTeamName = $fullTeamName -replace ' ','#@!'
     $fullTeamName = $fullTeamName -replace '\\',' '
     $fullTeamName = $fullTeamName -replace '/',' '
     $fullTeamName = $fullTeamName -replace '(^\s+|\s+$)','' -replace '\s+','\\'
-    Write-Host ("Full team path: {0}" –f $fullTeamName)
+    $fullTeamName = $fullTeamName -replace '#@!',' '
+    $fullTeamName = $fullTeamName -replace '\\\s+','\\'
+    $fullTeamName = $fullTeamName -replace '\s+\\','\\'
+    $fullTeamName = $fullTeamName -replace '\\+','\\'
+    Write-Host ("Full team path: {0}" -f $fullTeamName)
 	$CliScanArgs.PrjSettings.ProjectName = $fullTeamName + "\\" + $projectName
 
-    Write-Host ("Preset name: {0}" –f $preset)
+    Write-Host ("Preset name: {0}" -f $preset)
 	$presetId
 	switch ($preset){
         'Default 2014' {$presetId = 17}
@@ -187,7 +192,7 @@ Else{
         'Error handling' {$presetId = 2}
         'All' {$presetId = 1}
         }
-    Write-Host ("PresetId: {0}" –f $presetId)
+    Write-Host ("PresetId: {0}" -f $presetId)
 
     $CliScanArgs.PrjSettings.PresetID = $presetId
     $CliScanArgs.PrjSettings.IsPublic = 1 # true
@@ -227,7 +232,7 @@ Else{
                 $scanStatusResponse.CurrentStatus -ne "Canceled"  -and
                 $scanStatusResponse.CurrentStatus -ne "Deleted"
                 ) {
-                    write-host ("Scan status is : {0}, {1}%" –f $scanStatusResponse.CurrentStatus, $scanStatusResponse.TotalPercent) -foregroundcolor "green"
+                    write-host ("Scan status is : {0}, {1}%" -f $scanStatusResponse.CurrentStatus, $scanStatusResponse.TotalPercent) -foregroundcolor "green"
                     $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
                     Start-Sleep -s 10 # wait 10 seconds
                 }
@@ -244,12 +249,12 @@ Else{
                     $resHigh = $scanSummary.High
                     $resMedium = $scanSummary.Medium
                     $resLow = $scanSummary.Low
-                    Write-Host ("High Risk: {0}" –f $resHigh) -foregroundcolor "green"
-                    Write-Host ("Medium Risk: {0}" –f $resMedium) -foregroundcolor "green"
-                    Write-Host ("Low Risk: {0}" –f $resLow) -foregroundcolor "green"
+                    Write-Host ("High Risk: {0}" -f $resHigh) -foregroundcolor "green"
+                    Write-Host ("Medium Risk: {0}" -f $resMedium) -foregroundcolor "green"
+                    Write-Host ("Low Risk: {0}" -f $resLow) -foregroundcolor "green"
 
-                    $cxLink = ("{0}CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}" –f $serviceUrl, $scanId, $projectID)
-                    Write-Host ("View scan results at {0}" –f $cxLink) -foregroundcolor "green"
+                    $cxLink = ("{0}CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}" -f $serviceUrl, $scanId, $projectID)
+                    Write-Host ("View scan results at {0}" -f $cxLink) -foregroundcolor "green"
 
                     CreateScanReport $reportPath $resHigh $resMedium $resLow $cxLink
 
@@ -261,7 +266,7 @@ Else{
                             [Int]$highNum = [convert]::ToInt32($high, 10)
                             [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
                             if($resHigh -gt $highNum){
-                                Write-Host  ("##vso[task.logissue type=error;]Threshold for high result exceeded. Threshold:  {0} , Detected: {1}" –f $highNum, $resHigh)
+                                Write-Host  ("##vso[task.logissue type=error;]Threshold for high result exceeded. Threshold:  {0} , Detected: {1}" -f $highNum, $resHigh)
                                 $thresholdExceeded=$true
                             }
                         }
@@ -271,7 +276,7 @@ Else{
                             [Int]$mediumNum = [convert]::ToInt32($medium, 10)
                             [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                             if($resMedium -gt $mediumNum){
-                                Write-Host  ("##vso[task.logissue type=error;]Threshold for medium result exceeded. Threshold:  {0} , Detected: {1}" –f $mediumNum, $resMedium)
+                                Write-Host  ("##vso[task.logissue type=error;]Threshold for medium result exceeded. Threshold:  {0} , Detected: {1}" -f $mediumNum, $resMedium)
                                 $thresholdExceeded=$true
                             }
                         }
@@ -281,7 +286,7 @@ Else{
                             [Int]$lowNum = [convert]::ToInt32($low, 10)
                             [Int]$resLow = [convert]::ToInt32($resLow, 10)
                             if($resLow -gt $lowNum){
-                                Write-Host  ("##vso[task.logissue type=error;]Threshold for low result exceeded. Threshold:  {0} , Detected: {1}" –f $lowNum, $resLow)
+                                Write-Host  ("##vso[task.logissue type=error;]Threshold for low result exceeded. Threshold:  {0} , Detected: {1}" -f $lowNum, $resLow)
                                 $thresholdExceeded=$true
                             }
                         }
@@ -315,11 +320,11 @@ function IsIncRun{
     [Int]$end = [convert]::ToInt32($content.IndexOf(","), 10)
     $autoFullScan = $content.Substring($start, $end - $start).trim()
     [Int]$autoFullScan = [convert]::ToInt32($autoFullScan, 10)
-    write-host ("autoFullScan: {0}" –f $autoFullScan)
+    write-host ("autoFullScan: {0}" -f $autoFullScan)
 
     $curRun = $content.Substring($content.LastIndexOf(":") + 1).trim()
     [Int]$curRun = [convert]::ToInt32($curRun, 10) + 1
-    write-host ("curRun: {0}" –f $curRun)
+    write-host ("curRun: {0}" -f $curRun)
 
     if($fsois -ne $autoFullScan){
         [Int]$autoFullScan = $fsois
