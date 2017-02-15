@@ -29,19 +29,33 @@ if($srcRepoType -Match 'git'){
     if(!([string]::IsNullOrEmpty($env:SYSTEM_ACCESSTOKEN))){
         $resource = "$($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)$env:SYSTEM_TEAMPROJECTID/_apis/build/definitions/$($env:SYSTEM_DEFINITIONID)?api-version=2.0"
         Write-Host "URL: $resource"
-        $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
-        [String]$defaultBranch = $response.defaultBranch
-        $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
+        [String]$defaultBranch = "N/A"
+        try {
+            $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
+            $defaultBranch = $response.repository.defaultBranch
+            $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
 
-        Write-Host ("Default branch: '{0}', Current Branch: '{1}'" -f $defaultBranch, $branchName)
-        if(!($branchName -Like $defaultBranch)){
-            Write-Host "##vso[task.complete result=Skipped;]Default branch not equal to branch that source was push to."
-            Exit
+            Write-Host ("Default branch: '{0}', Current Branch: '{1}'" -f $defaultBranch, $branchName)
+
+            if(!($branchName -Like $defaultBranch)){
+                Write-Host "Default branch not equal to branch that source was push to."
+                Write-Host "##vso[task.complete result=Skipped;]"
+                Exit
+            }
+        } catch {
+            $result = $_.Exception.Response.GetResponseStream()
+            $reader = New-Object System.IO.StreamReader($result)
+            $reader.BaseStream.Position = 0
+            $reader.DiscardBufferedData()
+            $responseBody = $reader.ReadToEnd();
+
+            Write-Host "##vso[task.logissue type=error;]Fail to get default branch from server: " ,  $responseBody
+            Write-Host "##vso[task.complete result=Failed;]DONE"
         }
     } Else {
         if(!($branchName -Like 'master')){
             Write-Host "Access to OAuth token is not given and not running on 'master' branch."
-            Write-Host "##vso[task.complete result=Skipped;]Access to OAuth token is not given and not running on 'master' branch."
+            Write-Host "##vso[task.complete result=Skipped;]"
             Exit
         }
     }
