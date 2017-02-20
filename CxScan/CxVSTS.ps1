@@ -28,7 +28,7 @@ if($srcRepoType -Match 'git'){
     [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
     if(!([string]::IsNullOrEmpty($env:SYSTEM_ACCESSTOKEN))){
         $resource = "$($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)$env:SYSTEM_TEAMPROJECTID/_apis/build/definitions/$($env:SYSTEM_DEFINITIONID)?api-version=2.0"
-        Write-Host "URL: $resource"
+        Write-Host "Url for build definition: $resource"
         [String]$defaultBranch = "N/A"
         try {
             $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
