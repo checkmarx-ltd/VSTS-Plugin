@@ -139,7 +139,7 @@ Else{
     $CliScanArgs.PrjSettings =  New-Object ($ProjectSettingsType)
 
     $SourceCodeSettingsType = ($namespace  + '.SourceCodeSettings')
-    $CliScanArgs.SrcCodeSettings =  New-Object ($SourceCodeSettingsType)
+    $CliScanArgs.SrcCodeSettings = New-Object ($SourceCodeSettingsType)
 
     $LocalCodeContainerType = ($namespace  + '.LocalCodeContainer')
     $CliScanArgs.SrcCodeSettings.PackagedCode =  New-Object ($LocalCodeContainerType)
@@ -212,20 +212,52 @@ Else{
     $CliScanArgs.PrjSettings.IsPublic = 1 # true
     $CliScanArgs.PrjSettings.Owner = $user
 
-	$zipfilename = [System.IO.Path]::GetTempPath() +  [System.IO.Path]::GetRandomFileName()
-	write-host "Zipping sources to $zipfilename ......" -foregroundcolor "green"
+    $tempSourceLocation = $sourceLocation + 'Temp'
+    if((Test-Path -Path $tempSourceLocation )){
+        Remove-Item $tempSourceLocation -force -recurse
+    }
 
-	Add-Type -Assembly System.IO.Compression.FileSystem
+    $filesStr = ""
+    $foldersStr = ""
+    if(!([string]::IsNullOrEmpty($fileExtension))){
+        $filesStr = $fileExtension
+    }
+    if(!([string]::IsNullOrEmpty($folderExclusion))){
+        $foldersStr = $folderExclusion
+    }
+    [array]$files = $filesStr.Split(",") | Foreach-Object { $_.Trim() }
+    [array]$foldersArr = $foldersStr.Split(",") | Foreach-Object { $_.Trim() }
 
-	$compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($sourceLocation,$zipfilename,$compressionLevel,$false)
+    Get-ChildItem $sourceLocation -Recurse -Exclude $files |
+    Foreach-Object {
+        $allowed = $true
+        if(!(($foldersArr.Count -eq 1) -and ($foldersArr[0] -eq ""))){
+            foreach ($folder in $foldersArr) {
+                if ($_.FullName.Contains('\' + $folder) -or $_.FullName.Contains('\' + $folder + '\')) {
+                    $allowed = $false
+                    break
+                }
+            }
+        }
+        if ($allowed) {
+            $loc = $tempSourceLocation + $_.FullName.Substring($sourceLocation.length)
+            Copy-Item $_.FullName -Destination $loc
+        }
+    }
+
+    $zipfilename = [System.IO.Path]::GetTempPath() + [System.IO.Path]::GetRandomFileName()
+    write-host "Zipping sources to $zipfilename" -foregroundcolor "green"
+
+    Add-Type -Assembly System.IO.Compression.FileSystem
+    $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($tempSourceLocation, $zipfilename, $compressionLevel, $false)
 
     $CliScanArgs.SrcCodeSettings.PackagedCode.ZippedFile = [System.IO.File]::ReadAllBytes($zipfilename)
     $CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
 
     [System.IO.File]::Delete($zipfilename)
 
-    write-host "Starting a scan....." -foregroundcolor "green"
+    write-host "Starting Checkmarx scan..." -foregroundcolor "green"
 
     $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
 
