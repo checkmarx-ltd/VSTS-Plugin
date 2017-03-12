@@ -108,7 +108,7 @@
       "type": "string",
       "label": "File Extension",
       "required": false,
-      "helpMarkDown": "Comma delineated list of the file extensions to exclude from the scan (for example: *.xml,*.txt,*.log)",
+      "helpMarkDown": "Comma delineated list of the file extensions to exclude from the scan (for example: *.log,*.txt,*.xml)",
       "groupName": "scanSettings"
     },
     {

@@ -228,6 +228,7 @@ Else{
         $foldersStr = $folderExclusion
     }
     [array]$files = $filesStr.Split(",") | Foreach-Object { $_.Trim() }
+    $files = $files | Foreach-Object { if ($_.ToString().StartsWith('.')){ "*$_" } Else {"$_"} }
     [array]$foldersArr = $foldersStr.Split(",") | Foreach-Object { $_.Trim() }
 
     Get-ChildItem $sourceLocation -Recurse -Exclude $files |
