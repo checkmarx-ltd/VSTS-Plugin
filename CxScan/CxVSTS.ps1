@@ -213,8 +213,10 @@ Else{
     $CliScanArgs.PrjSettings.Owner = $user
 
     $tempSourceLocation = $sourceLocation + 'Temp'
-    if((Test-Path -Path $tempSourceLocation )){
+    if (Test-Path -Path $tempSourceLocation){
         Remove-Item $tempSourceLocation -force -recurse
+    } else {
+        mkdir $tempSourceLocation
     }
 
     $filesStr = ""
@@ -250,10 +252,18 @@ Else{
 
     Add-Type -Assembly System.IO.Compression.FileSystem
     $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($tempSourceLocation, $zipfilename, $compressionLevel, $false)
+    if((Test-Path -Path $tempSourceLocation)){
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($tempSourceLocation, $zipfilename, $compressionLevel, $false)
+    }
 
-    $CliScanArgs.SrcCodeSettings.PackagedCode.ZippedFile = [System.IO.File]::ReadAllBytes($zipfilename)
-    $CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
+    if(!(Test-Path -Path $zipfilename)){
+        Write-Host "Zip file is empty: no source to scan"
+        Write-Host "##vso[task.complete result=Skipped;]"
+        Exit
+    } Else {
+        $CliScanArgs.SrcCodeSettings.PackagedCode.ZippedFile = [System.IO.File]::ReadAllBytes($zipfilename)
+        $CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
+    }
 
     [System.IO.File]::Delete($zipfilename)
 
