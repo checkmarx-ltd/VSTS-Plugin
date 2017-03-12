@@ -10,9 +10,9 @@
   ],
   "author": "Ilan Dayan",
   "version": {
-    "Major": 0,
-    "Minor": 2,
-    "Patch": 3
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
   },
   "demands": [
   ],
@@ -100,7 +100,7 @@
       "type": "string",
       "label": "Folder Exclusion",
       "required": false,
-      "helpMarkDown": "Comma delineated list of the folders to exclude from the scan",
+      "helpMarkDown": "Comma delineated list of the folders to exclude from the scan (for example: dto,target,WEB-INF)",
       "groupName": "scanSettings"
     },
     {
@@ -108,7 +108,7 @@
       "type": "string",
       "label": "File Extension",
       "required": false,
-      "helpMarkDown": "Comma delineated list of the file extensions to exclude from the scan",
+      "helpMarkDown": "Comma delineated list of the file extensions to exclude from the scan (for example: *.xml,*.txt,*.log)",
       "groupName": "scanSettings"
     },
     {
