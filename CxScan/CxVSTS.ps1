@@ -252,7 +252,13 @@ Else{
 
     Add-Type -Assembly System.IO.Compression.FileSystem
     $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
-    if((Test-Path -Path $tempSourceLocation)){
+    if(Test-Path -Path $tempSourceLocation){
+        $directoryInfo = Get-ChildItem $tempSourceLocation | Measure-Object
+        if($directoryInfo.count -eq 0){
+            Write-Host "Zip file is empty: no source to scan"
+            Write-Host "##vso[task.complete result=Skipped;]"
+            Exit
+        }
         [System.IO.Compression.ZipFile]::CreateFromDirectory($tempSourceLocation, $zipfilename, $compressionLevel, $false)
     }
 
