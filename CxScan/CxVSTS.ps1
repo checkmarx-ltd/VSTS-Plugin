@@ -1,6 +1,6 @@
 [CmdletBinding()]
 Param(
-    [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $connectedServiceName,
+    [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $CheckmarxService,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $projectName,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $fullTeamName,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $preset,
@@ -66,10 +66,10 @@ $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
 Write-Host ("Source location: {0}" -f $sourceLocation)
 
-$serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $connectedServiceName
+$serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 
 if (!$serviceEndpoint){
-    throw "Connected Service with name '$ConnectedServiceName' could not be found.  Ensure that this Connected Service was successfully provisioned using the services tab in the Admin UI."
+    throw "Connected Service with name '$CheckmarxService' could not be found.  Ensure that this Connected Service was successfully provisioned using the services tab in the Admin UI."
 }
 
 $authScheme = $serviceEndpoint.Authorization.Scheme
@@ -98,7 +98,14 @@ $resolverUrl = $serviceUrl + $resolverUrlExtention
 
 write-host "Connecting to Checkmarx at: $resolverUrl ....." -foregroundcolor "green"
 
-$resolver = New-WebServiceProxy -Uri $resolverUrl -UseDefaultCredential
+$resolver = $null
+try {
+    $resolver = New-WebServiceProxy -Uri $resolverUrl -UseDefaultCredential
+} catch {
+    write-host "Could not resolve Checkmarx service URL. Service might be down or a wrong URL was supplied." -foregroundcolor "red"
+    Write-Error $_.Exception
+    Exit
+}
 
 if (!$resolver){
     write-host "Could not resolve service URL. Service might be down or a wrong URL was supplied." -foregroundcolor "red"
@@ -127,6 +134,8 @@ $loginResponse = $proxy.Login($credentials, 1033)
 
 If(-Not $loginResponse.IsSuccesfull){
     write-host "An Error occurred while logging in: ", $loginResponse.ErrorMessage  -foregroundcolor "red"
+    Write-Host "##vso[task.complete result=Failed;]DONE"
+    Exit
 }
 Else{
 	$sessionId = $loginResponse.SessionId
@@ -165,7 +174,7 @@ Else{
         }
     }
 
-    $CliScanArgs.Comment = "Scan triggered by CxRunner"
+    $CliScanArgs.Comment = "Scan triggered by CxVSTS"
     $CliScanArgs.IgnoreScanWithUnchangedCode = 0
     $CliScanArgs.ClientOrigin = "SDK"
 
@@ -231,6 +240,12 @@ Else{
     $files = $files | Foreach-Object { if ($_.ToString().StartsWith('.')){ "*$_" } Else {"$_"} }
     [array]$foldersArr = $foldersStr.Split(",") | Foreach-Object { $_.Trim() }
 
+    $zipfilename = [System.IO.Path]::GetTempPath() + [System.IO.Path]::GetRandomFileName()
+    Add-Type -Assembly System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
+    [System.IO.Compression.ZipArchive] $arch = [System.IO.Compression.ZipFile]::Open($zipfilename,[System.IO.Compression.ZipArchiveMode]::Update)
+
     Get-ChildItem $sourceLocation -Recurse -Exclude $files |
     Foreach-Object {
         $allowed = $true
@@ -243,25 +258,15 @@ Else{
             }
         }
         if ($allowed) {
-            $loc = $tempSourceLocation + $_.FullName.Substring($sourceLocation.length)
-            Copy-Item $_.FullName -Destination $loc
+            if(!(([IO.FileInfo]$_.FullName).Attributes -eq "Directory")){
+                $loc = $_.FullName.Substring($sourceLocation.length + 1)
+                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($arch, $_.FullName, $loc, $compressionLevel)
+            }
         }
     }
 
-    $zipfilename = [System.IO.Path]::GetTempPath() + [System.IO.Path]::GetRandomFileName()
+    $arch.Dispose()
     write-host "Zipping sources to $zipfilename" -foregroundcolor "green"
-
-    Add-Type -Assembly System.IO.Compression.FileSystem
-    $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
-    if(Test-Path -Path $tempSourceLocation){
-        $directoryInfo = Get-ChildItem $tempSourceLocation | Measure-Object
-        if($directoryInfo.count -eq 0){
-            Write-Host "Zip file is empty: no source to scan"
-            Write-Host "##vso[task.complete result=Skipped;]"
-            Exit
-        }
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($tempSourceLocation, $zipfilename, $compressionLevel, $false)
-    }
 
     if(!(Test-Path -Path $zipfilename)){
         Write-Host "Zip file is empty: no source to scan"
@@ -276,10 +281,18 @@ Else{
 
     write-host "Starting Checkmarx scan..." -foregroundcolor "green"
 
-    $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
+    $scanResponse = $null
+    try {
+        $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
+    } catch {
+        write-host "Fail to init Checkmarx scan." -foregroundcolor "red"
+        Write-Host "##vso[task.logissue type=error;]An error occurred while scanning."
+        Write-Host "##vso[task.complete result=Failed;]DONE"
+        Exit
+    }
 
     If(-Not $scanResponse.IsSuccesfull)	{
-		Write-Host "##vso[task.logissue type=error;]An Error occurred while scanning: " ,  $scanResponse.ErrorMessage
+		Write-Host "##vso[task.logissue type=error;]An error occurred while scanning: " ,  $scanResponse.ErrorMessage
         Write-Host "##vso[task.complete result=Failed;]DONE"
     }
     Else {

@@ -32,8 +32,8 @@
   "instanceNameFormat": "Security static source code analysis",
   "inputs": [
     {
-      "name": "connectedServiceName",
-      "type": "connectedService:Checkmarx-endpoint",
+      "name": "CheckmarxService",
+      "type": "connectedService:Checkmarx-Endpoint",
       "label": "Checkmarx Endpoint",
       "required": true,
       "helpMarkDown": "The CX server endpoint.",
