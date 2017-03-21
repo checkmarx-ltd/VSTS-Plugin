@@ -153,16 +153,8 @@ Else{
     $LocalCodeContainerType = ($namespace  + '.LocalCodeContainer')
     $CliScanArgs.SrcCodeSettings.PackagedCode =  New-Object ($LocalCodeContainerType)
 
-    If((!([string]::IsNullOrEmpty($fileExtension))) -or (!([string]::IsNullOrEmpty($folderExclusion)))){
-        $SourceFilterPatternsType = ($namespace  + '.SourceFilterPatterns')
-        $CliScanArgs.SrcCodeSettings.SourceFilterLists =  New-Object ($SourceFilterPatternsType)
-        If(!([string]::IsNullOrEmpty($fileExtension))){
-            $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = $fileExtension
-        }
-        If(!([string]::IsNullOrEmpty($folderExclusion))){
-            $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = $folderExclusion
-        }
-    }
+    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = ""
+    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = ""
 
 	$CliScanArgs.IsPrivateScan = 0
 
@@ -246,6 +238,7 @@ Else{
     $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
     [System.IO.Compression.ZipArchive] $arch = [System.IO.Compression.ZipFile]::Open($zipfilename,[System.IO.Compression.ZipArchiveMode]::Update)
 
+    write-host "Zipping sources to $zipfilename" -foregroundcolor "green"
     Get-ChildItem $sourceLocation -Recurse -Exclude $files |
     Foreach-Object {
         $allowed = $true
@@ -264,15 +257,14 @@ Else{
             }
         }
     }
-
     $arch.Dispose()
-    write-host "Zipping sources to $zipfilename" -foregroundcolor "green"
 
     if(!(Test-Path -Path $zipfilename)){
         Write-Host "Zip file is empty: no source to scan"
         Write-Host "##vso[task.complete result=Skipped;]"
         Exit
     } Else {
+        write-host "Zipped sources to $zipfilename" -foregroundcolor "green"
         $CliScanArgs.SrcCodeSettings.PackagedCode.ZippedFile = [System.IO.File]::ReadAllBytes($zipfilename)
         $CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
     }
