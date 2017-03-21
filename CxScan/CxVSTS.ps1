@@ -153,8 +153,8 @@ Else{
     $LocalCodeContainerType = ($namespace  + '.LocalCodeContainer')
     $CliScanArgs.SrcCodeSettings.PackagedCode =  New-Object ($LocalCodeContainerType)
 
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = ""
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = ""
+    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = [string]::Empty
+    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = [string]::Empty
 
 	$CliScanArgs.IsPrivateScan = 0
 
