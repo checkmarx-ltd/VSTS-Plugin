@@ -21,20 +21,30 @@ import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Internal"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
 
-$ErrorActionPreference = "Stop"
-
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
 if($srcRepoType -Match 'git'){
     [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
     if(!([string]::IsNullOrEmpty($env:SYSTEM_ACCESSTOKEN))){
         $resource = "$($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)$env:SYSTEM_TEAMPROJECTID/_apis/build/definitions/$($env:SYSTEM_DEFINITIONID)?api-version=2.0"
         Write-Host "Url for build definition: $resource"
-        [String]$defaultBranch = "N/A"
-        try {
+        [String]$defaultBranch = ""
+        Try {
             $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
-            $defaultBranch = $response.repository.defaultBranch
-            $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
+            Try {
+                $defaultBranch = $response.repository.defaultBranch
+            } Catch {
+                Write-Host "Fail to get default branch on first attempt"
+            }
+            if([string]::IsNullOrEmpty($defaultBranch)){
+                Try {
+                    $defaultBranch = $response.defaultBranch
+                } Catch {
+                    Write-Host "##vso[task.logissue type=error;]Fail to read default branch from: $resource"
+                    Exit
+                }
+            }
 
+            $defaultBranch = $defaultBranch.Substring($defaultBranch.LastIndexOf("/") + 1)
             Write-Host ("Default branch: '{0}', Current Branch: '{1}'" -f $defaultBranch, $branchName)
 
             if(!($branchName -Like $defaultBranch)){
@@ -42,14 +52,14 @@ if($srcRepoType -Match 'git'){
                 Write-Host "##vso[task.complete result=Skipped;]"
                 Exit
             }
-        } catch {
+        } Catch {
             $result = $_.Exception.Response.GetResponseStream()
             $reader = New-Object System.IO.StreamReader($result)
             $reader.BaseStream.Position = 0
             $reader.DiscardBufferedData()
             $responseBody = $reader.ReadToEnd();
 
-            Write-Host "##vso[task.logissue type=error;]Fail to get default branch from server: " ,  $responseBody
+            Write-Host "##vso[task.logissue type=error;]Fail to get default branch from server: " , $responseBody
             Write-Host "##vso[task.complete result=Failed;]DONE"
         }
     } Else {
@@ -60,6 +70,8 @@ if($srcRepoType -Match 'git'){
         }
     }
 }
+
+$ErrorActionPreference = "Stop"
 
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
