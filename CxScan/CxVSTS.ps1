@@ -21,6 +21,19 @@ import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Internal"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
 
+$serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
+
+if (!$serviceEndpoint){
+    throw "Connected Service with name '$CheckmarxService' could not be found.  Ensure that this Connected Service was successfully provisioned using the services tab in the Admin UI."
+}
+$authScheme = $serviceEndpoint.Authorization.Scheme
+if ($authScheme -ne 'UserNamePassword'){
+	throw "The authorization scheme $authScheme is not supported for a CX server."
+}
+
+$agentProxy = [string]$serviceEndpoint.Authorization.Parameters.agentProxy
+Write-Host "Agent proxy: $agentProxy"
+
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
 if($srcRepoType -Match 'git'){
     [String]$branchName = [String]$env:BUILD_SOURCEBRANCHNAME
@@ -29,7 +42,16 @@ if($srcRepoType -Match 'git'){
         Write-Host "URL for build definition: $resource"
         [String]$defaultBranch = ""
         Try {
-            $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
+            $response;
+            if([string]::IsNullOrEmpty($agentProxy)){
+                $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
+            } else {
+                $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"} -Proxy $agentProxy
+            }
+
+            $json = ConvertTo-Json -InputObject @( $response )
+            write-host $json
+
             Try {
                 $defaultBranch = $response.repository.defaultBranch
             } Catch {
@@ -78,18 +100,6 @@ $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
 Write-Host ("Source location: {0}" -f $sourceLocation)
 
-$serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
-
-if (!$serviceEndpoint){
-    throw "Connected Service with name '$CheckmarxService' could not be found.  Ensure that this Connected Service was successfully provisioned using the services tab in the Admin UI."
-}
-
-$authScheme = $serviceEndpoint.Authorization.Scheme
-
-if ($authScheme -ne 'UserNamePassword'){
-	throw "The authorization scheme $authScheme is not supported for a CX server."
-}
-
 $serviceUrl = [string]$serviceEndpoint.Url  #Url to cx server
 $user = [string]$serviceEndpoint.Authorization.Parameters.UserName  # cx user
 $password = [string]$serviceEndpoint.Authorization.Parameters.Password # cx user pwd
@@ -105,8 +115,8 @@ if (-Not $serviceUrl.EndsWith('/')){
     $serviceUrl = $serviceUrl + '/'
 }
 
-$resolverUrlExtention = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
-$resolverUrl = $serviceUrl + $resolverUrlExtention
+$resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
+$resolverUrl = $serviceUrl + $resolverUrlExtension
 
 write-host "Connecting to Checkmarx at: $resolverUrl ....." -foregroundcolor "green"
 
@@ -267,7 +277,7 @@ Else{
         if ($allowed) {
             if(!(([IO.FileInfo]$_.FullName).Attributes -eq "Directory")){
                 $loc = $_.FullName.Substring($sourceLocation.length + 1)
-                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($arch, $_.FullName, $loc, $compressionLevel)
+                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($arch, $_.FullName, $loc, $compressionLevel) | Out-Null
             }
         }
     }
