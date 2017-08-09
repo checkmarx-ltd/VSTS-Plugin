@@ -49,9 +49,6 @@ if($srcRepoType -Match 'git'){
                 $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"} -Proxy $agentProxy
             }
 
-            $json = ConvertTo-Json -InputObject @( $response )
-            write-host $json
-
             Try {
                 $defaultBranch = $response.repository.defaultBranch
             } Catch {
