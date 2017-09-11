@@ -12,7 +12,7 @@
   "version": {
     "Major": 1,
     "Minor": 0,
-    "Patch": 2
+    "Patch": 4
   },
   "demands": [
   ],
@@ -77,6 +77,14 @@
         "Error handling": "Error handling",
         "All": "All"
       }
+    },
+    {
+      "name": "customPreset",
+      "type": "string",
+      "label": "Custom Preset",
+      "required": false,
+      "helpMarkDown": "Custom presets are provided in cases where the desired preset is missing from the Checkmarx presets above. Leave empty in order to use a Checkmarx defined preset.",
+      "groupName": "serverSettings"
     },
     {
       "name": "fullTeamName",

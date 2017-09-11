@@ -4,6 +4,7 @@ Param(
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $projectName,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $fullTeamName,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $preset,
+    [String] $customPreset,
     [String] $incScan,
     [String] $fsois,
     [String] $sourceFolder,
@@ -21,6 +22,34 @@ import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Internal"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
 
+
+
+        Write-Host "                                       \n" +
+                "          `..................`          \n" +
+                "      -ohdmmmmmmmmmmmmmmmmmmmmmhs/`     \n" +
+                "    -ymmmmmmmmmmmmmmmmmmmmmmmmmmmmd+    \n" +
+                "   :mmmmmmmdhhhhhhhhhhhhhhhhdmmmmmmms   \n" +
+                "  `dmmmmms.                  `smmmmmm.  \n" +
+                "  -mmmmmm`                   .smmmmmm.  \n" +
+                "  -mmmmmm`    .:-`        `/ymmmmmmm+   \n" +
+                "  -mmmmmm`  .hmmmd+     :sdmmmmmmmh:    \n" +
+                "  -mmmmmm`  /mmmmmmh--odmmmmmmmds-      \n" +
+                "  -mmmmmm`   /dmmmmmmmmmmmmmmy:`        \n" +
+                "  -mmmmmm`    `smmmmmmmmmmy/`   `--`    \n" +
+                "  -mmmmmm`      -hmmmmmh+.     +dmmms`  \n" +
+                "  -mmmmmm`        /os+-       `dmmmmm-  \n" +
+                "  .mmmmmm/                    /mmmmmm.  \n" +
+                "   ommmmmmhsooooooooooooooooshmmmmmmo   \n" +
+                "    +dmmmmmmmmmmmmmmmmmmmmmmmmmmmmd+    \n" +
+                "     `+hmmmmmmmmmmmmmmmmmmmmmmmmh+.     \n" +
+                "        `-////////////////////-`        \n" +
+                "                                        \n" +
+                "            C H E C K M A R X           \n"
+
+
+
+
+$presetName;
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 
 if (!$serviceEndpoint){
@@ -95,7 +124,8 @@ $ErrorActionPreference = "Stop"
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
-Write-Host ("Source location: {0}" -f $sourceLocation)
+
+
 
 $serviceUrl = [string]$serviceEndpoint.Url  #Url to cx server
 $user = [string]$serviceEndpoint.Authorization.Parameters.UserName  # cx user
@@ -115,11 +145,62 @@ if (-Not $serviceUrl.EndsWith('/')){
 $resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
 $resolverUrl = $serviceUrl + $resolverUrlExtension
 
+    Write-Host " "
+    Write-Host "-------------------------------Configurations:--------------------------------";
+    Write-Host "Username: " $user
+    Write-Host "URL: " $serviceUrl
+    Write-Host "Project name: " $projectName;
+    Write-Host "Source location: " $sourceLocation
+    Write-Host "Scan timeout in minutes: " $scanTimeout;
+    Write-Host "Full team path: " $fullTeamName;
+    if ($customPreset -ne $null){
+        Write-Host "Custom preset name:" $customPreset;
+    }else{
+        Write-Host "Preset name:" $preset;
+   }
+
+   $forPrint = false;
+   if ($incScan -eq "True"){
+        $forPrint = $incScan;
+   }
+    Write-Host "Is incremental scan:"  $forPrint;
+
+    if (-Not $folderExclusion){
+        Write-Host "Folder exclusions: none"  ;
+      }else{
+        Write-Host "Folder exclusions: "  $folderExclusion;
+      }
+
+    if (-Not $fileExtension){
+        Write-Host "File exclusions: none"  ;
+      }else{
+        Write-Host "File exclusions: "  $fileExtension;
+      }
+
+     if ($syncMode -eq "True"){
+        $forPrint = $syncMode;
+     }else{
+         $forPrint = "false";
+     }
+
+    Write-Host "Is synchronous scan: "  $forPrint ;
+
+    Write-Host "CxSAST thresholds enabled: "  $vulnerabilityThreshold;
+    if ($vulnerabilityThreshold -eq "True") {
+       Write-Host "CxSAST high threshold: " $high;
+       Write-Host "CxSAST medium threshold: " $medium;
+       Write-Host "CxSAST low threshold: " $low;
+    }
+   Write-Host "------------------------------------------------------------------------------";
+   Write-Host " "
+
+
 write-host "Connecting to Checkmarx at: $resolverUrl ....." -foregroundcolor "green"
 
 $resolver = $null
 try {
     $resolver = New-WebServiceProxy -Uri $resolverUrl -UseDefaultCredential
+    $resolver.Timeout = 600000
 } catch {
     write-host "Could not resolve Checkmarx service URL. Service might be down or a wrong URL was supplied." -foregroundcolor "red"
     Write-Error $_.Exception
@@ -132,6 +213,7 @@ if (!$resolver){
 }
 
 $webServiceAddressObject = $resolver.GetWebServiceUrl('SDK' ,1)
+
 $proxy = New-WebServiceProxy -Uri $webServiceAddressObject.ServiceURL -UseDefaultCredential #-Namespace CxSDK
 
 if (!$proxy){
@@ -146,7 +228,7 @@ $credentials = New-Object ($credentialsType)
 $credentials.User = $user
 $credentials.Pass = $password
 
-write-host  "Logging into Checkmarx...." -foregroundcolor "green"
+write-host  "Logging into the Checkmarx service..." -foregroundcolor "green"
 $loginResponse = $proxy.Login($credentials, 1033)
 
 . $PSScriptRoot/CxReport/CxReport.ps1
@@ -199,40 +281,85 @@ Else{
     $fullTeamName = $fullTeamName -replace '\\\s+','\\'
     $fullTeamName = $fullTeamName -replace '\s+\\','\\'
     $fullTeamName = $fullTeamName -replace '\\+','\\'
-    Write-Host ("Full team path: {0}" -f $fullTeamName)
+    #Write-Host ("Full team path: {0}" -f $fullTeamName)
 	$CliScanArgs.PrjSettings.ProjectName = $fullTeamName + "\\" + $projectName
 
-    Write-Host ("Preset name: {0}" -f $preset)
 	$presetId
-	switch ($preset){
-        'Default 2014' {$presetId = 17}
-        'Default' {$presetId = 7}
-        'XS' {$presetId = 35}
-        'Checkmarx Default' {$presetId = 36}
-        'OWASP Mobile TOP 10 - 2016' {$presetId = 37}
-        'JSSEC' {$presetId = 20}
-        'Apple Secure Coding Guide' {$presetId = 19}
-        'WordPress' {$presetId = 16}
-        'OWASP TOP 10 - 2013' {$presetId = 15}
-        'Mobile' {$presetId = 14}
-        'High and Medium and Low' {$presetId = 13}
-        'HIPAA' {$presetId = 12}
-        'MISRA_CPP' {$presetId = 11}
-        'MISRA_C' {$presetId = 10}
-        'Android' {$presetId = 9}
-        'SANS top 25' {$presetId = 8}
-        'Empty preset' {$presetId = 6}
-        'PCI' {$presetId = 5}
-        'OWASP TOP 10 - 2010' {$presetId = 4}
-        'High and Medium' {$presetId = 3}
-        'Error handling' {$presetId = 2}
-        'All' {$presetId = 1}
+
+	if ($customPreset -ne $null){
+
+    $presetList = $proxy.GetPresetList($sessionId)
+    $presets = New-Object 'System.Collections.Generic.Dictionary[String,String]'
+
+    if ($presetList.IsSuccesfull -ne "True" ) {
+        Write-Host "##vso[task.logissue type=error;]Failed to retrieve preset list:  $presetList.ErrorMessage"
+        Write-Host "##vso[task.complete result=Failed;]DONE"
+        Exit
         }
-    Write-Host ("PresetId: {0}" -f $presetId)
+
+        #Write-Host ("Presets- IsSuccessful: {0}" -f $presetList.IsSuccessful);
+        $presets = $presetList.PresetList;
+
+		foreach ($_preset in $presets.GetEnumerator()) {
+            if ($_preset[0].PresetName -eq  $customPreset){
+                $PresetId = $_preset[0].ID;
+                $presetName = $_preset[0].PresetName;
+                #Write-Host ("PresetId was found: {0}" -f $PresetId);
+            }
+
+        }
+
+        #The preset was not found
+         if ($presetId -eq $null){
+             Write-Host "##vso[task.logissue type=error;]The selected custom preset [$customPreset] does not exist. Please fix and re-run the scan";
+             Write-Host "##vso[task.complete result=Failed;]DONE"
+         Exit
+        }
+
+        Write-Host "Custom preset was found. PresetId: " $presetId
+
+	}else{
+	  $presetName = $preset;
+         Write-Host ("Preset name: {0}" -f $presetName)
+
+        switch ($preset){
+            'Default 2014' {$presetId = 17}
+            'Default' {$presetId = 7}
+            'XS' {$presetId = 35}
+            'Checkmarx Default' {$presetId = 36}
+            'OWASP Mobile TOP 10 - 2016' {$presetId = 37}
+            'JSSEC' {$presetId = 20}
+            'Apple Secure Coding Guide' {$presetId = 19}
+            'WordPress' {$presetId = 16}
+            'OWASP TOP 10 - 2013' {$presetId = 15}
+            'Mobile' {$presetId = 14}
+            'High and Medium and Low' {$presetId = 13}
+            'HIPAA' {$presetId = 12}
+            'MISRA_CPP' {$presetId = 11}
+            'MISRA_C' {$presetId = 10}
+            'Android' {$presetId = 9}
+            'SANS top 25' {$presetId = 8}
+            'Empty preset' {$presetId = 6}
+            'PCI' {$presetId = 5}
+            'OWASP TOP 10 - 2010' {$presetId = 4}
+            'High and Medium' {$presetId = 3}
+            'Error handling' {$presetId = 2}
+            'All' {$presetId = 1}
+            }
+	}
+
+
+
 
     $CliScanArgs.PrjSettings.PresetID = $presetId
     $CliScanArgs.PrjSettings.IsPublic = 1 # true
     $CliScanArgs.PrjSettings.Owner = $user
+
+
+   # if ($scanTimeout -eq $null) {
+    #    $scanTimeout = 0;
+    #}
+
 
     $tempSourceLocation = $sourceLocation + 'Temp'
     if (Test-Path -Path $tempSourceLocation){
@@ -294,10 +421,11 @@ Else{
 
     write-host "Starting Checkmarx scan..." -foregroundcolor "green"
 
-    $scanResponse = $null
     try {
         $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
     } catch {
+      $ErrorMessage = $_.Exception.Message
+        write-host ("Error: {0}" -f $ErrorMessage);
         write-host "Fail to init Checkmarx scan." -foregroundcolor "red"
         Write-Host "##vso[task.logissue type=error;]An error occurred while scanning."
         Write-Host "##vso[task.complete result=Failed;]DONE"
@@ -313,7 +441,8 @@ Else{
 		    $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
 
 		    If(-Not $scanResponse.IsSuccesfull) {
-			    write-host  "Scan failed : " ,  $scanResponse.ErrorMessage  -foregroundcolor "red"
+		        Write-Host "##vso[task.logissue type=error;]Scan failed :" , $scanResponse.ErrorMessage
+                Write-Host "##vso[task.complete result=Failed;]DONE"
             } Else {
                 while($scanStatusResponse.IsSuccesfull -ne 0 -and
                 $scanStatusResponse.CurrentStatus -ne "Finished"  -and
@@ -331,6 +460,7 @@ Else{
                     Write-Host "##vso[task.complete result=Failed;]DONE"
                 }
                 Else {
+                    Write-Host "Scan finished. Retrieving scan results"
                     [String]$scanId = $scanStatusResponse.ScanId
                     [String]$projectID = $scanResponse.ProjectID
 
@@ -338,20 +468,28 @@ Else{
                     $resHigh = $scanSummary.High
                     $resMedium = $scanSummary.Medium
                     $resLow = $scanSummary.Low
-                    Write-Host ("High Risk: {0}" -f $resHigh) -foregroundcolor "green"
-                    Write-Host ("Medium Risk: {0}" -f $resMedium) -foregroundcolor "green"
-                    Write-Host ("Low Risk: {0}" -f $resLow) -foregroundcolor "green"
-
+                   # $resInfo = $scanSummary.Info
                     $cxLink = ("{0}CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}" -f $serviceUrl, $scanId, $projectID)
-                    Write-Host ("View scan results at {0}" -f $cxLink) -foregroundcolor "green"
 
+                    Write-Host " "
+                    Write-Host "----------------------Checkmarx Scan Results(CxSAST):-------------------------";
+                    Write-Host "High severity results: "  $scanSummary.High
+                    Write-Host "Medium severity results: " $scanSummary.Medium
+                    Write-Host "Low severity results: " $scanSummary.Low
+                    Write-Host "Info severity results: " $scanSummary.Info
+                    Write-Host "";
+                    Write-Host "Scan results location: " $cxLink
+                    Write-Host "------------------------------------------------------------------------------";
+                    Write-Host " "
+
+                    Write-Host "Creating CxSAST reports"
                     CreateScanReport $reportPath $resHigh $resMedium $resLow $cxLink
 
                     [bool]$thresholdExceeded=$false
                     if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
-                        if([string]::IsNullOrEmpty($high)){
-                            Write-Host "High threshold is not set."
-                        } else {
+                        if(-Not [string]::IsNullOrEmpty($high)){
+                           # Write-Host "High threshold is not set."
+
                             [Int]$highNum = [convert]::ToInt32($high, 10)
                             [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
                             if($resHigh -gt $highNum){
@@ -359,9 +497,9 @@ Else{
                                 $thresholdExceeded=$true
                             }
                         }
-                        if([string]::IsNullOrEmpty($medium)){
-                             Write-Host "Medium threshold is not set."
-                        } else {
+                        if(-Not [string]::IsNullOrEmpty($medium)){
+                            # Write-Host "Medium threshold is not set."
+
                             [Int]$mediumNum = [convert]::ToInt32($medium, 10)
                             [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                             if($resMedium -gt $mediumNum){
@@ -369,9 +507,9 @@ Else{
                                 $thresholdExceeded=$true
                             }
                         }
-                        if([string]::IsNullOrEmpty($low)){
-                             Write-Host "Low threshold is not set."
-                        } else {
+                        if(-Not [string]::IsNullOrEmpty($low)){
+                            # Write-Host "Low threshold is not set."
+
                             [Int]$lowNum = [convert]::ToInt32($low, 10)
                             [Int]$resLow = [convert]::ToInt32($resLow, 10)
                             if($resLow -gt $lowNum){
