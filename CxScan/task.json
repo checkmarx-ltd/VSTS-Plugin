@@ -83,7 +83,7 @@
       "type": "string",
       "label": "Custom Preset",
       "required": false,
-      "helpMarkDown": "Custom presets are provided in cases where the desired preset is missing from the Checkmarx presets above. Leave empty in order to use a Checkmarx defined preset.",
+      "helpMarkDown": "Custom presets are provided in cases where the desired preset is missing from the Checkmarx presets above. Leave empty in order to use a Checkmarx defined preset. In case a custom preset is selected, it will override the Checkmarx preset.",
       "groupName": "serverSettings"
     },
     {

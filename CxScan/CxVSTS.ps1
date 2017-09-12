@@ -3,7 +3,7 @@ Param(
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $CheckmarxService,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $projectName,
     [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $fullTeamName,
-    [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()] $preset,
+    $presetList,
     [String] $customPreset,
     [String] $incScan,
     [String] $fsois,
@@ -23,32 +23,34 @@ import-module "Microsoft.TeamFoundation.DistributedTask.Task.Internal"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
 
 
-
-        Write-Host "                                       \n" +
-                "          `..................`          \n" +
-                "      -ohdmmmmmmmmmmmmmmmmmmmmmhs/`     \n" +
-                "    -ymmmmmmmmmmmmmmmmmmmmmmmmmmmmd+    \n" +
-                "   :mmmmmmmdhhhhhhhhhhhhhhhhdmmmmmmms   \n" +
-                "  `dmmmmms.                  `smmmmmm.  \n" +
-                "  -mmmmmm`                   .smmmmmm.  \n" +
-                "  -mmmmmm`    .:-`        `/ymmmmmmm+   \n" +
-                "  -mmmmmm`  .hmmmd+     :sdmmmmmmmh:    \n" +
-                "  -mmmmmm`  /mmmmmmh--odmmmmmmmds-      \n" +
-                "  -mmmmmm`   /dmmmmmmmmmmmmmmy:`        \n" +
-                "  -mmmmmm`    `smmmmmmmmmmy/`   `--`    \n" +
-                "  -mmmmmm`      -hmmmmmh+.     +dmmms`  \n" +
-                "  -mmmmmm`        /os+-       `dmmmmm-  \n" +
-                "  .mmmmmm/                    /mmmmmm.  \n" +
-                "   ommmmmmhsooooooooooooooooshmmmmmmo   \n" +
-                "    +dmmmmmmmmmmmmmmmmmmmmmmmmmmmmd+    \n" +
-                "     `+hmmmmmmmmmmmmmmmmmmmmmmmmh+.     \n" +
-                "        `-////////////////////-`        \n" +
-                "                                        \n" +
-                "            C H E C K M A R X           \n"
+Write-Host "                                       "
+Write-Host
+          "         CxCxCxCxCxCxCxCxCxCxCxCx           `n"
+          "        CxCxCxCxCxCxCxCxCxCxCxCxCx`         `n" +
+          "       CxCxCxCxCxCxCxCxCxCxCxCxCxCx`        `n" +
+          "      CxCxCx                CxCxCxCx        `n" +
+          "      CxCxCx                CxCxCxCx`       `n" +
+          "      CxCxCx  CxCxCx      CxCxCxCxC         `n" +
+          "      CxCxCx  xCxCxCx  .CxCxCxCxCx          `n" +
+          "      CxCxCx   xCxCxCxCxCxCxCxCx            `n"  +
+          "      CxCxCx    xCxCxCxCxCxCx               `n"  +
+          "      CxCxCx     CxCxCxCxCx   CxCxCx        `n"  +
+          "      CxCxCx       xCxCxC     CxCxCx        `n"  +
+          "      CxCxCx                 CxCxCx         `n"  +
+          "       CxCxCxCxCxCxCxCxCxCxCxCxCxCx         `n"  +
+          "        CxCxCxCxCxCxCxCxCxCxCxCxCx          `n"  +
+          "          CxCxCxCxCxCxCxCxCxCxCx            `n"  +
+          "                                            `n" +
+          "            C H E C K M A R X               `n"
+Write-Host "                                               "
 
 
 
 
+
+
+
+Write-Host "Starting Checkmarx scan"
 $presetName;
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 
@@ -61,7 +63,7 @@ if ($authScheme -ne 'UserNamePassword'){
 }
 
 $agentProxy = [string]$serviceEndpoint.Authorization.Parameters.agentProxy
-Write-Host "Agent proxy: $agentProxy"
+
 
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
 if($srcRepoType -Match 'git'){
@@ -119,6 +121,7 @@ if($srcRepoType -Match 'git'){
     }
 }
 
+
 $ErrorActionPreference = "Stop"
 
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
@@ -145,10 +148,11 @@ if (-Not $serviceUrl.EndsWith('/')){
 $resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
 $resolverUrl = $serviceUrl + $resolverUrlExtension
 
-    Write-Host " "
+  Write-Host " "
     Write-Host "-------------------------------Configurations:--------------------------------";
     Write-Host "Username: " $user
     Write-Host "URL: " $serviceUrl
+    Write-Host "Agent proxy: " $agentProxy
     Write-Host "Project name: " $projectName;
     Write-Host "Source location: " $sourceLocation
     Write-Host "Scan timeout in minutes: " $scanTimeout;
@@ -156,7 +160,7 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
     if ($customPreset -ne $null){
         Write-Host "Custom preset name:" $customPreset;
     }else{
-        Write-Host "Preset name:" $preset;
+        Write-Host "Preset name:" $presetList;
    }
 
    $forPrint = false;
@@ -194,6 +198,18 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
    Write-Host "------------------------------------------------------------------------------";
    Write-Host " "
 
+
+$serviceUrl = $serviceUrl.TrimStart().TrimEnd()
+$serviceUrl = $serviceUrl.Replace('CxWebClient', '').trim()
+if ($serviceUrl.EndsWith('//')){
+    $serviceUrl = $serviceUrl.Substring(0,$serviceUrl.Length -1)
+}
+if (-Not $serviceUrl.EndsWith('/')){
+    $serviceUrl = $serviceUrl + '/'
+}
+
+$resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
+$resolverUrl = $serviceUrl + $resolverUrlExtension
 
 write-host "Connecting to Checkmarx at: $resolverUrl ....." -foregroundcolor "green"
 
@@ -319,10 +335,10 @@ Else{
         Write-Host "Custom preset was found. PresetId: " $presetId
 
 	}else{
-	  $presetName = $preset;
+	  $presetName = $presetList;
          Write-Host ("Preset name: {0}" -f $presetName)
 
-        switch ($preset){
+        switch ($presetList){
             'Default 2014' {$presetId = 17}
             'Default' {$presetId = 7}
             'XS' {$presetId = 35}
@@ -482,14 +498,12 @@ Else{
                     Write-Host "------------------------------------------------------------------------------";
                     Write-Host " "
 
-                    Write-Host "Creating CxSAST reports"
+                    #Write-Host "Creating CxSAST reports"
                     CreateScanReport $reportPath $resHigh $resMedium $resLow $cxLink
 
                     [bool]$thresholdExceeded=$false
                     if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
                         if(-Not [string]::IsNullOrEmpty($high)){
-                           # Write-Host "High threshold is not set."
-
                             [Int]$highNum = [convert]::ToInt32($high, 10)
                             [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
                             if($resHigh -gt $highNum){
@@ -498,8 +512,6 @@ Else{
                             }
                         }
                         if(-Not [string]::IsNullOrEmpty($medium)){
-                            # Write-Host "Medium threshold is not set."
-
                             [Int]$mediumNum = [convert]::ToInt32($medium, 10)
                             [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
                             if($resMedium -gt $mediumNum){
@@ -508,8 +520,6 @@ Else{
                             }
                         }
                         if(-Not [string]::IsNullOrEmpty($low)){
-                            # Write-Host "Low threshold is not set."
-
                             [Int]$lowNum = [convert]::ToInt32($low, 10)
                             [Int]$resLow = [convert]::ToInt32($resLow, 10)
                             if($resLow -gt $lowNum){
