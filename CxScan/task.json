@@ -1,18 +1,18 @@
 {
   "id": "5262FEE4-B921-4E23-9D22-3BCCAA562688",
   "name": "Security static source code analysis",
-  "friendlyName": "Checkmarx",
+  "friendlyName": "Checkmarx CxSAST",
   "description": "Security static source code analysis",
   "helpMarkDown": "[Information] https://checkmarx.atlassian.net/wiki/display/KC/CxSAST+MS-VSTS+Plugin",
   "category": "Build",
   "visibility": [
     "Build"
   ],
-  "author": "Ilan Dayan",
+  "author": "Checkmarx",
   "version": {
     "Major": 1,
     "Minor": 0,
-    "Patch": 4
+    "Patch": 2
   },
   "demands": [
   ],
@@ -53,29 +53,35 @@
       "label": "Preset",
       "required": true,
       "groupName": "serverSettings",
-      "defaultValue": "Default",
+      "defaultValue": "Checkmarx Default",
       "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).",
       "options": {
-        "Default 2014": "Default 2014",
-        "Default": "Default",
-        "XS": "XS",
-        "JSSEC": "JSSEC",
+        "Checkmarx Default": "Checkmarx Default",
+        "All": "All",
+        "Android": "Android",
         "Apple Secure Coding Guide": "Apple Secure Coding Guide",
-        "WordPress": "WordPress",
-        "OWASP TOP 10 - 2013": "OWASP TOP 10 - 2013",
-        "Mobile": "Mobile",
+        "Default": "Default",
+        "Default 2014": "Default 2014",
+        "Empty preset": "Empty preset",
+        "Error handling": "Error handling",
+        "FISMA": "FISMA",
+        "High and Medium": "High and Medium",
         "High and Medium and Low": "High and Medium and Low",
         "HIPAA": "HIPAA",
-        "MISRA_CPP": "MISRA_CPP",
+        "JSSEC": "JSSEC",
         "MISRA_C": "MISRA_C",
-        "Android": "Android",
-        "SANS top 25": "SANS top 25",
-        "Empty preset": "Empty preset",
-        "PCI": "PCI",
+        "MISRA_CPP": "MISRA_CPP",
+        "Mobile": "Mobile",
+        "NIST": "NIST",
+        "OWASP Mobile TOP 10 - 2016": "OWASP Mobile TOP 10 - 2016",
         "OWASP TOP 10 - 2010": "OWASP TOP 10 - 2010",
-        "High and Medium": "High and Medium",
-        "Error handling": "Error handling",
-        "All": "All"
+        "OWASP TOP 10 - 2013": "OWASP TOP 10 - 2013",
+        "PCI": "PCI",
+        "SANS top 25": "SANS top 25",
+        "STIG": "STIG",
+        "WordPress": "WordPress",
+        "XS": "XS",
+        "XSS and SQLi only": "XSS and SQLi only"
       }
     },
     {

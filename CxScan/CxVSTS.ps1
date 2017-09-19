@@ -157,17 +157,20 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
     Write-Host "Source location: " $sourceLocation
     Write-Host "Scan timeout in minutes: " $scanTimeout;
     Write-Host "Full team path: " $fullTeamName;
-    if ($customPreset -ne $null){
+    if (-not ([string]::IsNullOrEmpty($customPreset))){
         Write-Host "Custom preset name:" $customPreset;
     }else{
         Write-Host "Preset name:" $presetList;
    }
 
-   $forPrint = false;
-   if ($incScan -eq "True"){
-        $forPrint = $incScan;
-   }
-    Write-Host "Is incremental scan:"  $forPrint;
+    $valToPrint
+    if ($incScan -eq "True"){
+        $valToPrint = $incScan;
+     }else{
+         $valToPrint = "false";
+     }
+
+    Write-Host "Is incremental scan:"  $valToPrint;
 
     if (-Not $folderExclusion){
         Write-Host "Folder exclusions: none"  ;
@@ -182,12 +185,12 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
       }
 
      if ($syncMode -eq "True"){
-        $forPrint = $syncMode;
+        $valToPrint = $syncMode;
      }else{
-         $forPrint = "false";
+         $valToPrint = "false";
      }
 
-    Write-Host "Is synchronous scan: "  $forPrint ;
+    Write-Host "Is synchronous scan: "  $valToPrint ;
 
     Write-Host "CxSAST thresholds enabled: "  $vulnerabilityThreshold;
     if ($vulnerabilityThreshold -eq "True") {
@@ -302,7 +305,7 @@ Else{
 
 	$presetId
 
-	if ($customPreset -ne $null){
+	if (-not ([string]::IsNullOrEmpty($customPreset))){
 
     $presetList = $proxy.GetPresetList($sessionId)
     $presets = New-Object 'System.Collections.Generic.Dictionary[String,String]'
@@ -317,7 +320,7 @@ Else{
         $presets = $presetList.PresetList;
 
 		foreach ($_preset in $presets.GetEnumerator()) {
-            if ($_preset[0].PresetName -eq  $customPreset){
+            if ($_preset[0].PresetName -eq  $customPreset.Trim()){
                 $PresetId = $_preset[0].ID;
                 $presetName = $_preset[0].PresetName;
                 #Write-Host ("PresetId was found: {0}" -f $PresetId);
@@ -336,36 +339,36 @@ Else{
 
 	}else{
 	  $presetName = $presetList;
-         Write-Host ("Preset name: {0}" -f $presetName)
+        switch ($presetName){
 
-        switch ($presetList){
-            'Default 2014' {$presetId = 17}
-            'Default' {$presetId = 7}
-            'XS' {$presetId = 35}
-            'Checkmarx Default' {$presetId = 36}
-            'OWASP Mobile TOP 10 - 2016' {$presetId = 37}
-            'JSSEC' {$presetId = 20}
-            'Apple Secure Coding Guide' {$presetId = 19}
-            'WordPress' {$presetId = 16}
-            'OWASP TOP 10 - 2013' {$presetId = 15}
-            'Mobile' {$presetId = 14}
-            'High and Medium and Low' {$presetId = 13}
-            'HIPAA' {$presetId = 12}
-            'MISRA_CPP' {$presetId = 11}
-            'MISRA_C' {$presetId = 10}
-            'Android' {$presetId = 9}
-            'SANS top 25' {$presetId = 8}
-            'Empty preset' {$presetId = 6}
-            'PCI' {$presetId = 5}
-            'OWASP TOP 10 - 2010' {$presetId = 4}
-            'High and Medium' {$presetId = 3}
-            'Error handling' {$presetId = 2}
-            'All' {$presetId = 1}
-            }
+            "Checkmarx Default"          {$presetId = 36}
+            "All"                        {$presetId =  1}
+            "Android"                    {$presetId = 9}
+            "Apple Secure Coding Guide"  {$presetId = 19}
+            "Default"                    {$presetId = 7}
+            "Default 2014"               {$presetId = 17}
+            "Empty preset"               {$presetId = 6}
+            "Error handling"             {$presetId = 2}
+            "FISMA"                      {$presetId = 39}
+            "High and Medium"            {$presetId = 3}
+            "High and Medium and Low"     {$presetId = 13}
+            "HIPAA"                      {$presetId = 12}
+            "JSSEC"                      {$presetId = 20}
+            "MISRA_C"                    {$presetId = 10}
+            "MISRA_CPP"                  {$presetId = 11}
+            "Mobile"                     {$presetId = 14}
+            "NIST"                       {$presetId = 40}
+            "OWASP Mobile TOP 10 - 2016" {$presetId = 37}
+            "OWASP TOP 10 - 2010"        {$presetId = 4}
+            "OWASP TOP 10 - 2013"        {$presetId = 15}
+            "PCI"                        {$presetId = 5}
+            "SANS top 25"                {$presetId = 8}
+            "STIG"                       {$presetId = 38}
+            "WordPress"                  {$presetId = 16}
+            "XS"                         {$presetId = 35}
+            "XSS and SQLi only"          {$presetId = 41}
+        }
 	}
-
-
-
 
     $CliScanArgs.PrjSettings.PresetID = $presetId
     $CliScanArgs.PrjSettings.IsPublic = 1 # true

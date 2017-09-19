@@ -2,14 +2,14 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST Plugin",
-  "version": "0.5.1435",
-  "publisher": "ilandayan",
+  "version": "0.5.33",
+  "publisher": "Checkmarx",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "public": false,
+  "public": true,
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
     "default": "extension-icon.png"
