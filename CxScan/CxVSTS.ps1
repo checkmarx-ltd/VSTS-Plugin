@@ -25,7 +25,7 @@ import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
 
 Write-Host "                                       "
 Write-Host
-          "         CxCxCxCxCxCxCxCxCxCxCxCx           `n"
+          "         CxCxCxCxCxCxCxCxCxCxCxCx           `n" +
           "        CxCxCxCxCxCxCxCxCxCxCxCxCx`         `n" +
           "       CxCxCxCxCxCxCxCxCxCxCxCxCxCx`        `n" +
           "      CxCxCx                CxCxCxCx        `n" +
@@ -77,7 +77,7 @@ if($srcRepoType -Match 'git'){
             if([string]::IsNullOrEmpty($agentProxy)){
                 $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
             } else {
-                $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"} -Proxy $agentProxy
+                $response = Invoke-RestMethod -Uri $resource -Proxy $proxy -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
             }
 
             Try {
@@ -89,7 +89,7 @@ if($srcRepoType -Match 'git'){
                 Try {
                     $defaultBranch = $response.defaultBranch
                 } Catch {
-                    Write-Host "##vso[task.logissue type=error;]Fail to read default branch from: $resource"
+                    Write-Host ("##vso[task.logissue type=error;]Fail to read default branch from: {0}" -f $resource)
                     Exit
                 }
             }
@@ -103,13 +103,7 @@ if($srcRepoType -Match 'git'){
                 Exit
             }
         } Catch {
-            $result = $_.Exception.Response.GetResponseStream()
-            $reader = New-Object System.IO.StreamReader($result)
-            $reader.BaseStream.Position = 0
-            $reader.DiscardBufferedData()
-            $responseBody = $reader.ReadToEnd();
-
-            Write-Host "##vso[task.logissue type=error;]Fail to get default branch from server: " , $responseBody
+            Write-Host ("##vso[task.logissue type=error;]Fail to get default branch from server: {0}" -f $_.Exception.Message)
             Write-Host "##vso[task.complete result=Failed;]DONE"
         }
     } Else {
@@ -148,58 +142,36 @@ if (-Not $serviceUrl.EndsWith('/')){
 $resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
 $resolverUrl = $serviceUrl + $resolverUrlExtension
 
-  Write-Host " "
+
+. $PSScriptRoot/CxUtils.ps1
+    Write-Host " "
     Write-Host "-------------------------------Configurations:--------------------------------";
-    Write-Host "Username: " $user
-    Write-Host "URL: " $serviceUrl
-    Write-Host "Agent proxy: " $agentProxy
-    Write-Host "Project name: " $projectName;
-    Write-Host "Source location: " $sourceLocation
-    Write-Host "Scan timeout in minutes: " $scanTimeout;
-    Write-Host "Full team path: " $fullTeamName;
+
+    Write-Host ("URL: {0}" -f $serviceUrl)
+    Write-Host ("Agent proxy: {0}" -f $(ResolveString $agentProxy))
+    Write-Host ("Project name: {0}" -f $projectName)
+    Write-Host ("Source location: {0}" -f $sourceLocation)
+    Write-Host ("Scan timeout in minutes: {0}" -f $(ResolveString $scanTimeout))
+    Write-Host ("Full team path: {0}" -f $fullTeamName)
     if (-not ([string]::IsNullOrEmpty($customPreset))){
-        Write-Host "Custom preset name:" $customPreset;
+      Write-Host ("Custom preset name: {0}" -f $customPreset)
     }else{
-        Write-Host "Preset name:" $presetList;
-   }
-
-    $valToPrint
-    if ($incScan -eq "True"){
-        $valToPrint = $incScan;
-     }else{
-         $valToPrint = "false";
-     }
-
-    Write-Host "Is incremental scan:"  $valToPrint;
-
-    if (-Not $folderExclusion){
-        Write-Host "Folder exclusions: none"  ;
-      }else{
-        Write-Host "Folder exclusions: "  $folderExclusion;
-      }
-
-    if (-Not $fileExtension){
-        Write-Host "File exclusions: none"  ;
-      }else{
-        Write-Host "File exclusions: "  $fileExtension;
-      }
-
-     if ($syncMode -eq "True"){
-        $valToPrint = $syncMode;
-     }else{
-         $valToPrint = "false";
-     }
-
-    Write-Host "Is synchronous scan: "  $valToPrint ;
-
-    Write-Host "CxSAST thresholds enabled: "  $vulnerabilityThreshold;
-    if ($vulnerabilityThreshold -eq "True") {
-       Write-Host "CxSAST high threshold: " $high;
-       Write-Host "CxSAST medium threshold: " $medium;
-       Write-Host "CxSAST low threshold: " $low;
+      Write-Host ("Preset name: {0}" -f $presetList)
     }
-   Write-Host "------------------------------------------------------------------------------";
-   Write-Host " "
+
+    Write-Host ("Is incremental scan: {0}" -f $(ResolveBool $incScan))
+    Write-Host ("Folder exclusions: {0}" -f $( ResolveVal $folderExclusion))
+    Write-Host ("File exclusions: {0}" -f $(ResolveVal $fileExtension))
+    Write-Host ("Is synchronous scan: {0}" -f $(ResolveBool $syncMode))
+
+    Write-Host ("CxSAST thresholds enabled: {0}" -f $vulnerabilityThreshold)
+    if ($vulnerabilityThreshold -eq "True") {
+     Write-Host ("CxSAST high threshold: {0}" -f $high)
+     Write-Host ("CxSAST medium threshold: {0}" -f $medium)
+     Write-Host ("CxSAST low threshold: {0}" -f $low)
+    }
+    Write-Host "------------------------------------------------------------------------------";
+    Write-Host " "
 
 
 $serviceUrl = $serviceUrl.TrimStart().TrimEnd()
@@ -234,6 +206,7 @@ if (!$resolver){
 $webServiceAddressObject = $resolver.GetWebServiceUrl('SDK' ,1)
 
 $proxy = New-WebServiceProxy -Uri $webServiceAddressObject.ServiceURL -UseDefaultCredential #-Namespace CxSDK
+$proxy.Timeout = 600000
 
 if (!$proxy){
     write-host  "Could not find Checkmarx SDK service URL" -foregroundcolor "red"
@@ -253,7 +226,7 @@ $loginResponse = $proxy.Login($credentials, 1033)
 . $PSScriptRoot/CxReport/CxReport.ps1
 
 If(-Not $loginResponse.IsSuccesfull){
-    write-host "An Error occurred while logging in: ", $loginResponse.ErrorMessage  -foregroundcolor "red"
+    Write-Host ("##vso[task.logissue type=error;]An Error occurred while logging in: {0}" -f $loginResponse.ErrorMessage)
     Write-Host "##vso[task.complete result=Failed;]DONE"
     Exit
 }
@@ -284,7 +257,7 @@ Else{
         $CliScanArgs.IsIncremental = 1
         if(!([string]::IsNullOrEmpty($fsois))){
             [Int]$fsois = [convert]::ToInt32($fsois, 10)
-            write-host "todo: add scans count environment variable"
+            #write-host "todo: add scans count environment variable"
         }
     }
 
@@ -311,7 +284,7 @@ Else{
     $presets = New-Object 'System.Collections.Generic.Dictionary[String,String]'
 
     if ($presetList.IsSuccesfull -ne "True" ) {
-        Write-Host "##vso[task.logissue type=error;]Failed to retrieve preset list:  $presetList.ErrorMessage"
+        Write-Host ("##vso[task.logissue type=error;]Failed to retrieve preset list: {0}" -f $presetList.ErrorMessage)
         Write-Host "##vso[task.complete result=Failed;]DONE"
         Exit
         }
@@ -323,7 +296,6 @@ Else{
             if ($_preset[0].PresetName -eq  $customPreset.Trim()){
                 $PresetId = $_preset[0].ID;
                 $presetName = $_preset[0].PresetName;
-                #Write-Host ("PresetId was found: {0}" -f $PresetId);
             }
 
         }
@@ -335,23 +307,23 @@ Else{
          Exit
         }
 
-        Write-Host "Custom preset was found. PresetId: " $presetId
+        Write-Host ("Custom preset was found. PresetId: {0}" -f $presetId)
 
 	}else{
 	  $presetName = $presetList;
         switch ($presetName){
 
             "Checkmarx Default"          {$presetId = 36}
-            "All"                        {$presetId =  1}
-            "Android"                    {$presetId = 9}
+            "All"                        {$presetId = 1 }
+            "Android"                    {$presetId = 9 }
             "Apple Secure Coding Guide"  {$presetId = 19}
-            "Default"                    {$presetId = 7}
+            "Default"                    {$presetId = 7 }
             "Default 2014"               {$presetId = 17}
-            "Empty preset"               {$presetId = 6}
-            "Error handling"             {$presetId = 2}
+            "Empty preset"               {$presetId = 6 }
+            "Error handling"             {$presetId = 2 }
             "FISMA"                      {$presetId = 39}
-            "High and Medium"            {$presetId = 3}
-            "High and Medium and Low"     {$presetId = 13}
+            "High and Medium"            {$presetId = 3 }
+            "High and Medium and Low"    {$presetId = 13}
             "HIPAA"                      {$presetId = 12}
             "JSSEC"                      {$presetId = 20}
             "MISRA_C"                    {$presetId = 10}
@@ -359,10 +331,10 @@ Else{
             "Mobile"                     {$presetId = 14}
             "NIST"                       {$presetId = 40}
             "OWASP Mobile TOP 10 - 2016" {$presetId = 37}
-            "OWASP TOP 10 - 2010"        {$presetId = 4}
+            "OWASP TOP 10 - 2010"        {$presetId = 4 }
             "OWASP TOP 10 - 2013"        {$presetId = 15}
-            "PCI"                        {$presetId = 5}
-            "SANS top 25"                {$presetId = 8}
+            "PCI"                        {$presetId = 5 }
+            "SANS top 25"                {$presetId = 8 }
             "STIG"                       {$presetId = 38}
             "WordPress"                  {$presetId = 16}
             "XS"                         {$presetId = 35}
@@ -375,56 +347,9 @@ Else{
     $CliScanArgs.PrjSettings.Owner = $user
 
 
-   # if ($scanTimeout -eq $null) {
-    #    $scanTimeout = 0;
-    #}
-
-
-    $tempSourceLocation = $sourceLocation + 'Temp'
-    if (Test-Path -Path $tempSourceLocation){
-        Remove-Item $tempSourceLocation -force -recurse
-    } else {
-        mkdir $tempSourceLocation
-    }
-
-    $filesStr = ""
-    $foldersStr = ""
-    if(!([string]::IsNullOrEmpty($fileExtension))){
-        $filesStr = $fileExtension
-    }
-    if(!([string]::IsNullOrEmpty($folderExclusion))){
-        $foldersStr = $folderExclusion
-    }
-    [array]$files = $filesStr.Split(",") | Foreach-Object { $_.Trim() }
-    $files = $files | Foreach-Object { if ($_.ToString().StartsWith('.')){ "*$_" } Else {"$_"} }
-    [array]$foldersArr = $foldersStr.Split(",") | Foreach-Object { $_.Trim() }
-
-    $zipfilename = [System.IO.Path]::GetTempPath() + [System.IO.Path]::GetRandomFileName()
-    Add-Type -Assembly System.IO.Compression
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
-    [System.IO.Compression.ZipArchive] $arch = [System.IO.Compression.ZipFile]::Open($zipfilename,[System.IO.Compression.ZipArchiveMode]::Update)
-
-    write-host "Zipping sources to $zipfilename" -foregroundcolor "green"
-    Get-ChildItem $sourceLocation -Recurse -Exclude $files |
-    Foreach-Object {
-        $allowed = $true
-        if(!(($foldersArr.Count -eq 1) -and ($foldersArr[0] -eq ""))){
-            foreach ($folder in $foldersArr) {
-                if ($_.FullName.Contains('\' + $folder) -or $_.FullName.Contains('\' + $folder + '\')) {
-                    $allowed = $false
-                    break
-                }
-            }
-        }
-        if ($allowed) {
-            if(!(([IO.FileInfo]$_.FullName).Attributes -eq "Directory")){
-                $loc = $_.FullName.Substring($sourceLocation.length + 1)
-                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($arch, $_.FullName, $loc, $compressionLevel) | Out-Null
-            }
-        }
-    }
-    $arch.Dispose()
+    #Create Zip File
+    . $PSScriptRoot/CxZipUtils.ps1
+     $zipfilename = ZipSource $folderExclusion $fileExtension $sourceLocation
 
     if(!(Test-Path -Path $zipfilename)){
         Write-Host "Zip file is empty: no source to scan"
@@ -436,31 +361,32 @@ Else{
         $CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
     }
 
+    #Delete Zip File
     [System.IO.File]::Delete($zipfilename)
+
+
 
     write-host "Starting Checkmarx scan..." -foregroundcolor "green"
 
     try {
         $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
     } catch {
-      $ErrorMessage = $_.Exception.Message
-        write-host ("Error: {0}" -f $ErrorMessage);
         write-host "Fail to init Checkmarx scan." -foregroundcolor "red"
-        Write-Host "##vso[task.logissue type=error;]An error occurred while scanning."
+        Write-Host ("##vso[task.logissue type=error;]An error occurred while scanning: {0}" -f  $_.Exception.Message)
         Write-Host "##vso[task.complete result=Failed;]DONE"
         Exit
     }
 
     If(-Not $scanResponse.IsSuccesfull)	{
-		Write-Host "##vso[task.logissue type=error;]An error occurred while scanning: " ,  $scanResponse.ErrorMessage
+		Write-Host ("##vso[task.logissue type=error;]An error occurred while scanning: {0}" -f $scanResponse.ErrorMessage)
         Write-Host "##vso[task.complete result=Failed;]DONE"
     }
     Else {
         if([System.Convert]::ToBoolean($syncMode)){
 		    $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
 
-		    If(-Not $scanResponse.IsSuccesfull) {
-		        Write-Host "##vso[task.logissue type=error;]Scan failed :" , $scanResponse.ErrorMessage
+		    If(-Not $scanStatusResponse.IsSuccesfull) {
+		        Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.ErrorMessage)
                 Write-Host "##vso[task.complete result=Failed;]DONE"
             } Else {
                 while($scanStatusResponse.IsSuccesfull -ne 0 -and
@@ -474,11 +400,7 @@ Else{
                     Start-Sleep -s 10 # wait 10 seconds
                 }
 
-                If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -ne "Finished") {
-                    Write-Host "##vso[task.logissue type=error;]Scan failed: " ,  $scanStatusResponse.ErrorMessage
-                    Write-Host "##vso[task.complete result=Failed;]DONE"
-                }
-                Else {
+                If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -eq "Finished") {
                     Write-Host "Scan finished. Retrieving scan results"
                     [String]$scanId = $scanStatusResponse.ScanId
                     [String]$projectID = $scanResponse.ProjectID
@@ -487,17 +409,17 @@ Else{
                     $resHigh = $scanSummary.High
                     $resMedium = $scanSummary.Medium
                     $resLow = $scanSummary.Low
-                   # $resInfo = $scanSummary.Info
+                    $resInfo = $scanSummary.Info
                     $cxLink = ("{0}CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}" -f $serviceUrl, $scanId, $projectID)
 
                     Write-Host " "
                     Write-Host "----------------------Checkmarx Scan Results(CxSAST):-------------------------";
-                    Write-Host "High severity results: "  $scanSummary.High
-                    Write-Host "Medium severity results: " $scanSummary.Medium
-                    Write-Host "Low severity results: " $scanSummary.Low
-                    Write-Host "Info severity results: " $scanSummary.Info
-                    Write-Host "";
-                    Write-Host "Scan results location: " $cxLink
+                    Write-Host ("High severity results: {0}" -f $resHigh)
+                    Write-Host ("Medium severity results: {0}" -f $resMedium)
+                    Write-Host ("Low severity results: {0}" -f $resLow)
+                    Write-Host ("Info severity results: {0}" -f $resInfo)
+                    Write-Host ""
+                    Write-Host ("Scan results location: {0}" -f $cxLink)
                     Write-Host "------------------------------------------------------------------------------";
                     Write-Host " "
 
@@ -535,6 +457,13 @@ Else{
                         }
                     }
                 }
+                Else {
+                    Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.StageMessage)
+                    Write-Host "##vso[task.complete result=Failed;]DONE"
+                }
+
+
+
             }
 		}
     }
