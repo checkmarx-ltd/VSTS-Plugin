@@ -15,12 +15,75 @@ Param(
     [String] $high,
     [String] $medium,
     [String] $low,
-    [String] $scanTimeout
+    [String] $scanTimeout,
+    [String] $generatePDFReport
 )
 
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Internal"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
+function initScanResults($scanResults){
+    $scanResults | Add-Member -MemberType NoteProperty -Name projectId -Value $scan.ProjectID
+    $scanResults | Add-Member -MemberType NoteProperty -Name scanID -Value $scan.LastScanID
+    $scanResults | Add-Member -MemberType NoteProperty -Name highResults -Value $scan.HighVulnerabilities
+    $scanResults | Add-Member -MemberType NoteProperty -Name mediumResults -Value $scan.MediumVulnerabilities
+    $scanResults | Add-Member -MemberType NoteProperty -Name lowResults -Value $scan.LowVulnerabilities
+    $scanResults | Add-Member -MemberType NoteProperty -Name infoResults -Value $scan.InfoVulnerabilities
+    $scanResults | Add-Member -MemberType NoteProperty -Name riskLevel -Value $scan.RiskLevelScore
+
+    return $scanResults
+}
+
+
+function CreateSummaryReport{
+    [CmdletBinding()]
+    param ($reportPath, $scanResults)
+
+    $content = FormatScanResultContent $scanResults.highResults  $scanResults.mediumResults $scanResults.lowResults  $scanResults.sastSummaryResultsLink
+
+    $reportPath = [IO.Path]::Combine($reportPath, "scanReport.md");
+ Write-Host $reportPath
+    [IO.File]::WriteAllText($reportPath, $content)
+    Write-Host "Produced a Checkmarx scan summary report at $reportPath"
+    Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=Checkmarx Scan Results;]$reportPath"
+}
+
+function FormatScanResultContent{
+    [CmdletBinding()]
+    param ($high, $medium, $low, $cxLink)
+
+    Write-Host "Formatting the scan result report"
+
+    $template  = '<div style="padding:5px 0px">
+                      <span>Vulnerabilities Summary:</span>
+                  </div>
+                  <table border="0" style="border-top: 1px solid #eee;border-collapse: separate;border-spacing: 0 2px;">
+                      <tr>
+                          <td>
+                              <span style="text-align: center; padding-right:20px;"><span style="background-color:red; padding-right:19px;">fgfgfgf</span></span>
+                          </td>
+                          <td style="text-align: center;"><span style="padding:0px 2px">{0}</span></td>
+                      </tr>
+                      <tr>
+                          <td>
+                              <span style="text-align: center; padding-right:40px;"><span style="background-color:orange;">Medium</span></span>
+                          </td>
+                          <td style="text-align: center;"><span style="padding:0px 2px">{1}</span></td>
+                      </tr>
+                      <tr>
+                          <td>
+                              <span style="text-align: center; padding-right:40px;"><span style="background-color:yellow; padding-right:23px;">Low</span></span>
+                          </td>
+                          <td style="text-align: center;"><span style="padding:0px 2px">{2}</span></td>
+                      </tr>
+                  </table>
+                  <div style="padding: 10px 0px">
+                      <a target="_blank" href="{3}">Detailed Checkmarx Report &gt;</a>
+                  </div>'
+
+    $content = [String]::Format($template, $high, $medium, $low, $cxLink)
+    return $content
+}
 
 
 Write-Host "                                       "
@@ -47,11 +110,10 @@ Write-Host "                                               "
 
 
 
-
-
-
 Write-Host "Starting Checkmarx scan"
+
 $presetName;
+
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 
 if (!$serviceEndpoint){
@@ -148,10 +210,10 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
     Write-Host "-------------------------------Configurations:--------------------------------";
 
     Write-Host ("URL: {0}" -f $serviceUrl)
-    Write-Host ("Agent proxy: {0}" -f $(ResolveString $agentProxy))
+    Write-Host ("Agent proxy: {0}" -f $(resolveString $agentProxy))
     Write-Host ("Project name: {0}" -f $projectName)
     Write-Host ("Source location: {0}" -f $sourceLocation)
-    Write-Host ("Scan timeout in minutes: {0}" -f $(ResolveString $scanTimeout))
+    Write-Host ("Scan timeout in minutes: {0}" -f $(resolveString $scanTimeout))
     Write-Host ("Full team path: {0}" -f $fullTeamName)
     if (-not ([string]::IsNullOrEmpty($customPreset))){
       Write-Host ("Custom preset name: {0}" -f $customPreset)
@@ -159,13 +221,14 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
       Write-Host ("Preset name: {0}" -f $presetList)
     }
 
-    Write-Host ("Is incremental scan: {0}" -f $(ResolveBool $incScan))
-    Write-Host ("Folder exclusions: {0}" -f $( ResolveVal $folderExclusion))
-    Write-Host ("File exclusions: {0}" -f $(ResolveVal $fileExtension))
-    Write-Host ("Is synchronous scan: {0}" -f $(ResolveBool $syncMode))
+    Write-Host ("Is incremental scan: {0}" -f $incScan)
+    Write-Host ("Folder exclusions: {0}" -f $(resolveVal $folderExclusion))
+    Write-Host ("File exclusions: {0}" -f $(resolveVal $fileExtension))
+    Write-Host ("Is synchronous scan: {0}" -f $syncMode)
+    Write-Host "Generate PDF report: " $generatePDFReport;
 
     Write-Host ("CxSAST thresholds enabled: {0}" -f $vulnerabilityThreshold)
-    if ($vulnerabilityThreshold -eq "True") {
+    if ([System.Convert]::ToBoolean($vulnerabilityThreshold)) {
      Write-Host ("CxSAST high threshold: {0}" -f $high)
      Write-Host ("CxSAST medium threshold: {0}" -f $medium)
      Write-Host ("CxSAST low threshold: {0}" -f $low)
@@ -368,8 +431,10 @@ Else{
 
     write-host "Starting Checkmarx scan..." -foregroundcolor "green"
 
+        $scanStart;
     try {
         $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
+        $scanStart = [DateTime]::Now
     } catch {
         write-host "Fail to init Checkmarx scan." -foregroundcolor "red"
         Write-Host ("##vso[task.logissue type=error;]An error occurred while scanning: {0}" -f  $_.Exception.Message)
@@ -390,14 +455,17 @@ Else{
                 Write-Host "##vso[task.complete result=Failed;]DONE"
             } Else {
                 while($scanStatusResponse.IsSuccesfull -ne 0 -and
-                $scanStatusResponse.CurrentStatus -ne "Finished"  -and
-                $scanStatusResponse.CurrentStatus -ne "Failed"  -and
-                $scanStatusResponse.CurrentStatus -ne "Canceled"  -and
-                $scanStatusResponse.CurrentStatus -ne "Deleted"
-                ) {
-                    write-host ("Scan status is : {0}, {1}%" -f $scanStatusResponse.CurrentStatus, $scanStatusResponse.TotalPercent) -foregroundcolor "green"
-                    $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
-                    Start-Sleep -s 10 # wait 10 seconds
+                      $scanStatusResponse.CurrentStatus -ne "Finished"  -and
+                      $scanStatusResponse.CurrentStatus -ne "Failed"  -and
+                      $scanStatusResponse.CurrentStatus -ne "Canceled"  -and
+                      $scanStatusResponse.CurrentStatus -ne "Deleted")
+               {
+                   $timeLeft = [DateTime]::Now.Subtract($scanStart).ToString().Split('.')[0]
+                   $prefix="";
+                   if ($scanStatusResponse.TotalPercent -lt 10){ $prefix = " ";}
+                   write-host("Waiting for results. Elapsed time: {0}. {1}{2}% processed. Status: {3}." -f $timeLeft, $prefix, $scanStatusResponse.TotalPercent, $scanStatusResponse.CurrentStatus);
+                   $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
+                   Start-Sleep -s 20 # wait 20 seconds
                 }
 
                 If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -eq "Finished") {
@@ -405,26 +473,41 @@ Else{
                     [String]$scanId = $scanStatusResponse.ScanId
                     [String]$projectID = $scanResponse.ProjectID
 
-                    $scanSummary = $proxy.GetScanSummary($sessionId,$scanId)
-                    $resHigh = $scanSummary.High
-                    $resMedium = $scanSummary.Medium
-                    $resLow = $scanSummary.Low
-                    $resInfo = $scanSummary.Info
-                    $cxLink = ("{0}CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}" -f $serviceUrl, $scanId, $projectID)
+                $scanDataResponse = $proxy.GetProjectScannedDisplayData($sessionId)
+                if (-not $scanDataResponse.IsSuccesfull) {
+                    #throw new CxClientException("Fail to get scan data: " + scanDataResponse.getErrorMessage());
+                    Write-Host ("##vso[task.logissue type=error;]Fail to get scan data: {0}" -f $scanDataResponse.ErrorMessage)
+                    Write-Host "##vso[task.complete result=Failed;]DONE"
+                }
 
-                    Write-Host " "
-                    Write-Host "----------------------Checkmarx Scan Results(CxSAST):-------------------------";
-                    Write-Host ("High severity results: {0}" -f $resHigh)
-                    Write-Host ("Medium severity results: {0}" -f $resMedium)
-                    Write-Host ("Low severity results: {0}" -f $resLow)
-                    Write-Host ("Info severity results: {0}" -f $resInfo)
-                    Write-Host ""
-                    Write-Host ("Scan results location: {0}" -f $cxLink)
-                    Write-Host "------------------------------------------------------------------------------";
-                    Write-Host " "
+                $summaryLink = ("{0}/CxWebClient/portal#/projectState/{1}/Summary" -f $serviceUrl, $projectID)
+                $resultLink =  ("{0}/CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}"-f $serviceUrl,$scanId, $projectID)
 
-                    #Write-Host "Creating CxSAST reports"
-                    CreateScanReport $reportPath $resHigh $resMedium $resLow $cxLink
+                $scanResults = New-Object System.Object
+                $scanResults | Add-Member -MemberType NoteProperty -Name syncMode -Value $syncMode
+                $scanResults | Add-Member -MemberType NoteProperty -Name thresholdEnabled -Value $vulnerabilityThreshold
+                $scanResults | Add-Member -MemberType NoteProperty -Name sastSummaryResultsLink -Value $summaryLink
+                $scanResults | Add-Member -MemberType NoteProperty -Name sastScanResultsLink -Value $resultLink
+
+                $scanList = @($scanDataResponse.ProjectScannedList)
+                foreach ($scan in $scanList) {
+                    if ($projectID -eq $scan.ProjectID) {
+                        $scanResults = initScanResults($scanResults)
+                    }
+                }
+
+                printScanResults $scanResults
+
+                Write-Host "Creating CxSAST reports"
+                $cxReport = createReport $scanId "XML"
+                $scanResults = resolveXMLReport $scanResults $cxReport
+                Write-Host $scanResults.scanStartDate
+                CreateSummaryReport $reportPath $scanResults
+
+                #ask Ilan need to be temp? or workspcae??
+                if ([System.Convert]::ToBoolean($generatePDFReport)) {
+                    createPDFReport $scanId
+                }
 
                     [bool]$thresholdExceeded=$false
                     if([System.Convert]::ToBoolean($vulnerabilityThreshold)){

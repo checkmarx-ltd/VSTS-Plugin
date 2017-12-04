@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<head>
+    <script src="lib/VSS.SDK.min.js"></script>
+
+    <script type="text/javascript">
+        VSS.init( {
+            usePlatformScripts: true,
+            moduleLoaderConfig: {
+                paths: { "riskreport": "scripts" }
+            }
+        });
+
+        VSS.ready(function() {
+            require(["riskreport/status"], function () { });
+        });
+    </script>
+    <link rel="stylesheet" href="css/riskreport.css">
+</head>
+
+<body>
+<div class="cx-risk-report">
+    <div class="risk-report">
+        <div class="risk-report-message">The Checkmarx Risk Report is being processed, or has not been selected to be generated as part of this build.</div>
+    </div>
+</div>
+</body>
+</html>

@@ -23,7 +23,7 @@ more than 80%. Enables incorporation of the security gate within your continuous
 - **Seamlessly integration**
 Works with all IDEs, build management servers, bug tracking tools and source repositories
 
-![image](CxScan/Images/sample1.png)
+![image](images/sample1.png)
 
 
 
@@ -36,7 +36,7 @@ If you are a new user please submit the trial request registration form.
 
 #Checkmarx Registration:
 
-![image](CxScan/Images/sample2.png)
+![image](images/sample2.png)
 
 **To complete this step:**
 1.	Complete the form to request a Checkmarx trial license
@@ -54,7 +54,7 @@ The following steps are required to get started.
 
 #Getting Started with Checkmarx Plug-in:
 
-![image](CxScan/Images/sample3.png)
+![image](images/sample3.png)
 
 **To complete this step:**
 1.	From the Build menu in the main screen, add Checkmarx build step
@@ -64,7 +64,7 @@ The following steps are required to get started.
 
 #Configure Checkmarx Build Step
 
-![image](CxScan/Images/sample4.png)
+![image](images/sample4.png)
 
 **To complete this step:**
 To complete this step:
@@ -92,7 +92,7 @@ To complete this step:
 
 #Setup New Checkmarx End-Point
 
-![image](CxScan/Images/sample5.png)
+![image](images/sample5.png)
 
 **To complete this step:**
 1.	Enter Connection Name – Free text, for example: Checkmarx
