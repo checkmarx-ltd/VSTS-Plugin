@@ -150,7 +150,7 @@ function CreateSummaryReport{
     [CmdletBinding()]
     param ($reportPath, $scanResults, $thresholdExceeded, $osaThresholdExceeded)
 
-    $content = FormatScanResultContent $scanResults.highResults  $scanResults.mediumResults $scanResults.lowResults  $scanResults.sastSummaryResultsLink $thresholdExceeded $scanResults.osaEnabled $scanResults.osaFailed.ToString() $scanResults.osaHighResults $scanResults.osaMediumResults $scanResults.osaLowResults $scanResults.osaSummaryResultsLink $osaThresholdExceeded
+    $content = FormatScanResultContent $scanResults.highResults  $scanResults.mediumResults $scanResults.lowResults  $scanResults.sastSummaryResultsLink $thresholdExceeded $scanResults.osaEnabled $scanResults.osaFailed $scanResults.osaHighResults $scanResults.osaMediumResults $scanResults.osaLowResults $scanResults.osaSummaryResultsLink $osaThresholdExceeded
 
     $reportPath = [IO.Path]::Combine($reportPath, "scanReport.html");
     Write-Host $reportPath
@@ -362,7 +362,7 @@ function FormatScanResultContent{
         $threshold = "Threshold Compliant";
     }
 
-    if($osaEnabled -eq "true" -and  $osaFailed -ne "true"){
+    if($osaEnabled -eq "true" -and  $osaFailed.ToString() -ne "true"){
         $osaThresholdColor = "#21bf3f" #green
         $osaMaxCount =[math]::max($osaHigh, [math]::max($osaMedium, $osaLow));
         $osaMaxHeight = $osaMaxCount * 100 / 90
