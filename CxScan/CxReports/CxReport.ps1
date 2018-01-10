@@ -101,7 +101,7 @@ function waitForReport($reportId, $reportType){
         $scanReportStatus = $proxy.GetScanReportStatus($sessionId, $reportId);
 
         if (-Not $scanReportStatus.IsSuccesfull) {
-           Write-Warning "Fail to get status from scan report: " + $scanReportStatus.ErrorMessage;
+           Write-Warning ("Fail to get status from scan report: {0}" -f  $scanReportStatus.ErrorMessage);
         }
 
         if ($scanReportStatus.IsFailed) {

@@ -446,6 +446,16 @@ else {
         $scanResults = AddSASTResults $syncMode $vulnerabilityThreshold $high $medium $low $summaryLink $resultLink $osaEnabled $scanDataResponse.ProjectScannedList $projectID
         PrintScanResults $scanResults
 
+        #----- SAST detailed report ----------#
+        Write-Host "Creating Checkmarx reports"
+        $cxReport = createReport $scanId "XML"
+        $scanResults = ResolveXMLReport $scanResults $cxReport
+        $tmpPath = [System.IO.Path]::GetTempPath()
+        $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
+        if (!(Test-Path($tmpFolder))) {
+            Write-Host ("INFO: Create build specific report folder at: {0}" -f $tmpFolder)#todo
+            New-Item -ItemType directory -Path $tmpFolder | Out-Null
+        }
 
 
       #  if ([System.Convert]::ToBoolean($generatePDFReport)) {
@@ -468,18 +478,6 @@ else {
                  $scanResults.osaFailed = $osaFailed
                  $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message)
             }
-        }
-
-
-        #----- SAST detailed report ----------#
-        Write-Host "Creating Checkmarx reports"
-        $cxReport = createReport $scanId "XML"
-        $scanResults = ResolveXMLReport $scanResults $cxReport
-        $tmpPath = [System.IO.Path]::GetTempPath()
-        $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
-        if (!(Test-Path($tmpFolder))) {
-            Write-Host ("INFO: Create build specific report folder at: {0}" -f $tmpFolder)#todo
-            New-Item -ItemType directory -Path $tmpFolder | Out-Null
         }
 
         $cxReportFile = Join-Path $tmpFolder "cxreport.json"
