@@ -27,6 +27,7 @@ function AddSASTResults($syncMode, $vulnerabilityThreshold, $high, $medium, $low
     $scanResults | Add-Member -MemberType NoteProperty -Name sastSummaryResultsLink -Value $summaryLink
     $scanResults | Add-Member -MemberType NoteProperty -Name sastScanResultsLink -Value $resultLink
     $scanResults | Add-Member -MemberType NoteProperty -Name osaEnabled -Value $osaEnabled
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
     $scanList = @($projectScannedList)
     foreach ($scan in $scanList) {
         if ($projectID -eq $scan.ProjectID) {
@@ -37,7 +38,7 @@ function AddSASTResults($syncMode, $vulnerabilityThreshold, $high, $medium, $low
     return $scanResults
 }
 
-function AddOSAResults($scanResults, $osaSummaryResults, $osaProjectSummaryLink, $osaVulnerabilityThreshold, $osaHigh, $osaMedium, $osaLow){
+function AddOSAResults($scanResults, $osaSummaryResults, $osaProjectSummaryLink, $osaVulnerabilityThreshold, $osaHigh, $osaMedium, $osaLow, $osaFailed){
     $scanResults | Add-Member -MemberType NoteProperty -Name osaStartTime -Value $osaSummaryResults.osaStartTime
     $scanResults | Add-Member -MemberType NoteProperty -Name osaEndTime -Value $osaSummaryResults.osaEndTime
 

@@ -87,6 +87,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //-------------------------- osa vars --------------------------------------
                                 var osaEnabled = resultObject.osaEnabled;
+                                var osaFailed = resultObject.osaFailed;
 
                                 //libraries
                                 var osaVulnerableAndOutdatedLibs = resultObject.osaVulnerableLibraries;
@@ -142,7 +143,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var osaStartDate = ' ';
                                 var osaEndDate = ' ';
 
-                                if(osaEnabled === 'true'){
+                                if(osaEnabled.toString()  === 'true' && osaFailed.toString() != 'true'){
                                     osaList =  convertOSADataToList(resultObject.osaCveList);
                                     osaLibraries =  convertOSADataToList(resultObject.osaLibraries);
                                     osaStartDate = adjustDateFormat(resultObject.osaStartTime);
@@ -256,7 +257,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
 
                                     //---------------------------------------------------------- osa ---------------------------------------------------------------
-                                    if (osaEnabled.toString() == "true") {
+                                    if (osaEnabled.toString() == "true" && osaFailed.toString() != 'true') {
                                         try {
                                             document.getElementById("report-title").setAttribute("style", "display:block");
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");

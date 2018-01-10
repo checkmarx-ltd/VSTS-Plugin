@@ -62,6 +62,8 @@ $presetName;
 $scanStart;
 $presetId;
 $OsaClient;
+$osaFailed = $false;
+$osaFailedMessage = "";
 $debugMode =  $env:SYSTEM_DEBUG;
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 
@@ -302,7 +304,6 @@ if(-not ([string]::IsNullOrEmpty($customPreset))){
 		 Write-Host "##vso[task.complete result=Failed;]DONE"
 	 Exit
 	}
-	Write-Host ("Custom preset was found. PresetId: {0}" -f $presetId)
 }
 else {
 	$presetName = $presetList;
@@ -390,8 +391,11 @@ else {
             $osaScan = $OsaClient.runOSAScan();
         }Catch {
              Write-Host ("##vso[task.logissue type=error;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
-             Write-Host "##vso[task.complete result=Failed;]DONE"
-             Exit;
+            $osaFailed = $true;
+            $scanResults.osaFailed = $osaFailed;
+            $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
+            # Write-Host "##vso[task.complete result=Failed;]DONE"
+             #Exit;
          }
 	 }
 
@@ -426,7 +430,7 @@ else {
 	   Start-Sleep -s 20 # wait 20 seconds
 	}
 
-    Write-Host "Scan finished status: " $scanStatusResponse.stageMessage;
+    Write-Host "Scan finished status: " $scanStatusResponse.CurrentStatus;
 
 	If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -eq "Finished")
 	{
@@ -443,10 +447,6 @@ else {
         $scanResults = AddSASTResults $syncMode $vulnerabilityThreshold $high $medium $low $summaryLink $resultLink $osaEnabled $scanDataResponse.ProjectScannedList $projectID
         PrintScanResults $scanResults
 
-        #----- SAST detailed report ----------#
-        Write-Host "Creating CxSAST reports"
-        $cxReport = createReport $scanId "XML"
-        $scanResults = ResolveXMLReport $scanResults $cxReport
 
 
       #  if ([System.Convert]::ToBoolean($generatePDFReport)) {
@@ -454,22 +454,28 @@ else {
        # }
 
         #--------- OSA Results ---------#
-        if ([System.Convert]::ToBoolean($osaEnabled)) {
+        if ([System.Convert]::ToBoolean($osaEnabled) -and -not $osaFailed) {
             try{
 
                	Write-host "-----------------------------Get CxOSA Results:-------------------------------"
                 $osaSummaryResults = $OsaClient.retrieveOsaResults()
                 $osaProjectSummaryLink =  ("{0}/CxWebClient/portal#/projectState/{1}/OSA"-f $serviceUrl, $projectID);
-                $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaProjectSummaryLink $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow
+                $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaProjectSummaryLink $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow $osaFailed
                 PrintOSAResults $osaSummaryResults $osaProjectSummaryLink
 
             }Catch {
                  Write-Host ("##vso[task.logissue type=error;]Fail to retrieve OSA results : {0}" -f $_.Exception.Message)
-                 Write-Host "##vso[task.complete result=Failed;]DONE"
-                 Exit
+                 $osaFailed = $true;
+                 $scanResults.osaFailed = $osaFailed
+                 $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message)
             }
         }
 
+
+        #----- SAST detailed report ----------#
+        Write-Host "Creating Checkmarx reports"
+        $cxReport = createReport $scanId "XML"
+        $scanResults = ResolveXMLReport $scanResults $cxReport
         $tmpPath = [System.IO.Path]::GetTempPath()
         $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
         if (!(Test-Path($tmpFolder))) {
@@ -487,21 +493,23 @@ else {
 		if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
             $thresholdExceeded = IsSASTThresholdExceeded $scanResults
 		}
-        if ([System.Convert]::ToBoolean($osaEnabled) -and [System.Convert]::ToBoolean($osaVulnerabilityThreshold)) {
+        if (-not $osaFailed -and [System.Convert]::ToBoolean($osaEnabled) -and [System.Convert]::ToBoolean($osaVulnerabilityThreshold)) {
             $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
         }
 
          CreateSummaryReport $reportPath $scanResults
 
-		if($thresholdExceeded -or $osaThresholdExceeded){
-            Write-Host "##vso[task.complete result=Failed;]DONE"
+		if($thresholdExceeded -or $osaThresholdExceeded -or $osaFailed){
+            $errorMessage ="";
+            if ($thresholdExceeded){  $errorMessage += "CxSAST threshold exceeded."}
+            if ($osaThresholdExceeded){  $errorMessage += " CxOSA threshold exceeded"}
+            if ($osaFailed){  $errorMessage += " " + $osaFailedMessage}
+            Write-Host "##vso[task.complete result=Failed;]Build Failed due to: $errorMessage"
         }
-
-
 
 	}
 	Else {
-		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.StageMessage)
+		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.CurrentStatus)
 		Write-Host "##vso[task.complete result=Failed;]DONE"
 	}
 

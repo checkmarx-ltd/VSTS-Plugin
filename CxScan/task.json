@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 1,
-    "Minor": 0,
-    "Patch": 9
+    "Minor": 1,
+    "Patch": 0
   },
   "demands": [
   ],
@@ -149,6 +149,7 @@
     {
       "name": "high",
       "type": "string",
+      "pattern": "^[+]?\\d+([.]\\d+)?$",
       "label": "SAST High",
       "required": false,
       "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
@@ -158,6 +159,7 @@
     {
       "name": "medium",
       "type": "string",
+      "pattern": "^[+]?\\d+([.]\\d+)?$",
       "label": "SAST Medium",
       "required": false,
       "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
@@ -167,6 +169,7 @@
     {
       "name": "low",
       "type": "string",
+      "pattern": "^[+]?\\d+([.]\\d+)?$",
       "label": "SAST Low",
       "required": false,
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
@@ -223,6 +226,7 @@
     {
       "name": "osaHigh",
       "type": "string",
+      "pattern": "^[+]?\\d+([.]\\d+)?$",
       "label": "CxOSA High",
       "required": false,
       "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
@@ -232,6 +236,7 @@
     {
       "name": "osaMedium",
       "type": "string",
+      "pattern": "^[+]?\\d+([.]\\d+)?$",
       "label": "CxOSA Medium",
       "required": false,
       "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
@@ -241,6 +246,7 @@
     {
       "name": "osaLow",
       "type": "string",
+      "pattern": "^[+]?\\d+([.]\\d+)?$",
       "label": "CxOSA Low",
       "required": false,
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",

@@ -19,7 +19,7 @@ td {
     border: 1px solid transparent;
     padding: 8px 0px 8px 5px;
     margin-top: 5px;
-    width: 35%;
+    width: 44%;
 }
 
 .aui-item.details {
@@ -308,7 +308,7 @@ td {
 }
 
 .results-report .threshold-line {
-    width: 20px;
+    width: 50px;
     border-bottom: dashed white 1px;
     padding-right: 3px;
 }

@@ -121,9 +121,6 @@ function waitForReport($reportId, $reportType){
 }
 
 
-
-
-
 function createReport($scanId, $type){
     $cxWSReportRequestType = ($namespace + '.cxWSReportRequest')
     $cxWSReportRequest = New-Object ($cxWSReportRequestType)
@@ -149,13 +146,11 @@ function createReport($scanId, $type){
     return $scanReport.ScanResults;
 }
 
-
-
 function CreateSummaryReport{
     [CmdletBinding()]
     param ($reportPath, $scanResults, $thresholdExceeded, $osaThresholdExceeded)
 
-    $content = FormatScanResultContent $scanResults.highResults  $scanResults.mediumResults $scanResults.lowResults  $scanResults.sastSummaryResultsLink $thresholdExceeded $scanResults.osaEnabled $scanResults.osaHighResults $scanResults.osaMediumResults $scanResults.osaLowResults $scanResults.osaSummaryResultsLink $osaThresholdExceeded
+    $content = FormatScanResultContent $scanResults.highResults  $scanResults.mediumResults $scanResults.lowResults  $scanResults.sastSummaryResultsLink $thresholdExceeded $scanResults.osaEnabled $scanResults.osaFailed.ToString() $scanResults.osaHighResults $scanResults.osaMediumResults $scanResults.osaLowResults $scanResults.osaSummaryResultsLink $osaThresholdExceeded
 
     $reportPath = [IO.Path]::Combine($reportPath, "scanReport.html");
     Write-Host $reportPath
@@ -173,6 +168,7 @@ function FormatScanResultContent{
      $cxLink,
      $thresholdExceeded,
      $osaEnabled,
+     $osaFailed,
      $osaHigh,
      $osaMedium,
      $osaLow,
@@ -229,23 +225,23 @@ function FormatScanResultContent{
                                                <div style="height: 200px;">
                                                     <div class="bar-wrapper" style="padding-top: 56%">
                                                     </div>
-                                                   <div class="bar-1" id="bar-high" style="position: absolute;width: 6%;height:12.413793103448276%;background-color: #373050;margin-left: 5%;"></div>
+                                                   <div class="bar-1" id="bar-high" style="position: absolute;width: 6%;height:{3};background-color: #373050;margin-left: 5%;"></div>
                                                    <div class="bar-title-container" style="width: 6%;margin-left: 5%;padding-top: 4%;text-align: center;word-wrap: break-word;color: #444444;">
                                                        <div class="bar-title-icon" style=" margin-right: 6px;"></div>
                                                        <div class="bar-title" style="background-color: #DA2945;width: 48px;font-size: 14px;white-space: nowrap;">High -</div>
-                                                       <div class="bar-count" style="background-color: #DA2945;width: 48px;" id="bar-count-high">{3}</div>
+                                                       <div class="bar-count" style="background-color: #DA2945;width: 48px;" id="bar-count-high">{4}</div>
                                                    </div>
-                                                   <div class="bar-2" id="bar-med" style="width:  6%;height:46.55172413793104%;background-color: #373050;margin-left: 45%;margin-top: -38%;"></div>
+                                                   <div class="bar-2" id="bar-med" style="width:  6%;height:{5};background-color: #373050;margin-left: 45%;margin-top: -38%;"></div>
                                                    <div class="bar-title-container" style="width: 6%;margin-left: 45%;padding-top: 4%;text-align: center;word-wrap: break-word;color: #444444;">
                                                        <div class="bar-title-icon" style=" margin-right: 6px;">                                                                           </div>
                                                        <div class="bar-title" style="background-color: #ee9142;width: 65px;font-size: 14px;white-space: nowrap;">Medium -</div>
-                                                       <div class="bar-count" style="background-color: #ee9142;width: 65px;" id="bar-count-med">{4}</div>
+                                                       <div class="bar-count" style="background-color: #ee9142;width: 65px;" id="bar-count-med">{6}</div>
                                                    </div>
-                                                   <div class="bar-3" id="bar-low" style="width: 6%;height:90%;background-color: #373050;margin-left: 80%;margin-top: -60%;"></div>
+                                                   <div class="bar-3" id="bar-low" style="width: 6%;height:{7};background-color: #373050;margin-left: 80%;margin-top: -60%;"></div>
                                                    <div class="bar-title-container" style="width: 6%;margin-left: 78%;padding-top: 4%;text-align: center;word-wrap: break-word;color: #444444;">
                                                    <div class="bar-title-icon" style=" margin-right: 6px;"></div>
                                                        <div class="bar-title" style="background-color: #eeda4ad9;width: 66px;font-size: 14px;white-space: nowrap;">Low -</div>
-                                                       <div class="bar-count" style="background-color: #eeda4ad9;width: 66px;" id="bar-count-low">{5}</div>
+                                                       <div class="bar-count" style="background-color: #eeda4ad9;width: 66px;" id="bar-count-low">{8}</div>
                                                    </div>
                                                </div>
                                            </div>
@@ -279,23 +275,23 @@ function FormatScanResultContent{
                                               <div style="height: 200px;">
                                                    <div class="bar-wrapper" style="padding-top: 56%">
                                                    </div>
-                                                  <div class="bar-1" id="bar-high" style="position: absolute;width: 6%;height:12.413793103448276%;background-color: #373050;margin-left: 12%;"></div>
+                                                  <div class="bar-1" id="bar-high" style="position: absolute;width: 6%;height:{3};background-color: #373050;margin-left: 12%;"></div>
                                                   <div class="bar-title-container" style="width: 6%;margin-left: 10%;padding-top: 15px;text-align: center;word-wrap: break-word;color: #444444;">
                                                       <div class="bar-title-icon" style=" margin-right: 6px;">                                                                           </div>
                                                       <div class="bar-title" style="background-color: #DA2945;width: 48px;font-size: 14px;white-space: nowrap;">High -</div>
-                                                      <div class="bar-count" style="background-color: #DA2945;width: 48px;" id="bar-count-high">{3}</div>
+                                                      <div class="bar-count" style="background-color: #DA2945;width: 48px;" id="bar-count-high">{4}</div>
                                                   </div>
-                                                  <div class="bar-2" id="bar-med" style="width:  6%;height:46.55172413793104%;background-color: #373050;margin-left: 40%;margin-top: -38%;"></div>
+                                                  <div class="bar-2" id="bar-med" style="width:  6%;height:{5};background-color: #373050;margin-left: 40%;margin-top: -38%;"></div>
                                                   <div class="bar-title-container" style="width: 6%;margin-left: 37%;padding-top: 15px;text-align: center;word-wrap: break-word;color: #444444;">
                                                       <div class="bar-title-icon" style=" margin-right: 6px;">                                                                           </div>
                                                       <div class="bar-title" style="background-color: #ee9142;width: 65px;font-size: 14px;white-space: nowrap;">Medium -</div>
-                                                      <div class="bar-count" style="background-color: #ee9142;width: 65px;" id="bar-count-med">{4}</div>
+                                                      <div class="bar-count" style="background-color: #ee9142;width: 65px;" id="bar-count-med">{6}</div>
                                                   </div>
-                                                  <div class="bar-3" id="bar-low" style="width: 6%;height:90%;background-color: #373050;margin-left: 75%;margin-top: -60%;"></div>
+                                                  <div class="bar-3" id="bar-low" style="width: 6%;height:{7};background-color: #373050;margin-left: 75%;margin-top: -60%;"></div>
                                                   <div class="bar-title-container" style="width: 6%;margin-left: 70%;padding-top: 15px;text-align: center;word-wrap: break-word;color: #444444;">
                                                   <div class="bar-title-icon" style=" margin-right: 6px;"></div>
                                                       <div class="bar-title" style="background-color: #eeda4a;width: 66px;font-size: 14px;white-space: nowrap;">Low -</div>
-                                                      <div class="bar-count" style="background-color: #eeda4a;width: 66px;" id="bar-count-low">{5}</div>
+                                                      <div class="bar-count" style="background-color: #eeda4a;width: 66px;" id="bar-count-low">{8}</div>
                                                   </div>
                                               </div>
                                           </div>
@@ -305,7 +301,7 @@ function FormatScanResultContent{
                                         <div class="summary-report-title osa" style="font-size: 24px;font-weight: 400;padding-bottom: 21px;color: #373050;">
                                             <div class="summary-title-text osa" style="white-space: nowrap;font-weight: bold;">CxOSA Vulnerabilities & Libraries</div>
                                             <div class="summary-title-links" style="color: #4A90E2;font-size: 14px;padding: 15px 2px;border-bottom: solid 1px #d5d5d5;">
-                                                <a class="html-report" id="osa-summary-html-link" href="{6}">
+                                                <a class="html-report" id="osa-summary-html-link" href="{9}">
                                                     <div class="results-link summary-link" style="align-items: center;">
                                                         <div class="results-link-icon link-icon"></div>
                                                         <div class="summary-link-text" style=" padding: 0 8px;">Results</div>
@@ -316,28 +312,28 @@ function FormatScanResultContent{
                                         <div class="osa-results">
                                             <div class="osa-libraries"></div>
                                             <div class="osa-chart">
-                                                <div class="threshold-exceeded-compliance" id="threshold-exceeded-compliance"><div class="threshold-exceeded" style="font-size: 14px; padding: 4px 9px;background-color: {7};width: 160px;color: white;border-radius: 2px;font-weight: bold;"><div class="threshold-exceeded-icon" style="padding-right: 6px;margin: auto 0;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12px" height="12px" viewBox="0 0 12 12" version="1.1"><defs></defs><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Icons" transform="translate(-52.000000, -241.000000)"><g id="threshhold-icon" transform="translate(52.000000, 241.000000)"><g><path d="M8.0904685,3 L7.0904685,3 L7.0904685,5 L8.0904685,5 L8.0904685,11 L3.0904685,11 L3.0904685,0 L8.0904685,0 L8.0904685,3 Z M3.0904685,3 L3.0904685,5 L5.0904685,5 L5.0904685,3 L3.0904685,3 Z M5.0904685,3 L5.0904685,5 L7.0904685,5 L7.0904685,3 L5.0904685,3 Z" id="Combined-Shape" fill="#FFFFFF"></path><path d="M10.5904685,11.5 L0.590468498,11.5" id="Line" stroke="#FFFFFF" stroke-linecap="square"></path></g></g></g></g></svg></div><div class="threshold-exceeded-text">{8}</div></div></div>
+                                                <div class="threshold-exceeded-compliance" id="threshold-exceeded-compliance"><div class="threshold-exceeded" style="font-size: 14px; padding: 4px 9px;background-color: {10};width: 160px;color: white;border-radius: 2px;font-weight: bold;"><div class="threshold-exceeded-icon" style="padding-right: 6px;margin: auto 0;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12px" height="12px" viewBox="0 0 12 12" version="1.1"><defs></defs><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Icons" transform="translate(-52.000000, -241.000000)"><g id="threshhold-icon" transform="translate(52.000000, 241.000000)"><g><path d="M8.0904685,3 L7.0904685,3 L7.0904685,5 L8.0904685,5 L8.0904685,11 L3.0904685,11 L3.0904685,0 L8.0904685,0 L8.0904685,3 Z M3.0904685,3 L3.0904685,5 L5.0904685,5 L5.0904685,3 L3.0904685,3 Z M5.0904685,3 L5.0904685,5 L7.0904685,5 L7.0904685,3 L5.0904685,3 Z" id="Combined-Shape" fill="#FFFFFF"></path><path d="M10.5904685,11.5 L0.590468498,11.5" id="Line" stroke="#FFFFFF" stroke-linecap="square"></path></g></g></g></g></svg></div><div class="threshold-exceeded-text">{11}</div></div></div>
                                                 <div class="osa-chart chart" style=" table-layout: fixed;width: 100%;height: 240px;margin-top: 0;padding: 0;background-image: linear-gradient(to top, #d5d5d5, #ffffff 2%);background-size: 100% 70px;background-position: left bottom;border-bottom: solid #979797 2px;">
                                                     <div style="height: 200px;">
                                                          <div class="bar-wrapper" style="padding-top: 56%">
                                                          </div>
-                                                        <div class="bar-1" id="osa-bar-high" style="position: absolute;width: 6%;height:12.413793103448276%;background-color: #373050;margin-left: 14%;"></div>
+                                                        <div class="bar-1" id="osa-bar-high" style="position: absolute;width: 6%;height:{12};background-color: #373050;margin-left: 14%;"></div>
                                                         <div class="bar-title-container" style="width: 6%;margin-left: 12%;padding-top: 15px;text-align: center;word-wrap: break-word;color: #444444;">
-                                                            <div class="bar-title-icon" style=" margin-right: 6px;">                                                                           </div>
+                                                            <div class="bar-title-icon" style=" margin-right: 6px;"></div>
                                                             <div class="bar-title" style="background-color: #DA2945;width: 48px;font-size: 14px;white-space: nowrap;">High -</div>
-                                                            <div class="bar-count" style="background-color: #DA2945;width: 48px;" id="osa-bar-count-high">{9}</div>
+                                                            <div class="bar-count" style="background-color: #DA2945;width: 48px;" id="osa-bar-count-high">{13}</div>
                                                         </div>
-                                                        <div class="bar-2" id="osa-bar-med" style="position: absolute;width:  6%;height:46.55172413793104%;background-color: #373050;margin-left: 45%;margin-top: -38%;"></div>
+                                                        <div class="bar-2" id="osa-bar-med" style="position: absolute;width:  6%;height:{14};background-color: #373050;margin-left: 45%;margin-top: -33%;"></div>
                                                         <div class="bar-title-container" style="width: 6%;margin-left: 40%;padding-top: 15px;text-align: center;word-wrap: break-word;color: #444444;">
-                                                            <div class="bar-title-icon" style=" margin-right: 6px;">                                                                           </div>
+                                                            <div class="bar-title-icon" style=" margin-right: 6px;"></div>
                                                             <div class="bar-title" style="background-color: #ee9142;width: 65px;font-size: 14px;white-space: nowrap;">Medium -</div>
-                                                            <div class="bar-count" style="background-color: #ee9142;width: 65px;" id="osa-bar-count-med">{10}</div>
+                                                            <div class="bar-count" style="background-color: #ee9142;width: 65px;" id="osa-bar-count-med">{15}</div>
                                                         </div>
-                                                        <div class="bar-3" id="osa-bar-low" style="width: 6%;height:90%;background-color: #373050;margin-left: 75%;margin-top: -60%;"></div>
+                                                        <div class="bar-3" id="osa-bar-low" style="width: 6%;height:{16};background-color: #373050;margin-left: 75%;margin-top: -60%;"></div>
                                                         <div class="bar-title-container" style="width: 6%;margin-left: 70%;padding-top: 15px;text-align: center;word-wrap: break-word;color: #444444;">
                                                         <div class="bar-title-icon" style=" margin-right: 6px;"></div>
                                                             <div class="bar-title" style="background-color: #eeda4a;width: 66px;font-size: 14px;white-space: nowrap;">Low -</div>
-                                                            <div class="bar-count" style="background-color: #eeda4a;width: 66px;" id="osa-bar-count-low">{11}</div>
+                                                            <div class="bar-count" style="background-color: #eeda4a;width: 66px;" id="osa-bar-count-low">{17}</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -351,6 +347,14 @@ function FormatScanResultContent{
 
 
     $content ="";
+
+    $maxCount =[math]::max($high, $medium);
+    $maxCount =[math]::max($maxCount, $low);
+    $maxHeight = maxCount * 100 / 90;
+    $highHeight = $high * 100 / $maxHeight + "%";
+    $medHeight = $medium * 100 / $maxHeight + "%";
+    $lowHeight = $low * 100 / $maxHeight + "%";
+
     $thresholdColor = "#21bf3f" #green
     if ($thresholdExceeded -eq "true"){
        $threshold = "Threshold Exceeded";
@@ -359,22 +363,26 @@ function FormatScanResultContent{
         $threshold = "Threshold Compliant";
     }
 
-    if($osaEnabled -eq "true"){
+    if($osaEnabled -eq "true" -and -not $osaFailed -eq "true"){
         $osaThresholdColor = "#21bf3f" #green
+        $osaMaxCount =[math]::max($osaHigh, $osaMedium);
+        $osaMaxCount =[math]::max($osaMaxCount, $osaLow);
+        $osaMaxHeight = osaMaxCount * 100 / 90
+        $osaHighHeight = $osaHigh * 100 / $osaMaxHeight + "%";
+        $osaMedHeight = $osaHigh * 100 / $osaMaxHeight + "%";
+        $osaLowHeight = $osaHigh * 100 / $osaMaxHeight + "%";
+
         if ($osaThresholdExceeded -eq "true"){
               $osaThreshold = "Threshold Exceeded";
               $osaThresholdColor = "#DA2945" #red
         } else{
           $osaThreshold = "Threshold Compliant";
         }
-        $content = [String]::Format($OSASASTemplate, $cxLink, $thresholdColor, $threshold, $high, $medium, $low, $cxOsaLink, $osaThresholdColor, $osaThreshold, $osaHigh, $osaMedium, $osaLow)
+        $content = [String]::Format($OSASASTemplate, $cxLink, $thresholdColor, $threshold, $highHeight, $high, $medHeight, $medium, $lowHeight, $low, $cxOsaLink, $osaThresholdColor, $osaThreshold, $osaHighHeight, $osaHigh, $osaMedHeight, $osaMedium, $osaLowHeight, $osaLow)
 
    }else{
-
-
-     $content = [String]::Format($SASTemplate, $cxLink, $thresholdColor, $threshold, $high, $medium, $low)
+     $content = [String]::Format($SASTemplate, $cxLink, $thresholdColor, $threshold, $highHeight, $high, $medHeight, $medium, $lowHeight, $low)
    }
-
     return $content;
 }
 
