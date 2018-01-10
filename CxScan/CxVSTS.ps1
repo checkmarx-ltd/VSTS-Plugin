@@ -16,75 +16,25 @@ Param(
     [String] $medium,
     [String] $low,
     [String] $scanTimeout,
-    [String] $generatePDFReport
+    [String] $osaEnabled,
+    [String] $osaFileExclusions,
+    [String] $osaFolderExclusions,
+    [String] $osaArchiveInclude,
+    [String] $osaVulnerabilityThreshold,
+    [String] $osaHigh,
+    [String] $osaMedium,
+    [String] $osaLow
+
 )
 
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Internal"
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.TestResults"
-function initScanResults($scanResults){
-    $scanResults | Add-Member -MemberType NoteProperty -Name projectId -Value $scan.ProjectID
-    $scanResults | Add-Member -MemberType NoteProperty -Name scanID -Value $scan.LastScanID
-    $scanResults | Add-Member -MemberType NoteProperty -Name highResults -Value $scan.HighVulnerabilities
-    $scanResults | Add-Member -MemberType NoteProperty -Name mediumResults -Value $scan.MediumVulnerabilities
-    $scanResults | Add-Member -MemberType NoteProperty -Name lowResults -Value $scan.LowVulnerabilities
-    $scanResults | Add-Member -MemberType NoteProperty -Name infoResults -Value $scan.InfoVulnerabilities
-    $scanResults | Add-Member -MemberType NoteProperty -Name riskLevel -Value $scan.RiskLevelScore
-
-    return $scanResults
-}
-
-
-function CreateSummaryReport{
-    [CmdletBinding()]
-    param ($reportPath, $scanResults)
-
-    $content = FormatScanResultContent $scanResults.highResults  $scanResults.mediumResults $scanResults.lowResults  $scanResults.sastSummaryResultsLink
-
-    $reportPath = [IO.Path]::Combine($reportPath, "scanReport.md");
- Write-Host $reportPath
-    [IO.File]::WriteAllText($reportPath, $content)
-    Write-Host "Produced a Checkmarx scan summary report at $reportPath"
-    Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=Checkmarx Scan Results;]$reportPath"
-}
-
-function FormatScanResultContent{
-    [CmdletBinding()]
-    param ($high, $medium, $low, $cxLink)
-
-    Write-Host "Formatting the scan result report"
-
-    $template  = '<div style="padding:5px 0px">
-                      <span>Vulnerabilities Summary:</span>
-                  </div>
-                  <table border="0" style="border-top: 1px solid #eee;border-collapse: separate;border-spacing: 0 2px;">
-                      <tr>
-                          <td>
-                              <span style="text-align: center; padding-right:20px;"><span style="background-color:red; padding-right:19px;">fgfgfgf</span></span>
-                          </td>
-                          <td style="text-align: center;"><span style="padding:0px 2px">{0}</span></td>
-                      </tr>
-                      <tr>
-                          <td>
-                              <span style="text-align: center; padding-right:40px;"><span style="background-color:orange;">Medium</span></span>
-                          </td>
-                          <td style="text-align: center;"><span style="padding:0px 2px">{1}</span></td>
-                      </tr>
-                      <tr>
-                          <td>
-                              <span style="text-align: center; padding-right:40px;"><span style="background-color:yellow; padding-right:23px;">Low</span></span>
-                          </td>
-                          <td style="text-align: center;"><span style="padding:0px 2px">{2}</span></td>
-                      </tr>
-                  </table>
-                  <div style="padding: 10px 0px">
-                      <a target="_blank" href="{3}">Detailed Checkmarx Report &gt;</a>
-                  </div>'
-
-    $content = [String]::Format($template, $high, $medium, $low, $cxLink)
-    return $content
-}
-
+.$PSScriptRoot/CxZipUtils.ps1
+.$PSScriptRoot/CxUtils.ps1
+.$PSScriptRoot/CxReports/CxReport.ps1
+.$PSScriptRoot/CxFolderPattern.ps1
+.$PSScriptRoot/CxScanResults.ps1
 
 Write-Host "                                       "
 Write-Host
@@ -106,14 +56,13 @@ Write-Host
           "                                            `n" +
           "            C H E C K M A R X               `n"
 Write-Host "                                               "
-
-
-
-
 Write-Host "Starting Checkmarx scan"
 
 $presetName;
-
+$scanStart;
+$presetId;
+$OsaClient;
+$debugMode =  $env:SYSTEM_DEBUG;
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 
 if (!$serviceEndpoint){
@@ -125,7 +74,6 @@ if ($authScheme -ne 'UserNamePassword'){
 }
 
 $agentProxy = [string]$serviceEndpoint.Authorization.Parameters.agentProxy
-
 
 [String]$srcRepoType = [String]$env:BUILD_REPOSITORY_PROVIDER
 if($srcRepoType -Match 'git'){
@@ -139,7 +87,7 @@ if($srcRepoType -Match 'git'){
             if([string]::IsNullOrEmpty($agentProxy)){
                 $response = Invoke-RestMethod -Uri $resource -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
             } else {
-                $response = Invoke-RestMethod -Uri $resource -Proxy $proxy -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
+                $response = Invoke-RestMethod -Uri $resource -Proxy $agentProxy -Headers @{Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"}
             }
 
             Try {
@@ -179,41 +127,27 @@ if($srcRepoType -Match 'git'){
 
 
 $ErrorActionPreference = "Stop"
-
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
-
-
-
 $serviceUrl = [string]$serviceEndpoint.Url  #Url to cx server
+$serviceUrl = ResolveServiceURL $serviceUrl
 $user = [string]$serviceEndpoint.Authorization.Parameters.UserName  # cx user
 $password = [string]$serviceEndpoint.Authorization.Parameters.Password # cx user pwd
 
 write-host 'Entering CxScanner ......' -foregroundcolor "green"
 
-$serviceUrl = $serviceUrl.TrimStart().TrimEnd()
-$serviceUrl = $serviceUrl.Replace('CxWebClient', '').trim()
-if ($serviceUrl.EndsWith('//')){
-    $serviceUrl = $serviceUrl.Substring(0,$serviceUrl.Length -1)
-}
-if (-Not $serviceUrl.EndsWith('/')){
-    $serviceUrl = $serviceUrl + '/'
-}
-
 $resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
 $resolverUrl = $serviceUrl + $resolverUrlExtension
 
 
-. $PSScriptRoot/CxUtils.ps1
     Write-Host " "
     Write-Host "-------------------------------Configurations:--------------------------------";
-
     Write-Host ("URL: {0}" -f $serviceUrl)
-    Write-Host ("Agent proxy: {0}" -f $(resolveString $agentProxy))
+    Write-Host ("Agent proxy: {0}" -f $(ResolveString $agentProxy))
     Write-Host ("Project name: {0}" -f $projectName)
     Write-Host ("Source location: {0}" -f $sourceLocation)
-    Write-Host ("Scan timeout in minutes: {0}" -f $(resolveString $scanTimeout))
+    Write-Host ("Scan timeout in minutes: {0}" -f $(ResolveString $scanTimeout))
     Write-Host ("Full team path: {0}" -f $fullTeamName)
     if (-not ([string]::IsNullOrEmpty($customPreset))){
       Write-Host ("Custom preset name: {0}" -f $customPreset)
@@ -222,10 +156,10 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
     }
 
     Write-Host ("Is incremental scan: {0}" -f $incScan)
-    Write-Host ("Folder exclusions: {0}" -f $(resolveVal $folderExclusion))
-    Write-Host ("File exclusions: {0}" -f $(resolveVal $fileExtension))
+    Write-Host ("Folder exclusions: {0}" -f $(ResolveVal $folderExclusion))
+    Write-Host ("File exclusions: {0}" -f $(ResolveVal $fileExtension))
     Write-Host ("Is synchronous scan: {0}" -f $syncMode)
-    Write-Host "Generate PDF report: " $generatePDFReport;
+    #Write-Host "Generate PDF report: " $generatePDFReport;
 
     Write-Host ("CxSAST thresholds enabled: {0}" -f $vulnerabilityThreshold)
     if ([System.Convert]::ToBoolean($vulnerabilityThreshold)) {
@@ -233,21 +167,24 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
      Write-Host ("CxSAST medium threshold: {0}" -f $medium)
      Write-Host ("CxSAST low threshold: {0}" -f $low)
     }
-    Write-Host "------------------------------------------------------------------------------";
+
+
+#todo "[No Threshold]"
+    Write-Host("CxOSA enabled: {0}"-f $osaEnabled);
+    if ([System.Convert]::ToBoolean($osaEnabled)) {
+        Write-Host("CxOSA inclusions: {0}" -f $(ResolveVal $osaFileExclusions));
+        Write-Host("CxOSA exclusions: {0}" -f $(ResolveVal $osaFolderExclusions));
+        Write-Host("CxOSA thresholds enabled: {0}" -f $osaVulnerabilityThreshold);
+        if ([System.Convert]::ToBoolean($osaVulnerabilityThreshold)) {
+            Write-Host("CxOSA high threshold: {0}" -f $osaHigh);
+            Write-Host("CxOSA medium threshold: {0}" -f $osaMedium);
+           Write-Host("CxOSA low threshold: {0}" -f $osaLow);
+        }
+    }
+
+
     Write-Host " "
-
-
-$serviceUrl = $serviceUrl.TrimStart().TrimEnd()
-$serviceUrl = $serviceUrl.Replace('CxWebClient', '').trim()
-if ($serviceUrl.EndsWith('//')){
-    $serviceUrl = $serviceUrl.Substring(0,$serviceUrl.Length -1)
-}
-if (-Not $serviceUrl.EndsWith('/')){
-    $serviceUrl = $serviceUrl + '/'
-}
-
-$resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
-$resolverUrl = $serviceUrl + $resolverUrlExtension
+	Write-Host "----------------------------Create CxSAST Scan:-------------------------------"
 
 write-host "Connecting to Checkmarx at: $resolverUrl ....." -foregroundcolor "green"
 
@@ -283,309 +220,294 @@ $credentials = New-Object ($credentialsType)
 $credentials.User = $user
 $credentials.Pass = $password
 
-write-host  "Logging into the Checkmarx service..." -foregroundcolor "green"
+write-host  "Logging into the Checkmarx service." -foregroundcolor "green"
 $loginResponse = $proxy.Login($credentials, 1033)
-
-. $PSScriptRoot/CxReport/CxReport.ps1
 
 If(-Not $loginResponse.IsSuccesfull){
     Write-Host ("##vso[task.logissue type=error;]An Error occurred while logging in: {0}" -f $loginResponse.ErrorMessage)
     Write-Host "##vso[task.complete result=Failed;]DONE"
     Exit
 }
-Else{
-	$sessionId = $loginResponse.SessionId
 
-	#Init the parameters for Scan web nethod
-    $CliScanArgsType = ($namespace + '.CliScanArgs')
-    $CliScanArgs = New-Object ($CliScanArgsType)
+$sessionId = $loginResponse.SessionId
 
-    $ProjectSettingsType = ($namespace  + '.ProjectSettings')
-    $CliScanArgs.PrjSettings =  New-Object ($ProjectSettingsType)
+#Init the parameters for Scan web nethod
+$CliScanArgsType = ($namespace + '.CliScanArgs')
+$CliScanArgs = New-Object ($CliScanArgsType)
 
-    $SourceCodeSettingsType = ($namespace  + '.SourceCodeSettings')
-    $CliScanArgs.SrcCodeSettings = New-Object ($SourceCodeSettingsType)
+$ProjectSettingsType = ($namespace  + '.ProjectSettings')
+$CliScanArgs.PrjSettings =  New-Object ($ProjectSettingsType)
 
-    $LocalCodeContainerType = ($namespace  + '.LocalCodeContainer')
-    $CliScanArgs.SrcCodeSettings.PackagedCode =  New-Object ($LocalCodeContainerType)
+$SourceCodeSettingsType = ($namespace  + '.SourceCodeSettings')
+$CliScanArgs.SrcCodeSettings = New-Object ($SourceCodeSettingsType)
 
-    $SourceFilterPatternsType = ($namespace  + '.SourceFilterPatterns')
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists =  New-Object ($SourceFilterPatternsType)
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = $null
-    $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = $null
+$LocalCodeContainerType = ($namespace  + '.LocalCodeContainer')
+$CliScanArgs.SrcCodeSettings.PackagedCode =  New-Object ($LocalCodeContainerType)
 
-	$CliScanArgs.IsPrivateScan = 0
+$SourceFilterPatternsType = ($namespace  + '.SourceFilterPatterns')
+$CliScanArgs.SrcCodeSettings.SourceFilterLists =  New-Object ($SourceFilterPatternsType)
+$CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFilesPatterns = $null
+$CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = $null
 
-    if([System.Convert]::ToBoolean($incScan)){
-        $CliScanArgs.IsIncremental = 1
-        if(!([string]::IsNullOrEmpty($fsois))){
-            [Int]$fsois = [convert]::ToInt32($fsois, 10)
-            #write-host "todo: add scans count environment variable"
-        }
-    }
+$CliScanArgs.IsPrivateScan = 0
 
-    $CliScanArgs.Comment = "Scan triggered by CxVSTS"
-    $CliScanArgs.IgnoreScanWithUnchangedCode = 0
-    $CliScanArgs.ClientOrigin = "SDK"
+if([System.Convert]::ToBoolean($incScan)){
+	$CliScanArgs.IsIncremental = 1
+	if(!([string]::IsNullOrEmpty($fsois))){
+		[Int]$fsois = [convert]::ToInt32($fsois, 10)
+		#write-host "todo: add scans count environment variable"
+	}
+}
 
-    $fullTeamName = $fullTeamName -replace ' ','#@!'
-    $fullTeamName = $fullTeamName -replace '\\',' '
-    $fullTeamName = $fullTeamName -replace '/',' '
-    $fullTeamName = $fullTeamName -replace '(^\s+|\s+$)','' -replace '\s+','\\'
-    $fullTeamName = $fullTeamName -replace '#@!',' '
-    $fullTeamName = $fullTeamName -replace '\\\s+','\\'
-    $fullTeamName = $fullTeamName -replace '\s+\\','\\'
-    $fullTeamName = $fullTeamName -replace '\\+','\\'
-    #Write-Host ("Full team path: {0}" -f $fullTeamName)
-	$CliScanArgs.PrjSettings.ProjectName = $fullTeamName + "\\" + $projectName
+$CliScanArgs.Comment = "Scan triggered by CxVSTS"
+$CliScanArgs.IgnoreScanWithUnchangedCode = 0
+$CliScanArgs.ClientOrigin = "SDK"
 
-	$presetId
+$fullTeamName = $fullTeamName -replace ' ','#@!'
+$fullTeamName = $fullTeamName -replace '\\',' '
+$fullTeamName = $fullTeamName -replace '/',' '
+$fullTeamName = $fullTeamName -replace '(^\s+|\s+$)','' -replace '\s+','\\'
+$fullTeamName = $fullTeamName -replace '#@!',' '
+$fullTeamName = $fullTeamName -replace '\\\s+','\\'
+$fullTeamName = $fullTeamName -replace '\s+\\','\\'
+$fullTeamName = $fullTeamName -replace '\\+','\\'
+#Write-Host ("Full team path: {0}" -f $fullTeamName)
+$CliScanArgs.PrjSettings.ProjectName = $fullTeamName + "\\" + $projectName
 
-	if (-not ([string]::IsNullOrEmpty($customPreset))){
 
-    $presetList = $proxy.GetPresetList($sessionId)
-    $presets = New-Object 'System.Collections.Generic.Dictionary[String,String]'
+if(-not ([string]::IsNullOrEmpty($customPreset))){
 
-    if ($presetList.IsSuccesfull -ne "True" ) {
-        Write-Host ("##vso[task.logissue type=error;]Failed to retrieve preset list: {0}" -f $presetList.ErrorMessage)
-        Write-Host "##vso[task.complete result=Failed;]DONE"
-        Exit
-        }
+	$presetList = $proxy.GetPresetList($sessionId)
+	$presets = New-Object 'System.Collections.Generic.Dictionary[String,String]'
 
-        #Write-Host ("Presets- IsSuccessful: {0}" -f $presetList.IsSuccessful);
-        $presets = $presetList.PresetList;
-
-		foreach ($_preset in $presets.GetEnumerator()) {
-            if ($_preset[0].PresetName -eq  $customPreset.Trim()){
-                $PresetId = $_preset[0].ID;
-                $presetName = $_preset[0].PresetName;
-            }
-
-        }
-
-        #The preset was not found
-         if ($presetId -eq $null){
-             Write-Host "##vso[task.logissue type=error;]The selected custom preset [$customPreset] does not exist. Please fix and re-run the scan";
-             Write-Host "##vso[task.complete result=Failed;]DONE"
-         Exit
-        }
-
-        Write-Host ("Custom preset was found. PresetId: {0}" -f $presetId)
-
-	}else{
-	  $presetName = $presetList;
-        switch ($presetName){
-
-            "Checkmarx Default"          {$presetId = 36}
-            "All"                        {$presetId = 1 }
-            "Android"                    {$presetId = 9 }
-            "Apple Secure Coding Guide"  {$presetId = 19}
-            "Default"                    {$presetId = 7 }
-            "Default 2014"               {$presetId = 17}
-            "Empty preset"               {$presetId = 6 }
-            "Error handling"             {$presetId = 2 }
-            "FISMA"                      {$presetId = 39}
-            "High and Medium"            {$presetId = 3 }
-            "High and Medium and Low"    {$presetId = 13}
-            "HIPAA"                      {$presetId = 12}
-            "JSSEC"                      {$presetId = 20}
-            "MISRA_C"                    {$presetId = 10}
-            "MISRA_CPP"                  {$presetId = 11}
-            "Mobile"                     {$presetId = 14}
-            "NIST"                       {$presetId = 40}
-            "OWASP Mobile TOP 10 - 2016" {$presetId = 37}
-            "OWASP TOP 10 - 2010"        {$presetId = 4 }
-            "OWASP TOP 10 - 2013"        {$presetId = 15}
-            "PCI"                        {$presetId = 5 }
-            "SANS top 25"                {$presetId = 8 }
-            "STIG"                       {$presetId = 38}
-            "WordPress"                  {$presetId = 16}
-            "XS"                         {$presetId = 35}
-            "XSS and SQLi only"          {$presetId = 41}
-        }
+	if ($presetList.IsSuccesfull -ne "True" ) {
+		Write-Host ("##vso[task.logissue type=error;]Failed to retrieve preset list: {0}" -f $presetList.ErrorMessage)
+		Write-Host "##vso[task.complete result=Failed;]DONE"
+		Exit
 	}
 
-    $CliScanArgs.PrjSettings.PresetID = $presetId
-    $CliScanArgs.PrjSettings.IsPublic = 1 # true
-    $CliScanArgs.PrjSettings.Owner = $user
+	$presets = $presetList.PresetList;
 
+	foreach ($_preset in $presets.GetEnumerator()) {
+		if ($_preset[0].PresetName -eq  $customPreset.Trim()){
+			$PresetId = $_preset[0].ID;
+			$presetName = $_preset[0].PresetName;
+		}
+
+	}
+
+	#The preset was not found
+	 if ($presetId -eq $null){
+		 Write-Host "##vso[task.logissue type=error;]The selected custom preset [$customPreset] does not exist. Please fix and re-run the scan";
+		 Write-Host "##vso[task.complete result=Failed;]DONE"
+	 Exit
+	}
+	Write-Host ("Custom preset was found. PresetId: {0}" -f $presetId)
+}
+else {
+	$presetName = $presetList;
+	switch ($presetName){
+		"Checkmarx Default"          {$presetId = 36}
+		"All"                        {$presetId = 1 }
+		"Android"                    {$presetId = 9 }
+		"Apple Secure Coding Guide"  {$presetId = 19}
+		"Default"                    {$presetId = 7 }
+		"Default 2014"               {$presetId = 17}
+		"Empty preset"               {$presetId = 6 }
+		"Error handling"             {$presetId = 2 }
+		"FISMA"                      {$presetId = 39}
+		"High and Medium"            {$presetId = 3 }
+		"High and Medium and Low"    {$presetId = 13}
+		"HIPAA"                      {$presetId = 12}
+		"JSSEC"                      {$presetId = 20}
+		"MISRA_C"                    {$presetId = 10}
+		"MISRA_CPP"                  {$presetId = 11}
+		"Mobile"                     {$presetId = 14}
+		"NIST"                       {$presetId = 40}
+		"OWASP Mobile TOP 10 - 2016" {$presetId = 37}
+		"OWASP TOP 10 - 2010"        {$presetId = 4 }
+		"OWASP TOP 10 - 2013"        {$presetId = 15}
+		"PCI"                        {$presetId = 5 }
+		"SANS top 25"                {$presetId = 8 }
+		"STIG"                       {$presetId = 38}
+		"WordPress"                  {$presetId = 16}
+		"XS"                         {$presetId = 35}
+		"XSS and SQLi only"          {$presetId = 41}
+        }
+}
 
     #Create Zip File
-    . $PSScriptRoot/CxZipUtils.ps1
      $zipfilename = ZipSource $folderExclusion $fileExtension $sourceLocation
-
     if(!(Test-Path -Path $zipfilename)){
         Write-Host "Zip file is empty: no source to scan"
         Write-Host "##vso[task.complete result=Skipped;]"
         Exit
-    } Else {
-        write-host "Zipped sources to $zipfilename" -foregroundcolor "green"
-        $CliScanArgs.SrcCodeSettings.PackagedCode.ZippedFile = [System.IO.File]::ReadAllBytes($zipfilename)
-        $CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
     }
 
-    #Delete Zip File
-    [System.IO.File]::Delete($zipfilename)
+    $CliScanArgs.PrjSettings.PresetID = $presetId
+    $CliScanArgs.PrjSettings.IsPublic = 1 # true
+    $CliScanArgs.PrjSettings.Owner = $user
+	$CliScanArgs.SrcCodeSettings.PackagedCode.ZippedFile = [System.IO.File]::ReadAllBytes($zipfilename)
+	$CliScanArgs.SrcCodeSettings.PackagedCode.FileName = $zipfilename
+
+    write-host "Sending SAST scan request" -foregroundcolor "green"
 
 
-
-    write-host "Starting Checkmarx scan..." -foregroundcolor "green"
-
-        $scanStart;
     try {
         $scanResponse = $proxy.Scan($sessionId,$CliScanArgs)
         $scanStart = [DateTime]::Now
     } catch {
+        DeleteFile $zipfilename
         write-host "Fail to init Checkmarx scan." -foregroundcolor "red"
         Write-Host ("##vso[task.logissue type=error;]An error occurred while scanning: {0}" -f  $_.Exception.Message)
         Write-Host "##vso[task.complete result=Failed;]DONE"
         Exit
     }
 
+    #Delete Zip File
+    DeleteFile $zipfilename
+
     If(-Not $scanResponse.IsSuccesfull)	{
 		Write-Host ("##vso[task.logissue type=error;]An error occurred while scanning: {0}" -f $scanResponse.ErrorMessage)
         Write-Host "##vso[task.complete result=Failed;]DONE"
+		Exit
     }
-    Else {
-        if([System.Convert]::ToBoolean($syncMode)){
-		    $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
-
-		    If(-Not $scanStatusResponse.IsSuccesfull) {
-		        Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.ErrorMessage)
-                Write-Host "##vso[task.complete result=Failed;]DONE"
-            } Else {
-                while($scanStatusResponse.IsSuccesfull -ne 0 -and
-                      $scanStatusResponse.CurrentStatus -ne "Finished"  -and
-                      $scanStatusResponse.CurrentStatus -ne "Failed"  -and
-                      $scanStatusResponse.CurrentStatus -ne "Canceled"  -and
-                      $scanStatusResponse.CurrentStatus -ne "Deleted")
-               {
-                   $timeLeft = [DateTime]::Now.Subtract($scanStart).ToString().Split('.')[0]
-                   $prefix="";
-                   if ($scanStatusResponse.TotalPercent -lt 10){ $prefix = " ";}
-                   write-host("Waiting for results. Elapsed time: {0}. {1}{2}% processed. Status: {3}." -f $timeLeft, $prefix, $scanStatusResponse.TotalPercent, $scanStatusResponse.CurrentStatus);
-                   $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
-                   Start-Sleep -s 20 # wait 20 seconds
-                }
-
-                If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -eq "Finished") {
-                    Write-Host "Scan finished. Retrieving scan results"
-                    [String]$scanId = $scanStatusResponse.ScanId
-                    [String]$projectID = $scanResponse.ProjectID
-
-                $scanDataResponse = $proxy.GetProjectScannedDisplayData($sessionId)
-                if (-not $scanDataResponse.IsSuccesfull) {
-                    #throw new CxClientException("Fail to get scan data: " + scanDataResponse.getErrorMessage());
-                    Write-Host ("##vso[task.logissue type=error;]Fail to get scan data: {0}" -f $scanDataResponse.ErrorMessage)
-                    Write-Host "##vso[task.complete result=Failed;]DONE"
-                }
-
-                $summaryLink = ("{0}/CxWebClient/portal#/projectState/{1}/Summary" -f $serviceUrl, $projectID)
-                $resultLink =  ("{0}/CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}"-f $serviceUrl,$scanId, $projectID)
-
-                $scanResults = New-Object System.Object
-                $scanResults | Add-Member -MemberType NoteProperty -Name syncMode -Value $syncMode
-                $scanResults | Add-Member -MemberType NoteProperty -Name thresholdEnabled -Value $vulnerabilityThreshold
-                $scanResults | Add-Member -MemberType NoteProperty -Name sastSummaryResultsLink -Value $summaryLink
-                $scanResults | Add-Member -MemberType NoteProperty -Name sastScanResultsLink -Value $resultLink
-
-                $scanList = @($scanDataResponse.ProjectScannedList)
-                foreach ($scan in $scanList) {
-                    if ($projectID -eq $scan.ProjectID) {
-                        $scanResults = initScanResults($scanResults)
-                    }
-                }
-
-                printScanResults $scanResults
-
-                Write-Host "Creating CxSAST reports"
-                $cxReport = createReport $scanId "XML"
-                $scanResults = resolveXMLReport $scanResults $cxReport
-                Write-Host $scanResults.scanStartDate
-                CreateSummaryReport $reportPath $scanResults
-
-                #ask Ilan need to be temp? or workspcae??
-                if ([System.Convert]::ToBoolean($generatePDFReport)) {
-                    createPDFReport $scanId
-                }
-
-                    [bool]$thresholdExceeded=$false
-                    if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
-                        if(-Not [string]::IsNullOrEmpty($high)){
-                            [Int]$highNum = [convert]::ToInt32($high, 10)
-                            [Int]$resHigh = [convert]::ToInt32($resHigh, 10)
-                            if($resHigh -gt $highNum){
-                                Write-Host  ("##vso[task.logissue type=error;]Threshold for high result exceeded. Threshold:  {0} , Detected: {1}" -f $highNum, $resHigh)
-                                $thresholdExceeded=$true
-                            }
-                        }
-                        if(-Not [string]::IsNullOrEmpty($medium)){
-                            [Int]$mediumNum = [convert]::ToInt32($medium, 10)
-                            [Int]$resMedium = [convert]::ToInt32($resMedium, 10)
-                            if($resMedium -gt $mediumNum){
-                                Write-Host  ("##vso[task.logissue type=error;]Threshold for medium result exceeded. Threshold:  {0} , Detected: {1}" -f $mediumNum, $resMedium)
-                                $thresholdExceeded=$true
-                            }
-                        }
-                        if(-Not [string]::IsNullOrEmpty($low)){
-                            [Int]$lowNum = [convert]::ToInt32($low, 10)
-                            [Int]$resLow = [convert]::ToInt32($resLow, 10)
-                            if($resLow -gt $lowNum){
-                                Write-Host  ("##vso[task.logissue type=error;]Threshold for low result exceeded. Threshold:  {0} , Detected: {1}" -f $lowNum, $resLow)
-                                $thresholdExceeded=$true
-                            }
-                        }
-                        if($thresholdExceeded){
-                            Write-Host "##vso[task.complete result=Failed;]DONE"
-                        }
-                    }
-                }
-                Else {
-                    Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.StageMessage)
-                    Write-Host "##vso[task.complete result=Failed;]DONE"
-                }
+    [String]$projectID = $scanResponse.ProjectID
+    $summaryLink = ("{0}/CxWebClient/portal#/projectState/{1}/Summary" -f $serviceUrl, $projectID)
+    Write-Host "Scan created successfully. Link to project state: $summaryLink"
 
 
+     #------- Create OSA Scan ------#
+    if ([System.Convert]::ToBoolean($osaEnabled)) {
+        try{
+	        Write-Host "-----------------------------Create CxOSA Scan:-------------------------------"
+	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll")
+            $pattern = GeneratePattern $osaFolderExclusions $osaFileExclusions
+            Write-host ("pattern {0}" -f $pattern);
+            $tmpPath = [System.IO.Path]::GetTempPath();
+            Write-host ("debugMode {0}" -f $debugMode);
+            $OsaClient = New-Object CxOsa.CxRestClient $user , $password, $serviceUrl, $scanResponse.ProjectID,$sourceLocation, $tmpPath, $pattern, $osaArchiveInclude, $debugMode;
+            $osaScan = $OsaClient.runOSAScan();
+        }Catch {
+             Write-Host ("##vso[task.logissue type=error;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
+             Write-Host "##vso[task.complete result=Failed;]DONE"
+             Exit;
+         }
+	 }
 
+     #------ Asynchronous MODE ------#
+	if(-Not [System.Convert]::ToBoolean($syncMode)){
+	    Write-host "Running in Asynchronous mode. Not waiting for scan to finish";
+		Exit;
+	}
+
+	#------- SAST Results ------#
+	Write-host "-----------------------------Get CxSAST Results:------------------------------"
+
+	$scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
+	If(-Not $scanStatusResponse.IsSuccesfull) {
+		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.ErrorMessage)
+		Write-Host "##vso[task.complete result=Failed;]DONE"
+		Exit
+	}
+
+	Write-Host "Waiting for CxSAST scan to finish.";
+	while($scanStatusResponse.IsSuccesfull -ne 0 -and
+		  $scanStatusResponse.CurrentStatus -ne "Finished"  -and
+		  $scanStatusResponse.CurrentStatus -ne "Failed"  -and
+		  $scanStatusResponse.CurrentStatus -ne "Canceled"  -and
+		  $scanStatusResponse.CurrentStatus -ne "Deleted")
+    {
+	   $timeLeft = [DateTime]::Now.Subtract($scanStart).ToString().Split('.')[0]
+	   $prefix="";
+	   if ($scanStatusResponse.TotalPercent -lt 10){ $prefix = " ";}
+	   write-host("Waiting for results. Elapsed time: {0}. {1}{2}% processed. Status: {3}." -f $timeLeft, $prefix, $scanStatusResponse.TotalPercent, $scanStatusResponse.CurrentStatus);
+	   $scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
+	   Start-Sleep -s 20 # wait 20 seconds
+	}
+
+    Write-Host "Scan finished status: " $scanStatusResponse.stageMessage;
+
+	If($scanStatusResponse.IsSuccesfull -ne 0 -and $scanStatusResponse.CurrentStatus -eq "Finished")
+	{
+		Write-Host "Scan finished successfully. Retrieving SAST scan results"
+		[String]$scanId = $scanStatusResponse.ScanId
+        $scanDataResponse = $proxy.GetProjectScannedDisplayData($sessionId)
+        if (-not $scanDataResponse.IsSuccesfull) {
+            #throw new CxClientException("Fail to get scan data: " + scanDataResponse.getErrorMessage());
+            Write-Host ("##vso[task.logissue type=error;]Fail to get scan data: {0}" -f $scanDataResponse.ErrorMessage)
+            Write-Host "##vso[task.complete result=Failed;]DONE"
+        }
+
+        $resultLink =  ("{0}/CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}"-f $serviceUrl,$scanId, $projectID)
+        $scanResults = AddSASTResults $syncMode $vulnerabilityThreshold $high $medium $low $summaryLink $resultLink $osaEnabled $scanDataResponse.ProjectScannedList $projectID
+        PrintScanResults $scanResults
+
+        #----- SAST detailed report ----------#
+        Write-Host "Creating CxSAST reports"
+        $cxReport = createReport $scanId "XML"
+        $scanResults = ResolveXMLReport $scanResults $cxReport
+
+
+      #  if ([System.Convert]::ToBoolean($generatePDFReport)) {
+       #     CreatePDFReport $scanId
+       # }
+
+        #--------- OSA Results ---------#
+        if ([System.Convert]::ToBoolean($osaEnabled)) {
+            try{
+
+               	Write-host "-----------------------------Get CxOSA Results:-------------------------------"
+                $osaSummaryResults = $OsaClient.retrieveOsaResults()
+                $osaProjectSummaryLink =  ("{0}/CxWebClient/portal#/projectState/{1}/OSA"-f $serviceUrl, $projectID);
+                $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaProjectSummaryLink $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow
+                PrintOSAResults $osaSummaryResults $osaProjectSummaryLink
+
+            }Catch {
+                 Write-Host ("##vso[task.logissue type=error;]Fail to retrieve OSA results : {0}" -f $_.Exception.Message)
+                 Write-Host "##vso[task.complete result=Failed;]DONE"
+                 Exit
             }
+        }
+
+        $tmpPath = [System.IO.Path]::GetTempPath()
+        $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
+        if (!(Test-Path($tmpFolder))) {
+            Write-Host ("INFO: Create build specific report folder at: {0}" -f $tmpFolder)#todo
+            New-Item -ItemType directory -Path $tmpFolder | Out-Null
+        }
+
+        $cxReportFile = Join-Path $tmpFolder "cxreport.json"
+        $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
+        Write-Host "##vso[task.addattachment type=cxReport;name=cxReport;]$cxReportFile"
+        Write-Host "INFO: Generated Checkmarx summary results" #todo
+
+		[bool]$thresholdExceeded=$false
+		[bool]$osaThresholdExceeded=$false
+		if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
+            $thresholdExceeded = IsSASTThresholdExceeded $scanResults
 		}
-    }
+        if ([System.Convert]::ToBoolean($osaEnabled) -and [System.Convert]::ToBoolean($osaVulnerabilityThreshold)) {
+            $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
+        }
 
-write-host "Logging out....." -foregroundcolor "green"
+         CreateSummaryReport $reportPath $scanResults
 
-$loginResponse = $proxy.Logout($sessionId)
-}
+		if($thresholdExceeded -or $osaThresholdExceeded){
+            Write-Host "##vso[task.complete result=Failed;]DONE"
+        }
 
-function IsIncRun{
-    [CmdletBinding()]
-    param ([Int]$fsois)
 
-    [string]$fileName = "fullScanCount.txt"
-    $contentTemplate = "autoFullScan: {0}, curRun: {1}"
 
-    if(!(Test-Path $fileName)){
-        New-Item $fileName -type file -value ($contentTemplate -f $fsois, 0) | Out-Null
-    }
-    $content = Get-Content $fileName
+	}
+	Else {
+		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.StageMessage)
+		Write-Host "##vso[task.complete result=Failed;]DONE"
+	}
 
-    [Int]$start = [convert]::ToInt32($content.IndexOf(":"), 10) + 1
-    [Int]$end = [convert]::ToInt32($content.IndexOf(","), 10)
-    $autoFullScan = $content.Substring($start, $end - $start).trim()
-    [Int]$autoFullScan = [convert]::ToInt32($autoFullScan, 10)
-    write-host ("autoFullScan: {0}" -f $autoFullScan)
+	write-host "Logging out....." -foregroundcolor "green"
+	$loginResponse = $proxy.Logout($sessionId)
+	Write-Host "##vso[task.complete result=Succeeded;]Scan completed successfully"
 
-    $curRun = $content.Substring($content.LastIndexOf(":") + 1).trim()
-    [Int]$curRun = [convert]::ToInt32($curRun, 10) + 1
-    write-host ("curRun: {0}" -f $curRun)
 
-    if($fsois -ne $autoFullScan){
-        [Int]$autoFullScan = $fsois
-    }
-    set-content $fileName ($contentTemplate -f $autoFullScan, $curRun)
 
-    if($curRun -ge $autoFullScan){
-        set-content $fileName ($contentTemplate -f $autoFullScan, 0)
-      return $true;
-    }
-    return $false;
-}

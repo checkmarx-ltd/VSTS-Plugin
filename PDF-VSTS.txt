@@ -1,0 +1,9 @@
+    {
+      name generatePDFReport,
+      type boolean,
+      label Generate CxSAST PDF Report,
+      required false,
+      defaultValue false,
+      helpMarkDown Downloadable PDF report with scan results from the Checkmarx server. The report is available via a link on Checkmarx Scan Results page,
+      groupName scanSettings
+    },

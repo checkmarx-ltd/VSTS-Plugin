@@ -12,7 +12,7 @@
   "version": {
     "Major": 1,
     "Minor": 0,
-    "Patch": 6
+    "Patch": 9
   },
   "demands": [
   ],
@@ -114,15 +114,17 @@
       "type": "string",
       "label": "Folder Exclusion",
       "required": false,
+      "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea",
       "helpMarkDown": "Comma delineated list of the folders to exclude from the scan (for example: dto,target,WEB-INF)",
       "groupName": "scanSettings"
     },
     {
       "name": "fileExtension",
       "type": "string",
-      "label": "File Extension",
+      "label": "Include/Exclude File Extensions",
       "required": false,
-      "helpMarkDown": "Comma delineated list of the file extensions to exclude from the scan (for example: *.log,*.txt,*.xml)",
+      "defaultValue": "!*.DS_Store, !*.ipr,     !*.iws,\n!*.bak,    !*.tmp,     !*.aac,      !*.aif,      !*.iff,     !*.m3u,   !*.mid,   !*.mp3,\n!*.mpa,   !*.ra,        !*.wav,      !*.wma,      !*.3g2,     !*.3gp,   !*.asf,   !*.asx,\n!*.avi,      !*.flv,       !*.mov,     !*.mp4,      !*.mpg,     !*.rm,    !*.swf,   !*.vob,\n!*.wmv, !*.bmp,   !*.gif,       !*.jpg,      !*.png,     !*.psd,   !*.tif,   !*.swf,\n!*.jar,      !*.zip,       !*.rar,      !*.exe,      !*.dll,     !*.pdb,   !*.7z,    !*.gz,\n!*.tar.gz,  !*.tar,       !*.gz,       !*.ahtm,     !*.ahtml,   !*.fhtml, !*.hdm,\n!*.hdml,  !*.hsql,      !*.ht,      !*.hta,      !*.htc,     !*.htd,   !*.war,   !*.ear,\n!*.htmls, !*.ihtml,     !*.mht,      !*.mhtm,     !*.mhtml,   !*.ssi,   !*.stm,\n!*.stml,    !*.ttml,      !*.txn,      !*.xhtm,     !*.xhtml,   !*.class, !*.iml",
+      "helpMarkDown": "Comma separated list of include or exclude wildcard patterns. Exclude patterns start with exclamation mark \"!\" [Exclusion Example: !*.tmp, !*.html.   Inclusion Example: *.java ]",
       "groupName": "scanSettings"
     },
     {
@@ -137,7 +139,7 @@
     {
       "name": "vulnerabilityThreshold",
       "type": "boolean",
-      "label": "Vulnerability Threshold Level:",
+      "label": "Enable SAST Vulnerability Thresholds",
       "required": false,
       "defaultValue": "true",
       "helpMarkDown": "Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities of given severity before the scan fails.",
@@ -147,29 +149,103 @@
     {
       "name": "high",
       "type": "string",
-      "label": "High",
+      "label": "SAST High",
       "required": false,
-      "helpMarkDown": "",
+      "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true"
     },
     {
       "name": "medium",
       "type": "string",
-      "label": "Medium",
+      "label": "SAST Medium",
       "required": false,
-      "helpMarkDown": "",
+      "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true"
     },
     {
       "name": "low",
       "type": "string",
-      "label": "Low",
+      "label": "SAST Low",
       "required": false,
-      "helpMarkDown": "",
+      "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true"
+    },
+    {
+      "name": "osaEnabled",
+      "type": "boolean",
+      "label": "Enable CxOSA Scan",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": " Enable the CxOSA option to initiate Open Source Analysis for this scan/job. Disabled by default.",
+      "groupName": "scanSettings"
+    },
+    {
+      "name": "osaFolderExclusions",
+      "type": "string",
+      "label": "CxOSA Folder Exclusions",
+      "required": false,
+      "helpMarkDown": "Comma separated list of the folders to exclude from OSA scan (for example: dto,target,WEB-INF)",
+      "groupName": "scanSettings",
+      "visibleRule": "osaEnabled = true"
+    },
+    {
+      "name": "osaFileExclusions",
+      "type": "string",
+      "label": "CxOSA Include/Exclude wildcard patterns",
+      "required": false,
+      "helpMarkDown": "Define a comma separated list of folders to exclude in the open source analysis. Exclude patterns start with exclamation mark \"!\". [Exclusion Example: !**/**.tmp, !**/**.html.   Inclusion Example: **/**.java ]",
+      "groupName": "scanSettings",
+      "visibleRule": "osaEnabled = true"
+    },
+    {
+      "name": "osaArchiveInclude",
+      "type": "string",
+      "label": "CxOSA Archive Extract Extenstion ",
+      "required": false,
+      "defaultValue": "*.zip, *.war, *.ear, *.tgz",
+      "helpMarkDown": "Comma separated list of archive wildcard patterns to include their extracted content for the scan.  [Example: *.zip, *.jar, *.ear]. \n Supported archive types are: jar, war, ear, sca, gem, whl, egg, tar, tar.gz, tgz, zip, rar",
+      "groupName": "scanSettings",
+      "visibleRule": "osaEnabled = true"
+    },
+    {
+      "name": "osaVulnerabilityThreshold",
+      "type": "boolean",
+      "label": "Enable CxOSA Vulnerability Thresholds",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Enable the vulnerability threshold option (only available if synchronous mode is enabled). ",
+      "groupName": "scanSettings",
+      "visibleRule": "syncMode = true"
+    },
+    {
+      "name": "osaHigh",
+      "type": "string",
+      "label": "CxOSA High",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
+      "groupName": "scanSettings",
+      "visibleRule": "osaVulnerabilityThreshold = true"
+    },
+    {
+      "name": "osaMedium",
+      "type": "string",
+      "label": "CxOSA Medium",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
+      "groupName": "scanSettings",
+      "visibleRule": "osaVulnerabilityThreshold = true"
+    },
+    {
+      "name": "osaLow",
+      "type": "string",
+      "label": "CxOSA Low",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
+      "groupName": "scanSettings",
+      "visibleRule": "osaVulnerabilityThreshold = true"
     }
   ],
   "execution": {

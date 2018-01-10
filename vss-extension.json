@@ -2,14 +2,14 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST Plugin",
-  "version": "0.5.34",
-  "publisher": "Checkmarx",
+  "version": "0.5.150268",
+  "publisher": "ilandayan",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "public": true,
+  "public": false,
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
     "default": "extension-icon.png"
@@ -26,6 +26,9 @@
     "Checkmarx",
     "CxSAST"
   ],
+  "scopes": [
+    "vso.build_execute"
+  ],
   "content": {
     "details": {
       "path": "overview.md"
@@ -39,7 +42,7 @@
       "uri": "https://info.checkmarx.com/cx-microsoft-vs-team-services"
     },
     "learn": {
-      "uri": "https://checkmarx.atlassian.net/wiki/display/KC/CxSAST+MS-VSTS+Plugin"
+      "uri": "https://checkmarx.atlassian.net/wiki/spaces/KC/pages/96731162/CxSAST+MS-VSTS+Plugin+v8.4.1+and+up"
     },
     "support": {
       "uri": "https://support.checkmarx.com/home"
@@ -54,23 +57,45 @@
       "path": "CxScan"
     },
     {
-      "path": "CxScan/Images/sample1.png",
+      "path": "images/sample1.png",
       "addressable": true
     },
     {
-      "path": "CxScan/Images/sample2.png",
+      "path": "images/sample2.png",
       "addressable": true
     },
     {
-      "path": "CxScan/Images/sample3.png",
+      "path": "images/sample3.png",
       "addressable": true
     },
     {
-      "path": "CxScan/Images/sample4.png",
+      "path": "images/sample4.png",
       "addressable": true
     },
     {
-      "path": "CxScan/Images/sample5.png",
+      "path": "images/sample5.png",
+      "addressable": true
+    },
+    {
+      "path": "dist",
+      "addressable": true,
+      "packagePath": "scripts"
+    },
+    {
+      "path": "cxreport.html",
+      "addressable": true
+    },
+    {
+      "path": "css/cxreport.css",
+      "addressable": true
+    },
+    {
+      "path": "node_modules/vss-web-extension-sdk/lib",
+      "addressable": true,
+      "packagePath": "lib"
+    },
+    {
+      "path": "CxScan/osaDLL/OsaClient.dll",
       "addressable": true
     }
   ],
@@ -106,8 +131,8 @@
                 "inputMode": "textbox",
                 "isConfidential": false,
                 "validation": {
-                  "isRequired": false,
-                  "dataType": "string"
+                  "dataType": "String",
+                  "isRequired": false
                 }
               },
               {
@@ -117,8 +142,8 @@
                 "inputMode": "textbox",
                 "isConfidential": false,
                 "validation": {
-                  "isRequired": true,
-                  "dataType": "string"
+                  "dataType": "String",
+                  "isRequired": true
                 }
               },
               {
@@ -128,14 +153,27 @@
                 "inputMode": "passwordbox",
                 "isConfidential": true,
                 "validation": {
-                  "isRequired": true,
-                  "dataType": "string"
+                  "dataType": "String",
+                  "isRequired": true
                 }
               }
             ]
           }
         ],
         "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"4\">Don’t have a Checkmarx cloud account? </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"4\">Register</font></span></a></span>"
+      }
+    },
+    {
+      "id": "cx-report",
+      "type": "ms.vss-build-web.build-results-tab",
+      "description": "A tab contributing to Checkmarx results report",
+      "targets": [
+        "ms.vss-build-web.build-results-view"
+      ],
+      "properties": {
+        "name": "Checkmarx",
+        "uri": "cxreport.html",
+        "height": "100%"
       }
     }
   ]
