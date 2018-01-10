@@ -348,12 +348,11 @@ function FormatScanResultContent{
 
     $content ="";
 
-    $maxCount =[math]::max($high, $medium);
-    $maxCount =[math]::max($maxCount, $low);
-    $maxHeight = maxCount * 100 / 90;
-    $highHeight = $high * 100 / $maxHeight + "%";
-    $medHeight = $medium * 100 / $maxHeight + "%";
-    $lowHeight = $low * 100 / $maxHeight + "%";
+    $maxCount =[math]::max($high, [math]::max( $medium, $low ));
+    $maxHeight = $maxCount * 100 / 90;
+    $highHeight = ($high * 100 / $maxHeight).ToString() + "%";
+    $medHeight = ($medium * 100 / $maxHeight).ToString() + "%";
+    $lowHeight = ($low * 100 / $maxHeight).ToString() + "%";
 
     $thresholdColor = "#21bf3f" #green
     if ($thresholdExceeded -eq "true"){
@@ -363,14 +362,13 @@ function FormatScanResultContent{
         $threshold = "Threshold Compliant";
     }
 
-    if($osaEnabled -eq "true" -and -not $osaFailed -eq "true"){
+    if($osaEnabled -eq "true" -and  $osaFailed -ne "true"){
         $osaThresholdColor = "#21bf3f" #green
-        $osaMaxCount =[math]::max($osaHigh, $osaMedium);
-        $osaMaxCount =[math]::max($osaMaxCount, $osaLow);
-        $osaMaxHeight = osaMaxCount * 100 / 90
-        $osaHighHeight = $osaHigh * 100 / $osaMaxHeight + "%";
-        $osaMedHeight = $osaHigh * 100 / $osaMaxHeight + "%";
-        $osaLowHeight = $osaHigh * 100 / $osaMaxHeight + "%";
+        $osaMaxCount =[math]::max($osaHigh, [math]::max($osaMedium, $osaLow));
+        $osaMaxHeight = $osaMaxCount * 100 / 90
+        $osaHighHeight = ($osaHigh * 100 / $osaMaxHeight).ToString() + "%";
+        $osaMedHeight = ($osaHigh * 100 / $osaMaxHeight).ToString() + "%";
+        $osaLowHeight = ($osaHigh * 100 / $osaMaxHeight).ToString() + "%";
 
         if ($osaThresholdExceeded -eq "true"){
               $osaThreshold = "Threshold Exceeded";

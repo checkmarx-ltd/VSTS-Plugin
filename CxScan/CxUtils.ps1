@@ -45,19 +45,20 @@ function DeleteFile($fileName){
      $cxLink = $scanResults.sastSummaryResultsLink
 
      Write-Host " "
-     Write-Host "-----------------------Checkmarx Scan Results(CxSAST):------------------------"
+     Write-Host "-----------------Checkmarx Scan Results(CxSAST):------------------"
      Write-Host ("High severity results: {0}" -f $resHigh)
      Write-Host ("Medium severity results: {0}" -f $resMedium)
      Write-Host ("Low severity results: {0}" -f $resLow)
      Write-Host ("Info severity results: {0}" -f $resInfo)
      Write-Host ""
      Write-Host ("Scan results location: {0}" -f $cxLink)
-     Write-Host "------------------------------------------------------------------------------";
+     Write-Host "";
+     #Write-Host "------------------------------------------------------------------------------";
  }
 
 
     function PrintOSAResults($osaSummaryResults, $osaProjectSummaryLink) {
-        Write-Host("-----------------------Checkmarx Scan Results(CxOSA):-------------------------");
+        Write-Host("-----------------Checkmarx Scan Results(CxOSA):-------------------");
         Write-Host("");
         Write-Host("------------------------");
         Write-Host("Vulnerabilities Summary ");
@@ -76,7 +77,7 @@ function DeleteFile($fileName){
         Write-Host("Non-vulnerable libraries: {0}" -f $osaSummaryResults.nonVulnerableLibraries);
         Write-Host("");
         Write-Host("OSA scan results location: {0}" -f $osaProjectSummaryLink);
-        Write-Host("------------------------------------------------------------------------------");
+        Write-Host("-------------------------------------------------------------------");
     }
 
     function IsSASTThresholdExceeded($scanResults){

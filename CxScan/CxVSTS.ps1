@@ -384,9 +384,8 @@ else {
 	        Write-Host "-----------------------------Create CxOSA Scan:-------------------------------"
 	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll")
             $pattern = GeneratePattern $osaFolderExclusions $osaFileExclusions
-            Write-host ("pattern {0}" -f $pattern);
+            Write-debug ("pattern {0}" -f $pattern);
             $tmpPath = [System.IO.Path]::GetTempPath();
-            Write-host ("debugMode {0}" -f $debugMode);
             $OsaClient = New-Object CxOsa.CxRestClient $user , $password, $serviceUrl, $scanResponse.ProjectID,$sourceLocation, $tmpPath, $pattern, $osaArchiveInclude, $debugMode;
             $osaScan = $OsaClient.runOSAScan();
         }Catch {

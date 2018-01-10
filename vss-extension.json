@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST Plugin",
-  "version": "0.5.150279",
+  "version": "0.5.150283",
   "publisher": "ilandayan",
   "targets": [
     {
