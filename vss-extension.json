@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST Plugin",
-  "version": "0.5.150287",
+  "version": "0.5.150324",
   "publisher": "ilandayan",
   "targets": [
     {
@@ -83,6 +83,10 @@
     },
     {
       "path": "cxreport.html",
+      "addressable": true
+    },
+    {
+      "path": "cxSummary.html",
       "addressable": true
     },
     {
@@ -172,8 +176,21 @@
       ],
       "properties": {
         "name": "Checkmarx",
-        "uri": "cxreport.html",
-        "height": "100%"
+        "uri": "cxreport.html"
+      }
+    },
+    {
+      "id": "cx-summary-report",
+      "type": "ms.vss-build-web.build-results-section",
+      "description": "A section contributing Checkmarx results to existing build 'summary' tab",
+      "targets": [
+        "ms.vss-build-web.build-results-summary-tab"
+      ],
+      "properties": {
+        "name": "Checkmarx Scan Results",
+        "uri": "cxSummary.html",
+        "height": "700px",
+        "width" : "1150px"
       }
     }
   ]

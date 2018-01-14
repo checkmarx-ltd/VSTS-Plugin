@@ -53,7 +53,7 @@ function DeleteFile($fileName){
      Write-Host ""
      Write-Host ("Scan results location: {0}" -f $cxLink)
      Write-Host "";
-     #Write-Host "------------------------------------------------------------------------------";
+     Write-Host "------------------------------------------------------------------";
  }
 
 
@@ -97,13 +97,21 @@ function DeleteFile($fileName){
      }
 
     function IsLevelThresholdExceeded($result, $threshold, $severity, $scanType){
-       if(-Not [string]::IsNullOrEmpty($threshold)){
-            [Int]$thresholdNum = [convert]::ToInt32($threshold, 10)
-            [Int]$resultNum = [convert]::ToInt32($result, 10)
-            if($resultNum -gt $thresholdNum){
-                Write-Host  ("##vso[task.logissue type=error;]{0} {1} severity results are above threshold. Results: {2}. Threshold: {3}" -f $scanType, $severity, $resultNum, $thresholdNum)
-			   return $true
+       try{
+           if(-Not [string]::IsNullOrEmpty($threshold)){
+                [Int]$thresholdNum = [convert]::ToInt32($threshold, 10)
+               if ($thresholdNum -lt 0)
+               {
+                    throw "Threshold must be 0 or greater";
+               }
+                [Int]$resultNum = [convert]::ToInt32($result, 10)
+                if($resultNum -gt $thresholdNum){
+                   Write-Host  ("##vso[task.logissue type=error;]{0} {1} severity results are above threshold. Results: {2}. Threshold: {3}" -f $scanType, $severity, $resultNum, $thresholdNum)
+                   return $true
+                }
             }
+        }catch{
+            Write-Warning("Invalid {0} {1} threshold. Error: {2}" -f $scanType, $severity ,$_.Exception.Message);
         }
         return $false;
     }

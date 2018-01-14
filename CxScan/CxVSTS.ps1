@@ -494,8 +494,6 @@ else {
             $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
         }
 
-         CreateSummaryReport $reportPath $scanResults
-
 		if($thresholdExceeded -or $osaThresholdExceeded -or $osaFailed){
             $errorMessage ="";
             if ($thresholdExceeded){  $errorMessage += "CxSAST threshold exceeded."}
