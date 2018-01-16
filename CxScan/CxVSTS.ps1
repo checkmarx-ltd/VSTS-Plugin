@@ -62,16 +62,35 @@ $presetName;
 $scanStart;
 $presetId;
 $OsaClient;
-$osaFailed = $false;
+[boolean]$osaFailed = $false;
+[boolean]$osaEnabled = [System.Convert]::ToBoolean($osaEnabled);
+[boolean]$vulnerabilityThreshold = [System.Convert]::ToBoolean($vulnerabilityThreshold);
+[boolean]$syncMode = [System.Convert]::ToBoolean($syncMode);
+[boolean]$incScan = [System.Convert]::ToBoolean($incScan);
+[boolean]$osaVulnerabilityThreshold = [System.Convert]::ToBoolean($osaVulnerabilityThreshold);
+
 $osaFailedMessage = "";
 $debugMode =  $env:SYSTEM_DEBUG;
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
+$errorMessage ="";
+$buildFailed = $false;
+$scanResults = New-Object System.Object
+$scanResults | Add-Member -MemberType NoteProperty -Name syncMode -Value $syncMode
+$tmpPath = [System.IO.Path]::GetTempPath()
+$tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
+if (!(Test-Path($tmpFolder))) {
+    Write-Host ("INFO: Create build specific report folder at: {0}" -f $tmpFolder)#todo
+    New-Item -ItemType directory -Path $tmpFolder | Out-Null
+}
+$cxReportFile = Join-Path $tmpFolder "cxreport.json"
 
 if (!$serviceEndpoint){
+    OnSASTError $scanResults $cxReportFile
     throw "Connected Service with name '$CheckmarxService' could not be found.  Ensure that this Connected Service was successfully provisioned using the services tab in the Admin UI."
 }
 $authScheme = $serviceEndpoint.Authorization.Scheme
 if ($authScheme -ne 'UserNamePassword'){
+    OnSASTError $scanResults $cxReportFile
 	throw "The authorization scheme $authScheme is not supported for a CX server."
 }
 
@@ -101,6 +120,7 @@ if($srcRepoType -Match 'git'){
                 Try {
                     $defaultBranch = $response.defaultBranch
                 } Catch {
+                    OnSASTError $scanResults $cxReportFile
                     Write-Host ("##vso[task.logissue type=error;]Fail to read default branch from: {0}" -f $resource)
                     Exit
                 }
@@ -110,16 +130,21 @@ if($srcRepoType -Match 'git'){
             Write-Host ("Default branch: '{0}', Current Branch: '{1}'" -f $defaultBranch, $branchName)
 
             if(!($branchName -Like $defaultBranch)){
+                OnSASTError $scanResults $cxReportFile
                 Write-Host "Default branch not equal to branch that source was push to."
                 Write-Host "##vso[task.complete result=Skipped;]"
                 Exit
             }
         } Catch {
+            OnSASTError $scanResults $cxReportFile
             Write-Host ("##vso[task.logissue type=error;]Fail to get default branch from server: {0}" -f $_.Exception.Message)
             Write-Host "##vso[task.complete result=Failed;]DONE"
+            $buildFailed = $true
+            Exit
         }
     } Else {
         if(!($branchName -Like 'master')){
+            OnSASTError $scanResults $cxReportFile
             Write-Host "Access to OAuth token is not given and not running on 'master' branch."
             Write-Host "##vso[task.complete result=Skipped;]"
             Exit
@@ -164,7 +189,7 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
     #Write-Host "Generate PDF report: " $generatePDFReport;
 
     Write-Host ("CxSAST thresholds enabled: {0}" -f $vulnerabilityThreshold)
-    if ([System.Convert]::ToBoolean($vulnerabilityThreshold)) {
+    if ($vulnerabilityThreshold) {
      Write-Host ("CxSAST high threshold: {0}" -f $high)
      Write-Host ("CxSAST medium threshold: {0}" -f $medium)
      Write-Host ("CxSAST low threshold: {0}" -f $low)
@@ -173,11 +198,11 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
 
 #todo "[No Threshold]"
     Write-Host("CxOSA enabled: {0}"-f $osaEnabled);
-    if ([System.Convert]::ToBoolean($osaEnabled)) {
+    if ($osaEnabled) {
         Write-Host("CxOSA inclusions: {0}" -f $(ResolveVal $osaFileExclusions));
         Write-Host("CxOSA exclusions: {0}" -f $(ResolveVal $osaFolderExclusions));
         Write-Host("CxOSA thresholds enabled: {0}" -f $osaVulnerabilityThreshold);
-        if ([System.Convert]::ToBoolean($osaVulnerabilityThreshold)) {
+        if ($osaVulnerabilityThreshold) {
             Write-Host("CxOSA high threshold: {0}" -f $osaHigh);
             Write-Host("CxOSA medium threshold: {0}" -f $osaMedium);
            Write-Host("CxOSA low threshold: {0}" -f $osaLow);
@@ -195,12 +220,14 @@ try {
     $resolver = New-WebServiceProxy -Uri $resolverUrl -UseDefaultCredential
     $resolver.Timeout = 600000
 } catch {
+    OnSASTError $scanResults $cxReportFile
     write-host "Could not resolve Checkmarx service URL. Service might be down or a wrong URL was supplied." -foregroundcolor "red"
     Write-Error $_.Exception
     Exit
 }
 
 if (!$resolver){
+    OnSASTError $scanResults $cxReportFile
     write-host "Could not resolve service URL. Service might be down or a wrong URL was supplied." -foregroundcolor "red"
     Exit
 }
@@ -212,6 +239,7 @@ $proxy.Timeout = 600000
 
 if (!$proxy){
     write-host  "Could not find Checkmarx SDK service URL" -foregroundcolor "red"
+    OnSASTError $scanResults $cxReportFile
     Exit
 }
 
@@ -226,6 +254,7 @@ write-host  "Logging into the Checkmarx service." -foregroundcolor "green"
 $loginResponse = $proxy.Login($credentials, 1033)
 
 If(-Not $loginResponse.IsSuccesfull){
+    OnSASTError $scanResults $cxReportFile
     Write-Host ("##vso[task.logissue type=error;]An Error occurred while logging in: {0}" -f $loginResponse.ErrorMessage)
     Write-Host "##vso[task.complete result=Failed;]DONE"
     Exit
@@ -253,7 +282,7 @@ $CliScanArgs.SrcCodeSettings.SourceFilterLists.ExcludeFoldersPatterns = $null
 
 $CliScanArgs.IsPrivateScan = 0
 
-if([System.Convert]::ToBoolean($incScan)){
+if($incScan){
 	$CliScanArgs.IsIncremental = 1
 	if(!([string]::IsNullOrEmpty($fsois))){
 		[Int]$fsois = [convert]::ToInt32($fsois, 10)
@@ -300,9 +329,10 @@ if(-not ([string]::IsNullOrEmpty($customPreset))){
 
 	#The preset was not found
 	 if ($presetId -eq $null){
-		 Write-Host "##vso[task.logissue type=error;]The selected custom preset [$customPreset] does not exist. Please fix and re-run the scan";
-		 Write-Host "##vso[task.complete result=Failed;]DONE"
-	 Exit
+	    OnSASTError $scanResults $cxReportFile
+        Write-Host "##vso[task.logissue type=error;]The selected custom preset [$customPreset] does not exist. Please fix and re-run the scan";
+        Write-Host "##vso[task.complete result=Failed;]DONE"
+        Exit
 	}
 }
 else {
@@ -340,6 +370,7 @@ else {
     #Create Zip File
      $zipfilename = ZipSource $folderExclusion $fileExtension $sourceLocation
     if(!(Test-Path -Path $zipfilename)){
+        OnSASTError $scanResults $cxReportFile
         Write-Host "Zip file is empty: no source to scan"
         Write-Host "##vso[task.complete result=Skipped;]"
         Exit
@@ -359,6 +390,7 @@ else {
         $scanStart = [DateTime]::Now
     } catch {
         DeleteFile $zipfilename
+        OnSASTError $scanResults $cxReportFile
         write-host "Fail to init Checkmarx scan." -foregroundcolor "red"
         Write-Host ("##vso[task.logissue type=error;]An error occurred while scanning: {0}" -f  $_.Exception.Message)
         Write-Host "##vso[task.complete result=Failed;]DONE"
@@ -379,9 +411,10 @@ else {
 
 
      #------- Create OSA Scan ------#
-    if ([System.Convert]::ToBoolean($osaEnabled)) {
+    if ($osaEnabled) {
         try{
 	        Write-Host "-----------------------------Create CxOSA Scan:-------------------------------"
+            $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
 	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll")
             $pattern = GeneratePattern $osaFolderExclusions $osaFileExclusions
             Write-debug ("pattern {0}" -f $pattern);
@@ -389,18 +422,19 @@ else {
             $OsaClient = New-Object CxOsa.CxRestClient $user , $password, $serviceUrl, $scanResponse.ProjectID,$sourceLocation, $tmpPath, $pattern, $osaArchiveInclude, $debugMode;
             $osaScan = $OsaClient.runOSAScan();
         }Catch {
-             Write-Host ("##vso[task.logissue type=error;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
+            Write-Host ("##vso[task.logissue type=error;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
             $osaFailed = $true;
             $scanResults.osaFailed = $osaFailed;
             $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
-            # Write-Host "##vso[task.complete result=Failed;]DONE"
-             #Exit;
+            $buildFailed = $true
          }
 	 }
 
      #------ Asynchronous MODE ------#
-	if(-Not [System.Convert]::ToBoolean($syncMode)){
+	if(!$syncMode){
 	    Write-host "Running in Asynchronous mode. Not waiting for scan to finish";
+        $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
+        Write-Host "##vso[task.addattachment type=cxReport;name=cxReport;]$cxReportFile"
 		Exit;
 	}
 
@@ -409,8 +443,9 @@ else {
 
 	$scanStatusResponse = $proxy.GetStatusOfSingleScan($sessionId,$scanResponse.RunId)
 	If(-Not $scanStatusResponse.IsSuccesfull) {
+	    OnSASTError $scanResults $cxReportFile
 		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.ErrorMessage)
-		Write-Host "##vso[task.complete result=Failed;]DONE"
+		Write-Host "##vso[task.complete result=Failed;]Scan failed"
 		Exit
 	}
 
@@ -437,25 +472,20 @@ else {
 		[String]$scanId = $scanStatusResponse.ScanId
         $scanDataResponse = $proxy.GetProjectScannedDisplayData($sessionId)
         if (-not $scanDataResponse.IsSuccesfull) {
-            #throw new CxClientException("Fail to get scan data: " + scanDataResponse.getErrorMessage());
+            OnSASTError $scanResults $cxReportFile
             Write-Host ("##vso[task.logissue type=error;]Fail to get scan data: {0}" -f $scanDataResponse.ErrorMessage)
-            Write-Host "##vso[task.complete result=Failed;]DONE"
+            Write-Host "##vso[task.complete result=Failed;]Fail to get scan data"
+            Exit
         }
 
         $resultLink =  ("{0}/CxWebClient/ViewerMain.aspx?scanId={1}&ProjectID={2}"-f $serviceUrl,$scanId, $projectID)
-        $scanResults = AddSASTResults $syncMode $vulnerabilityThreshold $high $medium $low $summaryLink $resultLink $osaEnabled $scanDataResponse.ProjectScannedList $projectID
+        $scanResults = AddSASTResults $vulnerabilityThreshold $high $medium $low $summaryLink $resultLink $osaEnabled $scanDataResponse.ProjectScannedList $projectID
         PrintScanResults $scanResults
 
         #----- SAST detailed report ----------#
         Write-Host "Creating Checkmarx reports"
         $cxReport = createReport $scanId "XML"
         $scanResults = ResolveXMLReport $scanResults $cxReport
-        $tmpPath = [System.IO.Path]::GetTempPath()
-        $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
-        if (!(Test-Path($tmpFolder))) {
-            Write-Host ("INFO: Create build specific report folder at: {0}" -f $tmpFolder)#todo
-            New-Item -ItemType directory -Path $tmpFolder | Out-Null
-        }
 
 
       #  if ([System.Convert]::ToBoolean($generatePDFReport)) {
@@ -463,7 +493,7 @@ else {
        # }
 
         #--------- OSA Results ---------#
-        if ([System.Convert]::ToBoolean($osaEnabled) -and -not $osaFailed) {
+        if ($osaEnabled -and !$osaFailed) {
             try{
 
                	Write-host "-----------------------------Get CxOSA Results:-------------------------------"
@@ -473,7 +503,7 @@ else {
                 PrintOSAResults $osaSummaryResults $osaProjectSummaryLink
 
             }Catch {
-                 Write-Host ("##vso[task.logissue type=error;]Fail to retrieve OSA results : {0}" -f $_.Exception.Message)
+                 Write-Host ("##vso[task.logissue type=error;]Fail to retrieve CxOSA results : {0}" -f $_.Exception.Message)
                  $osaFailed = $true;
                  $scanResults.osaFailed = $osaFailed
                  $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message)
@@ -487,15 +517,15 @@ else {
 
 		[bool]$thresholdExceeded=$false
 		[bool]$osaThresholdExceeded=$false
-		if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
+		if($vulnerabilityThreshold){
             $thresholdExceeded = IsSASTThresholdExceeded $scanResults
 		}
-        if (-not $osaFailed -and [System.Convert]::ToBoolean($osaEnabled) -and [System.Convert]::ToBoolean($osaVulnerabilityThreshold)) {
+        if (!$osaFailed -and $osaEnabled -and $osaVulnerabilityThreshold) {
             $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
         }
 
 		if($thresholdExceeded -or $osaThresholdExceeded -or $osaFailed){
-            $errorMessage ="";
+		    $buildFailed = $true;
             if ($thresholdExceeded){  $errorMessage += "CxSAST threshold exceeded."}
             if ($osaThresholdExceeded){  $errorMessage += " CxOSA threshold exceeded"}
             if ($osaFailed){  $errorMessage += " " + $osaFailedMessage}
@@ -504,13 +534,15 @@ else {
 
 	}
 	Else {
+	    OnSASTError $scanResults $cxReportFile
+	    $errorMessage = ("Scan failed: {0}" -f $scanStatusResponse.CurrentStatus)
 		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.CurrentStatus)
-		Write-Host "##vso[task.complete result=Failed;]DONE"
+		Write-Host "##vso[task.complete result=Failed;]$errorMessage"
+		$buildFailed = $true;
 	}
 
 	write-host "Logging out....." -foregroundcolor "green"
 	$loginResponse = $proxy.Logout($sessionId)
-	Write-Host "##vso[task.complete result=Succeeded;]Scan completed successfully"
-
-
-
+	if (-not $buildFailed ){
+	    Write-Host "##vso[task.complete result=Succeeded;]Scan completed successfully"
+    }

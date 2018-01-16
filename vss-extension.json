@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST Plugin",
-  "version": "0.5.150324",
+  "version": "0.5.15036",
   "publisher": "ilandayan",
   "targets": [
     {
@@ -77,20 +77,20 @@
       "addressable": true
     },
     {
-      "path": "dist",
+      "path": "UI_Versions/8_60_0",
       "addressable": true,
-      "packagePath": "scripts"
+      "packagePath": "UI_Versions/8_60_0/scripts"
     },
     {
-      "path": "cxreport.html",
+      "path": "UI_Versions/8_60_0/cxreport.html",
       "addressable": true
     },
     {
-      "path": "cxSummary.html",
+      "path": "UI_Versions/8_60_0/cxSummary.html",
       "addressable": true
     },
     {
-      "path": "css/cxreport.css",
+      "path": "UI_Versions/8_60_0/css/cxreport.css",
       "addressable": true
     },
     {
@@ -176,7 +176,9 @@
       ],
       "properties": {
         "name": "Checkmarx",
-        "uri": "cxreport.html"
+        "uri": "UI_Versions/8_60_0/cxreport.html",
+        "height": "175%",
+        "width": "100%"
       }
     },
     {
@@ -188,7 +190,7 @@
       ],
       "properties": {
         "name": "Checkmarx Scan Results",
-        "uri": "cxSummary.html",
+        "uri": "UI_Versions/8_60_0/cxSummary.html",
         "height": "700px",
         "width" : "1150px"
       }

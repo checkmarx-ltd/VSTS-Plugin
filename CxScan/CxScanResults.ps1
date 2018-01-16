@@ -14,12 +14,11 @@ function InitScanResults($scanResults, $scan){
 
 
 
-function AddSASTResults($syncMode, $vulnerabilityThreshold, $high, $medium, $low, $summaryLink, $resultLink, $osaEnabled, $projectScannedList, $projectID){
-    $scanResults = New-Object System.Object
+function AddSASTResults($vulnerabilityThreshold, $high, $medium, $low, $summaryLink, $resultLink, $osaEnabled, $projectScannedList, $projectID){
 
-    $scanResults | Add-Member -MemberType NoteProperty -Name syncMode -Value $syncMode
+
     $scanResults | Add-Member -MemberType NoteProperty -Name thresholdEnabled -Value $vulnerabilityThreshold
-    if([System.Convert]::ToBoolean($vulnerabilityThreshold)){
+    if($vulnerabilityThreshold){
         $scanResults | Add-Member -MemberType NoteProperty -Name highThreshold -Value $high
         $scanResults | Add-Member -MemberType NoteProperty -Name mediumThreshold -Value $medium
         $scanResults | Add-Member -MemberType NoteProperty -Name lowThreshold -Value $low
@@ -27,7 +26,6 @@ function AddSASTResults($syncMode, $vulnerabilityThreshold, $high, $medium, $low
     $scanResults | Add-Member -MemberType NoteProperty -Name sastSummaryResultsLink -Value $summaryLink
     $scanResults | Add-Member -MemberType NoteProperty -Name sastScanResultsLink -Value $resultLink
     $scanResults | Add-Member -MemberType NoteProperty -Name osaEnabled -Value $osaEnabled
-    $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
     $scanList = @($projectScannedList)
     foreach ($scan in $scanList) {
         if ($projectID -eq $scan.ProjectID) {
@@ -39,6 +37,7 @@ function AddSASTResults($syncMode, $vulnerabilityThreshold, $high, $medium, $low
 }
 
 function AddOSAResults($scanResults, $osaSummaryResults, $osaProjectSummaryLink, $osaVulnerabilityThreshold, $osaHigh, $osaMedium, $osaLow, $osaFailed){
+    $scanResults.osaFailed = $osaFailed
     $scanResults | Add-Member -MemberType NoteProperty -Name osaStartTime -Value $osaSummaryResults.osaStartTime
     $scanResults | Add-Member -MemberType NoteProperty -Name osaEndTime -Value $osaSummaryResults.osaEndTime
 
@@ -59,4 +58,10 @@ function AddOSAResults($scanResults, $osaSummaryResults, $osaProjectSummaryLink,
     $scanResults | Add-Member -MemberType NoteProperty -Name osaLibraries -Value $osaSummaryResults.osaLibraries
 
     return $scanResults
+}
+
+function OnSASTError($scanResults, $cxReportFile){
+    $scanResults | Add-Member -MemberType NoteProperty -Name sastResultsReady -Value $false;
+    $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
+    Write-Host "##vso[task.addattachment type=cxReport;name=cxReport;]$cxReportFile"
 }

@@ -19,7 +19,7 @@ td {
     border: 1px solid transparent;
     padding: 8px 0px 8px 5px;
     margin-top: 5px;
-    width: 44%;
+    width: 50%;
 }
 
 .aui-item.details {
@@ -614,20 +614,17 @@ table.cve-table.osa-cve-table th:last-child {
 }
 
 .error-msg {
-    display: block;
     padding: 4% 0;
-}
-
-.aui-message.error, .aui-message-error {
-    display: block;
-}
-
-#asyncMessage {
-    display: none;
-    font-weight: bold;
 }
 
 #onSastError , #osa-summary, #osa-full, #sast-full  {
     display: none;
 }
+
+#scanErrorMessage,  #asyncMessage{
+    color: darkred;
+    font-weight: bold;
+    display: none;
+}
+
 

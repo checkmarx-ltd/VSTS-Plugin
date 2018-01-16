@@ -78,126 +78,131 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 //AsyncMode
                                 var syncMode = resultObject.syncMode;
 
-
-                                //counts
-                                var highCount = resultObject.highResults;
-                                var medCount = resultObject.mediumResults;
-                                var lowCount = resultObject.lowResults;
-
-
-                                //-------------------------- osa vars --------------------------------------
-                                var osaEnabled = resultObject.osaEnabled;
-                                var osaFailed = resultObject.osaFailed;
-
-                                //libraries
-                                var osaVulnerableAndOutdatedLibs = resultObject.osaVulnerableLibraries;
-                                var okLibraries = resultObject.osaOkLibraries;
-
-                                //thresholds
-                                var osaThresholdsEnabled = resultObject.osaThresholdEnabled;
-                                var osaHighThreshold = resultObject.osaHighThreshold;
-                                var osaMedThreshold = resultObject.osaMediumThreshold;
-                                var osaLowThreshold = resultObject.osaLowThreshold;
-
-                                //links
-                                var osaSummaryResultsLink = resultObject.osaSummaryResultsLink;
-
-                                //counts
-                                var osaHighCount = resultObject.osaHighResults;
-                                var osaMedCount = resultObject.osaMediumResults;
-                                var osaLowCount = resultObject.osaLowResults;
+                                if (sastResultsReady == true) {
+                                    //counts
+                                    var highCount = resultObject.highResults;
+                                    var medCount = resultObject.mediumResults;
+                                    var lowCount = resultObject.lowResults;
 
 
-                                //-------------------------- full reports vars --------------------------------------
-                                //-------------- sast ------------------
+                                    //-------------------------- osa vars --------------------------------------
+                                    var osaEnabled = resultObject.osaEnabled;
+                                    var osaFailed = resultObject.osaFailed;
+
+                                    //libraries
+                                    var osaVulnerableAndOutdatedLibs = resultObject.osaVulnerableLibraries;
+                                    var okLibraries = resultObject.osaOkLibraries;
+
+                                    //thresholds
+                                    var osaThresholdsEnabled = resultObject.osaThresholdEnabled;
+                                    var osaHighThreshold = resultObject.osaHighThreshold;
+                                    var osaMedThreshold = resultObject.osaMediumThreshold;
+                                    var osaLowThreshold = resultObject.osaLowThreshold;
+
+                                    //links
+                                    var osaSummaryResultsLink = resultObject.osaSummaryResultsLink;
+
+                                    //counts
+                                    var osaHighCount = resultObject.osaHighResults;
+                                    var osaMedCount = resultObject.osaMediumResults;
+                                    var osaLowCount = resultObject.osaLowResults;
 
 
-                                //full report info
-                                var sastStartDate = resultObject.scanStart;
-                                var sastScanTime = resultObject.scanTime;
-
-                                var sastEndDate = calculateEndDate(sastStartDate, sastScanTime);
-                                var sastNumFiles = resultObject.filesScanned;
-                                var sastLoc = resultObject.locScanned;
-
-                                //lists
-                                var queryList = convertQueriesToList(resultObject.queryList);
-
-                                var isSastFullReady =
-                                    sastStartDate != '' &&
-                                    sastScanTime != '' &&
-                                    sastNumFiles != null &&
-                                    sastLoc != null &&
-                                    queryList != null;
+                                    //-------------------------- full reports vars --------------------------------------
+                                    //-------------- sast ------------------
 
 
-                                var highCveList;
-                                var medCveList;
-                                var lowCveList;
+                                    //full report info
+                                    var sastStartDate = resultObject.scanStart;
+                                    var sastScanTime = resultObject.scanTime;
 
 
-                                //-------------- osa ------------------
-                                //this is a solution to the case scenario where OSA is disabled and osaCveList returns null which crashes the javascript code
-                                var osaList = null;
-                                var osaLibraries = null;
-                                var osaStartDate = ' ';
-                                var osaEndDate = ' ';
+                                    var sastEndDate = calculateEndDate(sastStartDate, sastScanTime);
+                                    var sastNumFiles = resultObject.filesScanned;
+                                    var sastLoc = resultObject.locScanned;
 
-                                if(osaEnabled.toString()  === 'true' && osaFailed.toString() != 'true'){
-                                    osaList =  convertOSADataToList(resultObject.osaCveList);
-                                    osaLibraries =  convertOSADataToList(resultObject.osaLibraries);
-                                    osaStartDate = adjustDateFormat(resultObject.osaStartTime);
-                                    osaEndDate = adjustDateFormat(resultObject.osaEndTime);
+                                    //lists
+                                    var queryList = convertQueriesToList(resultObject.queryList);
+
+                                    var isSastFullReady =
+                                        sastStartDate != '' &&
+                                        sastScanTime != '' &&
+                                        sastNumFiles != null &&
+                                        sastLoc != null &&
+                                        queryList != null;
+
+
+                                    var highCveList;
+                                    var medCveList;
+                                    var lowCveList;
+
+
+                                    //-------------- osa ------------------
+                                    //this is a solution to the case scenario where OSA is disabled and osaCveList returns null which crashes the javascript code
+                                    var osaList = null;
+                                    var osaLibraries = null;
+                                    var osaStartDate = ' ';
+                                    var osaEndDate = ' ';
+
+                                    if (osaEnabled === true && osaFailed != true) {
+                                        osaList = convertOSADataToList(resultObject.osaCveList);
+                                        osaLibraries = convertOSADataToList(resultObject.osaLibraries);
+                                        osaStartDate = adjustDateFormat(resultObject.osaStartTime);
+                                        osaEndDate = adjustDateFormat(resultObject.osaEndTime);
+                                    }
+
+                                    //links
+                                    var osaHtmlPath = osaSummaryResultsLink;
+
+                                    //full report info
+                                    var isOsaFullReady =
+                                        osaStartDate != ' ' &&
+                                        osaEndDate != ' ' &&
+                                        osaLibraries != null &&
+                                        osaList != null;
+
+                                    var osaNumFiles;
+
+                                    //cve lists
+                                    var osaHighCveList;
+                                    var osaMedCveList;
+                                    var osaLowCveList;
+
+
+                                    //-------------------------- html vars --------------------------------------
+                                    var thresholdExceededHtml =
+                                        '<div class="threshold-exceeded">' +
+                                        '<div class="threshold-exceeded-icon">' +
+                                        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12px" height="12px" viewBox="0 0 12 12" version="1.1"><defs/><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Icons" transform="translate(-52.000000, -241.000000)"><g id="threshhold-icon" transform="translate(52.000000, 241.000000)"><g><path d="M8.0904685,3 L7.0904685,3 L7.0904685,5 L8.0904685,5 L8.0904685,11 L3.0904685,11 L3.0904685,0 L8.0904685,0 L8.0904685,3 Z M3.0904685,3 L3.0904685,5 L5.0904685,5 L5.0904685,3 L3.0904685,3 Z M5.0904685,3 L5.0904685,5 L7.0904685,5 L7.0904685,3 L5.0904685,3 Z" id="Combined-Shape" fill="#FFFFFF"/><path d="M10.5904685,11.5 L0.590468498,11.5" id="Line" stroke="#FFFFFF" stroke-linecap="square"/></g></g></g></g></svg>' +
+                                        '</div>' +
+                                        '<div class="threshold-exceeded-text">' +
+                                        'Threshold Exceeded' +
+                                        '</div>' +
+                                        '</div>';
+
+                                    var thresholdComplianceHtml =
+                                        '<div class="threshold-compliance">' +
+                                        '<div class="threshold-compliance-icon">' +
+                                        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" id="SvgjsSvg1050" version="1.1" width="13.99264158479491" height="13" viewBox="0 0 13.99264158479491 13"><title>Icon</title><desc>Created with Avocode.</desc><defs id="SvgjsDefs1051"><clipPath id="SvgjsClipPath1056"><path id="SvgjsPath1055" d="M1035.00736 793.9841L1035.00736 784.01589L1046.9926400000002 784.01589L1046.9926400000002 793.9841ZM1038.67 790.72L1036.68 788.72L1036 789.4L1038.67 792.0699999999999L1045.21 785.67L1044.54 785Z " fill="#ffffff"/></clipPath></defs><path id="SvgjsPath1052" d="M1033 789.5C1033 785.91015 1035.91015 783 1039.5 783C1043.08985 783 1046 785.91015 1046 789.5C1046 793.08985 1043.08985 796 1039.5 796C1035.91015 796 1033 793.08985 1033 789.5Z " fill="#21bf3f" fill-opacity="1" transform="matrix(1,0,0,1,-1033,-783)"/><path id="SvgjsPath1053" d="M1038.67 790.72L1036.68 788.72L1036 789.4L1038.67 792.0699999999999L1045.21 785.67L1044.54 785Z " fill="#ffffff" fill-opacity="1" transform="matrix(1,0,0,1,-1033,-783)"/><path id="SvgjsPath1054" d="M1038.67 790.72L1036.68 788.72L1036 789.4L1038.67 792.0699999999999L1045.21 785.67L1044.54 785Z " fill-opacity="0" fill="#ffffff" stroke-dasharray="0" stroke-linejoin="miter" stroke-linecap="butt" stroke-opacity="1" stroke="#ffffff" stroke-miterlimit="50" stroke-width="1.4" clip-path="url(&quot;#SvgjsClipPath1056&quot;)" transform="matrix(1,0,0,1,-1033,-783)"/></svg>' +
+                                        '</div>' +
+                                        '<div class="threshold-compliance-text">' +
+                                        'Threshold Compliant' +
+                                        '</div>' +
+                                        '</div>';
+
                                 }
-
-                                //links
-                                var osaHtmlPath = osaSummaryResultsLink;
-
-                                //full report info
-                                var isOsaFullReady =
-                                    osaStartDate != ' ' &&
-                                    osaEndDate != ' ' &&
-                                    osaLibraries != null &&
-                                    osaList != null;
-
-                                var osaNumFiles;
-
-                                //cve lists
-                                var osaHighCveList;
-                                var osaMedCveList;
-                                var osaLowCveList;
-
-
-                                //-------------------------- html vars --------------------------------------
-                                var thresholdExceededHtml =
-                                    '<div class="threshold-exceeded">' +
-                                    '<div class="threshold-exceeded-icon">' +
-                                    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12px" height="12px" viewBox="0 0 12 12" version="1.1"><defs/><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Icons" transform="translate(-52.000000, -241.000000)"><g id="threshhold-icon" transform="translate(52.000000, 241.000000)"><g><path d="M8.0904685,3 L7.0904685,3 L7.0904685,5 L8.0904685,5 L8.0904685,11 L3.0904685,11 L3.0904685,0 L8.0904685,0 L8.0904685,3 Z M3.0904685,3 L3.0904685,5 L5.0904685,5 L5.0904685,3 L3.0904685,3 Z M5.0904685,3 L5.0904685,5 L7.0904685,5 L7.0904685,3 L5.0904685,3 Z" id="Combined-Shape" fill="#FFFFFF"/><path d="M10.5904685,11.5 L0.590468498,11.5" id="Line" stroke="#FFFFFF" stroke-linecap="square"/></g></g></g></g></svg>' +
-                                    '</div>' +
-                                    '<div class="threshold-exceeded-text">' +
-                                    'Threshold Exceeded' +
-                                    '</div>' +
-                                    '</div>';
-
-                                var thresholdComplianceHtml =
-                                    '<div class="threshold-compliance">' +
-                                    '<div class="threshold-compliance-icon">' +
-                                    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" id="SvgjsSvg1050" version="1.1" width="13.99264158479491" height="13" viewBox="0 0 13.99264158479491 13"><title>Icon</title><desc>Created with Avocode.</desc><defs id="SvgjsDefs1051"><clipPath id="SvgjsClipPath1056"><path id="SvgjsPath1055" d="M1035.00736 793.9841L1035.00736 784.01589L1046.9926400000002 784.01589L1046.9926400000002 793.9841ZM1038.67 790.72L1036.68 788.72L1036 789.4L1038.67 792.0699999999999L1045.21 785.67L1044.54 785Z " fill="#ffffff"/></clipPath></defs><path id="SvgjsPath1052" d="M1033 789.5C1033 785.91015 1035.91015 783 1039.5 783C1043.08985 783 1046 785.91015 1046 789.5C1046 793.08985 1043.08985 796 1039.5 796C1035.91015 796 1033 793.08985 1033 789.5Z " fill="#21bf3f" fill-opacity="1" transform="matrix(1,0,0,1,-1033,-783)"/><path id="SvgjsPath1053" d="M1038.67 790.72L1036.68 788.72L1036 789.4L1038.67 792.0699999999999L1045.21 785.67L1044.54 785Z " fill="#ffffff" fill-opacity="1" transform="matrix(1,0,0,1,-1033,-783)"/><path id="SvgjsPath1054" d="M1038.67 790.72L1036.68 788.72L1036 789.4L1038.67 792.0699999999999L1045.21 785.67L1044.54 785Z " fill-opacity="0" fill="#ffffff" stroke-dasharray="0" stroke-linejoin="miter" stroke-linecap="butt" stroke-opacity="1" stroke="#ffffff" stroke-miterlimit="50" stroke-width="1.4" clip-path="url(&quot;#SvgjsClipPath1056&quot;)" transform="matrix(1,0,0,1,-1033,-783)"/></svg>' +
-                                    '</div>' +
-                                    '<div class="threshold-compliance-text">' +
-                                    'Threshold Compliant' +
-                                    '</div>' +
-                                    '</div>';
-
-
                                 //---------------------------------------------------------- sast ---------------------------------------------------------------
-                                if (syncMode.toString() != "false") { //Synchronous Mode
-                                    if (sastResultsReady.toString() == "true") {
+                                if (syncMode != false) { //Synchronous Mode
+                                    document.getElementById("asyncMessage").setAttribute("style", "display:none");
+                                    document.getElementById("onAsyncMode").setAttribute("style", "display:none");
+                                    if (sastResultsReady == true) {
                                         try {
                                             document.getElementById("results-report").setAttribute("style", "display:block");
+                                            document.getElementById("report-title").setAttribute("style", "display:block");
 
                                             //link
                                             document.getElementById("sast-summary-html-link").setAttribute("href", sastScanResultsLink);
+                                            document.getElementById("sast-code-viewer-link").setAttribute("href", sastScanResultsLink);
 
                                             //set bars height and count
                                             document.getElementById("bar-count-high").innerHTML = highCount;
@@ -214,7 +219,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         }
 
                                         //if threshold is enabled
-                                        if (thresholdsEnabled.toString() == "true") {
+                                        if (thresholdsEnabled == true) {
                                             try {
                                                 var isThresholdExceeded = false;
                                                 var thresholdExceededComplianceElement = document.getElementById("threshold-exceeded-compliance");
@@ -236,7 +241,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                                 //if threshold exceeded
-                                                if (isThresholdExceeded.toString()  == "true") {
+                                                if (isThresholdExceeded  == true) {
                                                     thresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -255,8 +260,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
 
                                     //---------------------------------------------------------- osa ---------------------------------------------------------------
-                                    if (osaEnabled.toString() == "true" && osaFailed.toString() != 'true') {
+                                    if (osaEnabled == true && osaFailed != true) {
                                         try {
+                                            document.getElementById("report-title").setAttribute("style", "display:block");
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");
                                             //link
                                             document.getElementById("osa-summary-html-link").setAttribute("href", osaHtmlPath);
@@ -282,7 +288,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         }
 
                                         //if threshold is enabled
-                                        if (osaThresholdsEnabled.toString()  == "true") {
+                                        if (osaThresholdsEnabled  == true) {
                                             try {
                                                 var isOsaThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
@@ -305,7 +311,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                                 //if threshold exceeded
-                                                if (isOsaThresholdExceeded.toString()  == "true") {
+                                                if (isOsaThresholdExceeded  == true) {
                                                     osaThresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -323,26 +329,106 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("sast-summary").setAttribute("class", "sast-summary chart-large");
                                     }
 
-                                    //---------------------------------------------------------- full reports ---------------------------------------------------------------                                  
+                                    //---------------------------------------------------------- full reports ---------------------------------------------------------------
+                                    if (isSastFullReady  == true) {
+                                        document.getElementById("sast-full").setAttribute("style", "display: block");
+
+                                        //queries lists
+                                        highCveList = generateQueryList(SEVERITY.HIGH);
+                                        medCveList = generateQueryList(SEVERITY.MED);
+                                        lowCveList = generateQueryList(SEVERITY.LOW);
+
+
+                                        try {
+                                            //sast links
+                                            document.getElementById("sast-code-viewer-link").setAttribute("href", sastScanResultsLink);
+
+                                            //sast info
+                                            document.getElementById("sast-full-start-date").innerHTML = formatDate(sastStartDate, "dd/mm/yy hh:mm");
+                                            document.getElementById("sast-full-end-date").innerHTML = formatDate(sastEndDate, "dd/mm/yy hh:mm");
+                                            document.getElementById("sast-full-files").innerHTML = numberWithCommas(sastNumFiles);
+                                            document.getElementById("sast-full-loc").innerHTML = numberWithCommas(sastLoc);
+
+                                        } catch (e) {
+                                            console.error("Element missing in full report info section " + e.message);
+                                        }
+
+                                        try {
+                                            //generate full reports
+                                            if (highCount == 0 && medCount == 0 && lowCount == 0) {
+                                                document.getElementById("sast-full").setAttribute("style", "display: none");
+                                            } else {
+                                                if (highCount > 0) {
+                                                    generateCveTable(SEVERITY.HIGH);
+                                                }
+                                                if (medCount > 0) {
+                                                    generateCveTable(SEVERITY.MED);
+                                                }
+                                                if (lowCount > 0) {
+                                                    generateCveTable(SEVERITY.LOW);
+                                                }
+                                            }
+
+                                        } catch (e) {
+                                            console.error("Element missing in full report detailed table section " + e.message);
+                                        }
+                                    }
+
+                                    if (isOsaFullReady  == true) {
+                                        document.getElementById("osa-full").setAttribute("style", "display: block");
+                                        //cve lists
+                                        osaHighCveList = generateOsaCveList(SEVERITY.OSA_HIGH);
+                                        osaMedCveList = generateOsaCveList(SEVERITY.OSA_MED);
+                                        osaLowCveList = generateOsaCveList(SEVERITY.OSA_LOW);
+
+                                        osaNumFiles = osaLibraries.length;
+
+                                        try {
+
+
+                                            //osa links
+                                            document.getElementById("osa-html-link").setAttribute("href", osaHtmlPath);
+
+
+                                            //osa info
+                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(osaStartDate, "dd/mm/yy hh:mm");
+                                            document.getElementById("osa-full-end-date").innerHTML = formatDate(osaEndDate, "dd/mm/yy hh:mm");
+                                            document.getElementById("osa-full-files").innerHTML = numberWithCommas(osaNumFiles);
+                                        } catch (e) {
+                                            console.error("Element missing in full report info section " + e.message);
+                                        }
+
+                                        try {
+                                            //generate full reports
+                                            if (osaHighCount == 0 && osaMedCount == 0 && osaLowCount == 0) {
+                                                document.getElementById("osa-full").setAttribute("style", "display: none");
+                                            } else {
+                                                if (osaHighCount > 0) {
+                                                    generateCveTable(SEVERITY.OSA_HIGH);
+                                                }
+                                                if (osaMedCount > 0) {
+                                                    generateCveTable(SEVERITY.OSA_MED);
+                                                }
+                                                if (osaLowCount > 0) {
+                                                    generateCveTable(SEVERITY.OSA_LOW);
+                                                }
+                                            }
+                                        } catch (e) {
+                                            console.error("Element missing in full report detailed table section " + e.message);
+                                        }
+                                    }
                                 }
                                 else {  //AsyncMode
-                                    var asyncModeMessage = "CxSAST scan was run in Asynchronous mode";
-                                    var asyncDiv = document.getElementById("asyncMessage");
-
-                                    if (sastSummaryResultsLink.toString() == "true") {
-                                        asyncDiv.innerHTML = asyncModeMessage + ". Refer to the ";
-                                        var resultLink = document.createElement('a');
-                                        resultLink.setAttribute('href', sastSummaryResultsLink);
-                                        resultLink.innerHTML = sastSummaryResultsLink;
-                                        asyncDiv.appendChild(resultLink);
-                                        asyncDiv.appendChild(document.createTextNode(" for scan results"));
-                                    }
-                                    else {
+                                    if (sastResultsReady != false) {
+                                        var asyncModeMessage = "Cx scan was run in Asynchronous mode";
+                                        var asyncDiv = document.getElementById("asyncMessage");
                                         asyncDiv.innerHTML = asyncModeMessage;
+                                        asyncDiv.setAttribute("style", "display:block");
+                                        document.getElementById("onAsyncMode").setAttribute("style", "display:block");
+                                    }else {
+                                        document.getElementById("onSastError").setAttribute("style", "display:block");
+                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
                                     }
-
-                                    document.getElementById("asyncMessage").setAttribute("style", "display:block");
-                                    document.getElementById("onAsyncMode").setAttribute("style", "display:block");
                                 }
 
 
