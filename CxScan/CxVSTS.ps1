@@ -71,6 +71,7 @@ $OsaClient;
 
 $osaFailedMessage = "";
 $debugMode =  $env:SYSTEM_DEBUG;
+
 $serviceEndpoint = Get-ServiceEndpoint -Context $distributedTaskContext -Name $CheckmarxService
 $errorMessage ="";
 $buildFailed = $false;
@@ -79,7 +80,7 @@ $scanResults | Add-Member -MemberType NoteProperty -Name syncMode -Value $syncMo
 $tmpPath = [System.IO.Path]::GetTempPath()
 $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
 if (!(Test-Path($tmpFolder))) {
-    Write-Host ("INFO: Create build specific report folder at: {0}" -f $tmpFolder)#todo
+    Write-Host ("Build specific checkmarx reports folder created at: {0}" -f $tmpFolder)
     New-Item -ItemType directory -Path $tmpFolder | Out-Null
 }
 $cxReportFile = Join-Path $tmpFolder "cxreport.json"
@@ -199,8 +200,9 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
 #todo "[No Threshold]"
     Write-Host("CxOSA enabled: {0}"-f $osaEnabled);
     if ($osaEnabled) {
-        Write-Host("CxOSA inclusions: {0}" -f $(ResolveVal $osaFileExclusions));
-        Write-Host("CxOSA exclusions: {0}" -f $(ResolveVal $osaFolderExclusions));
+        Write-Host("CxOSA folder exclusions: {0}" -f $(ResolveVal $osaFolderExclusions));
+        Write-Host("CxOSA include/exclude wildcard patterns: {0}" -f $(ResolveVal $osaFileExclusions));
+        Write-Host("CxOSA archive extract extensions: {0}" -f $osaArchiveInclude);
         Write-Host("CxOSA thresholds enabled: {0}" -f $osaVulnerabilityThreshold);
         if ($osaVulnerabilityThreshold) {
             Write-Host("CxOSA high threshold: {0}" -f $osaHigh);
@@ -417,7 +419,7 @@ else {
             $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
 	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll")
             $pattern = GeneratePattern $osaFolderExclusions $osaFileExclusions
-            Write-debug ("pattern {0}" -f $pattern);
+            Write-debug ("OSA exclude pattern {0}" -f $pattern);
             $tmpPath = [System.IO.Path]::GetTempPath();
             $OsaClient = New-Object CxOsa.CxRestClient $user , $password, $serviceUrl, $scanResponse.ProjectID,$sourceLocation, $tmpPath, $pattern, $osaArchiveInclude, $debugMode;
             $osaScan = $OsaClient.runOSAScan();
@@ -495,7 +497,6 @@ else {
         #--------- OSA Results ---------#
         if ($osaEnabled -and !$osaFailed) {
             try{
-
                	Write-host "-----------------------------Get CxOSA Results:-------------------------------"
                 $osaSummaryResults = $OsaClient.retrieveOsaResults()
                 $osaProjectSummaryLink =  ("{0}/CxWebClient/portal#/projectState/{1}/OSA"-f $serviceUrl, $projectID);
@@ -535,8 +536,8 @@ else {
 	}
 	Else {
 	    OnSASTError $scanResults $cxReportFile
-	    $errorMessage = ("Scan failed: {0}" -f $scanStatusResponse.CurrentStatus)
-		Write-Host ("##vso[task.logissue type=error;]Scan failed: {0}" -f $scanStatusResponse.CurrentStatus)
+	    $errorMessage = ("Scan cannot be completed. Status [{0}].  Stage message: [{1}]" -f $scanStatusResponse.CurrentStatus, $scanStatusResponse.StageMessage)
+		Write-Host "##vso[task.logissue type=error;]$errorMessage"
 		Write-Host "##vso[task.complete result=Failed;]$errorMessage"
 		$buildFailed = $true;
 	}
