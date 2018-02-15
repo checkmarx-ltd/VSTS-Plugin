@@ -151,8 +151,6 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         osaEndDate = adjustDateFormat(resultObject.osaEndTime);
                                     }
 
-                                    //links
-                                    var osaHtmlPath = osaSummaryResultsLink;
 
                                     //full report info
                                     var isOsaFullReady =
@@ -265,7 +263,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("report-title").setAttribute("style", "display:block");
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");
                                             //link
-                                            document.getElementById("osa-summary-html-link").setAttribute("href", osaHtmlPath);
+                                            document.getElementById("osa-summary-html-link").setAttribute("href", osaSummaryResultsLink);
 
                                             //set bars height and count
                                             document.getElementById("osa-bar-count-high").innerHTML = osaHighCount;
@@ -387,7 +385,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                             //osa links
-                                            document.getElementById("osa-html-link").setAttribute("href", osaHtmlPath);
+                                            document.getElementById("osa-html-link").setAttribute("href", osaSummaryResultsLink);
 
 
                                             //osa info
@@ -400,16 +398,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                         try {
                                             //generate full reports
-                                            if (osaHighCount == 0 && osaMedCount == 0 && osaLowCount == 0) {
+                                            if (osaHighCveList.length == 0 && osaMedCveList.length  == 0 &&  osaLowCveList.length == 0) {
                                                 document.getElementById("osa-full").setAttribute("style", "display: none");
                                             } else {
-                                                if (osaHighCount > 0) {
+                                                if (osaHighCveList.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_HIGH);
                                                 }
-                                                if (osaMedCount > 0) {
+                                                if (osaMedCveList.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_MED);
                                                 }
-                                                if (osaLowCount > 0) {
+                                                if (osaLowCveList.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_LOW);
                                                 }
                                             }
@@ -688,6 +686,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         row.insertCell(0).innerHTML = osaCveMap[key].cveName;
                                         row.insertCell(1).innerHTML = formatDate(osaCveMap[key].publishDate, "dd-mm-yyyy");
                                         row.insertCell(2).innerHTML = libraryIdToName[osaCveMap[key].libraryId];
+                                        if(osaCveMap[key].state != null && 'NOT_EXPLOITABLE' === osaCveMap[key].state.name) {
+                                            row.classList.add('osa-cve-strike');
+                                        }
                                         i++;
                                     }
                                 }

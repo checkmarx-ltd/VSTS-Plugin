@@ -499,7 +499,7 @@ else {
             try{
                	Write-host "-----------------------------Get CxOSA Results:-------------------------------"
                 $osaSummaryResults = $OsaClient.retrieveOsaResults()
-                $osaProjectSummaryLink =  ("{0}/CxWebClient/portal#/projectState/{1}/OSA"-f $serviceUrl, $projectID);
+                $osaProjectSummaryLink =  ("{0}/CxWebClient/SPA/#/viewer/project/{1}"-f $serviceUrl, $projectID);
                 $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaProjectSummaryLink $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow $osaFailed
                 PrintOSAResults $osaSummaryResults $osaProjectSummaryLink
 

@@ -627,4 +627,8 @@ table.cve-table.osa-cve-table th:last-child {
     display: none;
 }
 
+.osa-cve-strike > td {
+    text-decoration: line-through;
+}
+
 

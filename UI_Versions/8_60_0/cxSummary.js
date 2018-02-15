@@ -101,7 +101,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //links
                                 var osaSummaryResultsLink = resultObject.osaSummaryResultsLink;
-                                var osaHtmlPath = osaSummaryResultsLink;
+
                                 //counts
                                 var osaHighCount = resultObject.osaHighResults;
                                 var osaMedCount = resultObject.osaMediumResults;
@@ -202,7 +202,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         try {
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");
                                             //link
-                                            document.getElementById("osa-summary-html-link").setAttribute("href", osaHtmlPath);
+                                            document.getElementById("osa-summary-html-link").setAttribute("href", osaSummaryResultsLink);
 
                                             //set bars height and count
                                             document.getElementById("osa-bar-count-high").innerHTML = osaHighCount;
