@@ -418,6 +418,7 @@ else {
 	        Write-Host "-----------------------------Create CxOSA Scan:-------------------------------"
             $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
 	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll")
+	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/System.Net.Http.Formatting.dll")
             $pattern = GeneratePattern $osaFolderExclusions $osaFileExclusions
             Write-debug ("OSA exclude pattern {0}" -f $pattern);
             $tmpPath = [System.IO.Path]::GetTempPath();
