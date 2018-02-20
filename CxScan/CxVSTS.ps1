@@ -360,6 +360,7 @@ else {
 		"OWASP Mobile TOP 10 - 2016" {$presetId = 37}
 		"OWASP TOP 10 - 2010"        {$presetId = 4 }
 		"OWASP TOP 10 - 2013"        {$presetId = 15}
+		"OWASP TOP 10 - 2017"        {$presetId = 42}
 		"PCI"                        {$presetId = 5 }
 		"SANS top 25"                {$presetId = 8 }
 		"STIG"                       {$presetId = 38}
