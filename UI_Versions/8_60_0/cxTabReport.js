@@ -727,7 +727,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 function convertOSADataToList(cveAry){
                                     var cveList = null;
-                                    if (typeof cveAry != 'undefined') {
+                                    if (typeof cveAry != 'undefined' && cveAry != null) {
                                         cveAry = JSON.parse(cveAry);
                                         cveList = new Array();
                                         for (var i = 0; i < cveAry.length; i++) {

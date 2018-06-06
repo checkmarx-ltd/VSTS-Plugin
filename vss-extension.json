@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "8.60.4",
+  "version": "8.60.5",
   "publisher": "Checkmarx",
   "targets": [
     {
@@ -129,17 +129,6 @@
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
             "inputDescriptors": [
               {
-                "id": "agentProxy",
-                "name": "Proxy",
-                "description": "If you're using proxy in your build agent (for example: http://proxy:8080)",
-                "inputMode": "textbox",
-                "isConfidential": false,
-                "validation": {
-                  "dataType": "String",
-                  "isRequired": false
-                }
-              },
-              {
                 "id": "username",
                 "name": "Username",
                 "description": "Checkmarx username",
@@ -192,7 +181,7 @@
         "name": "Checkmarx Scan Results",
         "uri": "UI_Versions/8_60_0/cxSummary.html",
         "height": "700px",
-        "width" : "1150px"
+        "width": "1150px"
       }
     }
   ]
