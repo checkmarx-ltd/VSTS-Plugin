@@ -95,7 +95,6 @@ if ($authScheme -ne 'UserNamePassword'){
 	throw "The authorization scheme $authScheme is not supported for a CX server."
 }
 
-
 $ErrorActionPreference = "Stop"
 $reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
@@ -111,34 +110,8 @@ $resolverUrlExtension = 'Cxwebinterface/CxWSResolver.asmx?wsdl'
 $resolverUrl = $serviceUrl + $resolverUrlExtension
 
 
-    Write-Host " "
-    Write-Host "-------------------------------Configurations:--------------------------------";
-    Write-Host ("URL: {0}" -f $serviceUrl)
-    Write-Host ("Project name: {0}" -f $projectName)
-    Write-Host ("Source location: {0}" -f $sourceLocation)
-    Write-Host ("Scan timeout in minutes: {0}" -f $(ResolveString $scanTimeout))
-    Write-Host ("Full team path: {0}" -f $fullTeamName)
-    if (-not ([string]::IsNullOrEmpty($customPreset))){
-      Write-Host ("Custom preset name: {0}" -f $customPreset)
-    }else{
-      Write-Host ("Preset name: {0}" -f $presetList)
-    }
-
-    Write-Host ("Is incremental scan: {0}" -f $incScan)
-    Write-Host ("Folder exclusions: {0}" -f $(ResolveVal $folderExclusion))
-    Write-Host ("File exclusions: {0}" -f $(ResolveVal $fileExtension))
-    Write-Host ("Is synchronous scan: {0}" -f $syncMode)
-    #Write-Host "Generate PDF report: " $generatePDFReport;
-
-    Write-Host ("CxSAST thresholds enabled: {0}" -f $vulnerabilityThreshold)
-    if ($vulnerabilityThreshold) {
-     Write-Host ("CxSAST high threshold: {0}" -f $high)
-     Write-Host ("CxSAST medium threshold: {0}" -f $medium)
-     Write-Host ("CxSAST low threshold: {0}" -f $low)
-    }
 
 
-#todo "[No Threshold]"
     Write-Host("CxOSA enabled: {0}"-f $osaEnabled);
     if ($osaEnabled) {
         Write-Host("CxOSA folder exclusions: {0}" -f $(ResolveVal $osaFolderExclusions));
@@ -146,9 +119,9 @@ $resolverUrl = $serviceUrl + $resolverUrlExtension
         Write-Host("CxOSA archive extract extensions: {0}" -f $osaArchiveInclude);
         Write-Host("CxOSA thresholds enabled: {0}" -f $osaVulnerabilityThreshold);
         if ($osaVulnerabilityThreshold) {
-            Write-Host("CxOSA high threshold: {0}" -f $osaHigh);
-            Write-Host("CxOSA medium threshold: {0}" -f $osaMedium);
-           Write-Host("CxOSA low threshold: {0}" -f $osaLow);
+            Write-Host("CxOSA high threshold: {0}" -f (ResolveVal $osaHigh));
+            Write-Host("CxOSA medium threshold: {0}" -f (ResolveVal $osaMedium));
+           Write-Host("CxOSA low threshold: {0}" -f (ResolveVal $osaLow));
         }
     }
 
@@ -378,6 +351,7 @@ else {
      #------ Asynchronous MODE ------#
 	if(!$syncMode){
 	    Write-host "Running in Asynchronous mode. Not waiting for scan to finish";
+	    $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
         $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
         Write-Host "##vso[task.addattachment type=cxReport;name=cxReport;]$cxReportFile"
 		Exit;
@@ -445,12 +419,7 @@ else {
                 $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow $osaFailed
                 PrintOSAResults $osaSummaryResults
 
-            }Catch {
-                 Write-Host ("##vso[task.logissue type=error;]Fail to retrieve CxOSA results : {0}" -f $_.Exception.Message)
-                 $osaFailed = $true;
-                 $scanResults.osaFailed = $osaFailed
-                 $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message)
-            }
+            }resultresults
         }
 
         $cxReportFile = Join-Path $tmpFolder "cxreport.json"

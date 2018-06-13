@@ -2,14 +2,14 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "8.60.1",
-  "publisher": "Checkmarx",
+  "version": "8.60.113",
+  "publisher": "ilandayan",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "public": true,
+  "public": false,
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
     "default": "extension-icon.png"
@@ -24,7 +24,10 @@
     "Scan",
     "SAST",
     "Checkmarx",
-    "CxSAST"
+    "CxSAST",
+    "OSA",
+    "Open source",
+    "Software Composition Analysis"
   ],
   "scopes": [
     "vso.build_execute"
@@ -99,7 +102,7 @@
       "packagePath": "lib"
     },
     {
-      "path": "CxScan/osaDLL/OsaClient.dll",
+      "path": "CxScan/CxOSA/osaDll/CxOSA.dll",
       "addressable": true
     }
   ],

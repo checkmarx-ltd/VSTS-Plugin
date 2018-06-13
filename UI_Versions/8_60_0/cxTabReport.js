@@ -1,21 +1,29 @@
 var __extends = (this && this.__extends) || (function () {
         var extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            ({__proto__: []} instanceof Array && function (d, b) {
+                d.__proto__ = b;
+            }) ||
+            function (d, b) {
+                for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+            };
         return function (d, b) {
             extendStatics(d, b);
-            function __() { this.constructor = d; }
+            function __() {
+                this.constructor = d;
+            }
+
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         };
     })();
 define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClient"], function (require, exports, Controls, DT_Client) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports, "__esModule", {value: true});
     var StatusSection = (function (_super) {
         __extends(StatusSection, _super);
         function StatusSection() {
             return _super.call(this) || this;
         }
+
         StatusSection.prototype.initialize = function () {
             _super.prototype.initialize.call(this);
             // Get configuration that's shared between extension and the extension host
@@ -47,9 +55,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
 
-
                                 var summaryPageData = arrayBufferToString(attachementContent);
-                                 var resultObject = JSON.parse(summaryPageData.replace(/[\u200B-\u200D\uFEFF]/g, ''));
+                                var resultObject = JSON.parse(summaryPageData.replace(/[\u200B-\u200D\uFEFF]/g, ''));
 
                                 //---------------------------------------------------------- vars ---------------------------------------------------------------
                                 var SEVERITY = {
@@ -63,6 +70,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //-------------------------- sast vars --------------------------------------
                                 var sastResultsReady = resultObject.sastResultsReady;
+                                var buildFailed = resultObject.buildFailed;
 
                                 //thresholds
                                 var thresholdsEnabled = resultObject.thresholdEnabled;
@@ -227,19 +235,19 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                     isThresholdExceeded = true;
                                                 }
 
-                                                if (medThreshold != null && medThreshold!="" && medCount > medThreshold) {
+                                                if (medThreshold != null && medThreshold != "" && medCount > medThreshold) {
                                                     document.getElementById("tooltip-med").innerHTML = tooltipGenerator(SEVERITY.MED);
                                                     isThresholdExceeded = true;
                                                 }
 
-                                                if (lowThreshold != null && lowThreshold!= "" && lowCount > lowThreshold) {
+                                                if (lowThreshold != null && lowThreshold != "" && lowCount > lowThreshold) {
                                                     document.getElementById("tooltip-low").innerHTML = tooltipGenerator(SEVERITY.LOW);
                                                     isThresholdExceeded = true;
                                                 }
 
 
                                                 //if threshold exceeded
-                                                if (isThresholdExceeded  == true) {
+                                                if (isThresholdExceeded == true) {
                                                     thresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -286,7 +294,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         }
 
                                         //if threshold is enabled
-                                        if (osaThresholdsEnabled  == true) {
+                                        if (osaThresholdsEnabled == true) {
                                             try {
                                                 var isOsaThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
@@ -309,7 +317,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                                 //if threshold exceeded
-                                                if (isOsaThresholdExceeded  == true) {
+                                                if (isOsaThresholdExceeded == true) {
                                                     osaThresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -328,7 +336,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
 
                                     //---------------------------------------------------------- full reports ---------------------------------------------------------------
-                                    if (isSastFullReady  == true) {
+                                    if (isSastFullReady == true) {
                                         document.getElementById("sast-full").setAttribute("style", "display: block");
 
                                         //queries lists
@@ -372,7 +380,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         }
                                     }
 
-                                    if (isOsaFullReady  == true) {
+                                    if (isOsaFullReady == true) {
                                         document.getElementById("osa-full").setAttribute("style", "display: block");
                                         //cve lists
                                         osaHighCveList = generateOsaCveList(SEVERITY.OSA_HIGH);
@@ -398,7 +406,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                         try {
                                             //generate full reports
-                                            if (osaHighCveList.length == 0 && osaMedCveList.length  == 0 &&  osaLowCveList.length == 0) {
+                                            if (osaHighCveList.length == 0 && osaMedCveList.length == 0 && osaLowCveList.length == 0) {
                                                 document.getElementById("osa-full").setAttribute("style", "display: none");
                                             } else {
                                                 if (osaHighCveList.length > 0) {
@@ -417,21 +425,21 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
                                 }
                                 else {  //AsyncMode
-                                    if (sastResultsReady != false) {
-                                        var asyncModeMessage = "Cx scan was run in Asynchronous mode";
+                                    if (buildFailed == true) {
+                                        document.getElementById("onSastError").setAttribute("style", "display:block");
+                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
+                                    } else {
+                                        var asyncModeMessage = "Scan was run in Asynchronous mode";
                                         var asyncDiv = document.getElementById("asyncMessage");
                                         asyncDiv.innerHTML = asyncModeMessage;
                                         asyncDiv.setAttribute("style", "display:block");
                                         document.getElementById("onAsyncMode").setAttribute("style", "display:block");
-                                    }else {
-                                        document.getElementById("onSastError").setAttribute("style", "display:block");
-                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
+
                                     }
                                 }
 
 
                                 //functions
-
 
 
                                 function tooltipGenerator(severity) {
@@ -651,7 +659,6 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
 
 
-
                                     var libraryIdToName = libraryDictionary(osaLibraries);
 
                                     //create uniquness by key: cve + libraryId
@@ -664,7 +671,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var severityTitle = generateCveTableTitle(severity);
 
                                     //generate table headers
-                                    var tableHeadersNames = {h1: "Vulnerability Type", h2: "Publish Date", h3: "Library"};
+                                    var tableHeadersNames = {
+                                        h1: "Vulnerability Type",
+                                        h2: "Publish Date",
+                                        h3: "Library"
+                                    };
                                     var tableHeadersElement = generateCveTableHeaders(tableHeadersNames);
 
                                     //get container and create table element in it
@@ -686,7 +697,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         row.insertCell(0).innerHTML = osaCveMap[key].cveName;
                                         row.insertCell(1).innerHTML = formatDate(osaCveMap[key].publishDate, "dd-mm-yyyy");
                                         row.insertCell(2).innerHTML = libraryIdToName[osaCveMap[key].libraryId];
-                                        if(osaCveMap[key].state != null && 'NOT_EXPLOITABLE' === osaCveMap[key].state.name) {
+                                        if (osaCveMap[key].state != null && 'NOT_EXPLOITABLE' === osaCveMap[key].state.name) {
                                             row.classList.add('osa-cve-strike');
                                         }
                                         i++;
@@ -725,9 +736,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
 
-                                function convertOSADataToList(cveAry){
+                                function convertOSADataToList(cveAry) {
                                     var cveList = null;
-                                    if (typeof cveAry != 'undefined') {
+                                    if (typeof cveAry != 'undefined' && cveAry != null) {
                                         cveAry = JSON.parse(cveAry);
                                         cveList = new Array();
                                         for (var i = 0; i < cveAry.length; i++) {
@@ -741,10 +752,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
 
-
                                 //query lists
-                                function convertQueriesToList(querystr){
-                                    var queryAry =  querystr.split(";") ;
+                                function convertQueriesToList(querystr) {
+                                    var queryAry = querystr.split(";");
                                     var queryList = new Array();
                                     for (var i = 0; i < queryAry.length - 1; i++) {
                                         var jsonObj = JSON.parse(queryAry[i]);
@@ -805,7 +815,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                             });
                         }
-                    }, function(error){
+                    }, function (error) {
                         console.log(error)
                     });
                 });

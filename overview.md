@@ -1,7 +1,6 @@
-#Checkmarx Plug-in for Microsoft Visual Studio Team Services
+#Overview
 
-Checkmarx is a powerful Static Source Code Analysis (SAST) solution designed for identifying, tracking and
-fixing technical and logical security flaws.
+Checkmarx is a powerful single unified security solution for Static Source Code Analysis (SAST) and Open Source Analysis (OSA) designed for identifying, tracking and fixing technical and logical security flaws.
 
 Checkmarx is integrated seamlessly into the Microsoft’s Software Development Life Cycle (SDLC), enabling
 the early detection and mitigation of crucial security flaws.
@@ -17,11 +16,20 @@ Highlights the best place to fix your code
 - **Quick and accurate scanning**
 Reduce false positives, adapt the rule set to minimize false positives, and understand the root cause
 for results
-- **Incremental scanning **
+- **Incremental scanning**
 Just test the parts of the code that have been changed since last code check-in to reduce scanning time by
 more than 80%. Enables incorporation of the security gate within your continuous integration pipeline
-- **Seamlessly integration**
+- **Seamless integration**
 Works with all IDEs, build management servers, bug tracking tools and source repositories
+- **Protect Your Full Code Portfolio (Open Source and In-house Source Code)**
+Analyzing open source libraries, making sure licenses are being honored and weeding out any open source components which expose the application to known vulnerabilities,
+Checkmarx Open Source solution provides complete code portfolio coverage under a single unified solution and with no extra installations or administration required.
+- **Easy to initiate Open Source Analysis **
+Enhancing your code portfolio risk assessment coverage is merely a few mouse clicks away. With Checkmarx’s Open Source Analysis, there is no need for additional installations or multiple management interfaces. Simply turn it on and within minutes a detailed report is generated with clear results and detailed mitigation instructions. Analysis results are designed with the developer in mind.
+No time is wasted on trying to understand the required actions items to mitigate the detected security or compliance risk.
+
+
+
 
 ![image](images/sample1.png)
 
@@ -29,7 +37,7 @@ Works with all IDEs, build management servers, bug tracking tools and source rep
 
 #Before You Start:
 
-If you are a new user please submit the trial request registration form.
+If you don't already have a Checkmarx server and require a hosted Checkmarx service, please submit the trial request registration form.
 [link to Checkmarx registration page](https://info.checkmarx.com/cx-microsoft-vs-team-services)
 
 
@@ -45,14 +53,14 @@ If you are a new user please submit the trial request registration form.
 
 
 
-#Getting Started with Checkmarx Plug-in:
+#Getting Started with Checkmarx:
 
-The Checkmarx plug-in for Visual Studio Team Services is simple to install and configure.
+Checkmarx for Visual Studio Team Services and Team Foundation Server (2015 and greater)is simple to install and configure.
 The following steps are required to get started.
 
 
 
-#Getting Started with Checkmarx Plug-in:
+#Getting Started with Checkmarx:
 
 ![image](images/sample3.png)
 
@@ -81,12 +89,11 @@ To complete this step:
     j.	Vulnerability Threshold – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
 2.	Control options
     a.	Enabled - Clear this check box if you want to disable a step. This is a handy option if a step is not working correctly or if you need to focus on other parts of the process.
-    b.	Continue on error –
-    If an error occurs in this step, and this check box is:
-    c.	Cleared: The build fails and no subsequent steps are run.
-    d.	Selected: The build will be partially successful at best, and the next step is run
-    e.	Always run – control option is enabled for the rollback task, so that the script can get executed when any of the tasks in the job fail.
-    f.	Scan Timeout (hours) – enter the number of hours to allow the scan to run before timing out.
+    b.	Continue on error - If an error occurs in this step, and this check box is:
+      1.	Cleared: The build fails and no subsequent steps are run.
+      2.	Selected: The build will be partially successful at best, and the next step is run
+      3.	Always run – control option is enabled for the rollback task, so that the script can get executed when any of the tasks in the job fail.
+    c.	Scan Timeout (minutes) – enter the number of minutes to allow the scan to run before timing out.
 
 
 

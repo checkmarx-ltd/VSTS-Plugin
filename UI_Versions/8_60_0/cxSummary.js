@@ -1,21 +1,29 @@
 var __extends = (this && this.__extends) || (function () {
         var extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            ({__proto__: []} instanceof Array && function (d, b) {
+                d.__proto__ = b;
+            }) ||
+            function (d, b) {
+                for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+            };
         return function (d, b) {
             extendStatics(d, b);
-            function __() { this.constructor = d; }
+            function __() {
+                this.constructor = d;
+            }
+
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         };
     })();
 define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClient"], function (require, exports, Controls, DT_Client) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports, "__esModule", {value: true});
     var StatusSection = (function (_super) {
         __extends(StatusSection, _super);
         function StatusSection() {
             return _super.call(this) || this;
         }
+
         StatusSection.prototype.initialize = function () {
             _super.prototype.initialize.call(this);
             // Get configuration that's shared between extension and the extension host
@@ -47,9 +55,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
 
-
                                 var summaryPageData = arrayBufferToString(attachementContent);
-                                 var resultObject = JSON.parse(summaryPageData.replace(/[\u200B-\u200D\uFEFF]/g, ''));
+                                var resultObject = JSON.parse(summaryPageData.replace(/[\u200B-\u200D\uFEFF]/g, ''));
 
                                 //---------------------------------------------------------- vars ---------------------------------------------------------------
                                 var SEVERITY = {
@@ -63,6 +70,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //-------------------------- sast vars --------------------------------------
                                 var sastResultsReady = resultObject.sastResultsReady;
+                                var buildFailed = resultObject.buildFailed;
 
                                 //thresholds
                                 var thresholdsEnabled = resultObject.thresholdEnabled;
@@ -106,7 +114,6 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var osaHighCount = resultObject.osaHighResults;
                                 var osaMedCount = resultObject.osaMediumResults;
                                 var osaLowCount = resultObject.osaLowResults;
-
 
 
                                 //-------------------------- html vars --------------------------------------
@@ -167,19 +174,19 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                     isThresholdExceeded = true;
                                                 }
 
-                                                if (medThreshold != null && medThreshold!="" && medCount > medThreshold) {
+                                                if (medThreshold != null && medThreshold != "" && medCount > medThreshold) {
                                                     document.getElementById("tooltip-med").innerHTML = tooltipGenerator(SEVERITY.MED);
                                                     isThresholdExceeded = true;
                                                 }
 
-                                                if (lowThreshold != null && lowThreshold!= "" && lowCount > lowThreshold) {
+                                                if (lowThreshold != null && lowThreshold != "" && lowCount > lowThreshold) {
                                                     document.getElementById("tooltip-low").innerHTML = tooltipGenerator(SEVERITY.LOW);
                                                     isThresholdExceeded = true;
                                                 }
 
 
                                                 //if threshold exceeded
-                                                if (isThresholdExceeded  == true) {
+                                                if (isThresholdExceeded == true) {
                                                     thresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -225,7 +232,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         }
 
                                         //if threshold is enabled
-                                        if (osaThresholdsEnabled  == true) {
+                                        if (osaThresholdsEnabled == true) {
                                             try {
                                                 var isOsaThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
@@ -248,7 +255,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                                 //if threshold exceeded
-                                                if (isOsaThresholdExceeded  == true) {
+                                                if (isOsaThresholdExceeded == true) {
                                                     osaThresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -269,21 +276,21 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     //---------------------------------------------------------- full reports ---------------------------------------------------------------
                                 }
                                 else {  //AsyncMode
-                                    if (sastResultsReady != false) {
-                                        var asyncModeMessage = "Cxscan was run in Asynchronous mode";
+                                    if (buildFailed == true) {
+                                        document.getElementById("onSastError").setAttribute("style", "display:block");
+                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
+                                    } else {
+                                        var asyncModeMessage = "Scan was run in Asynchronous mode";
                                         var asyncDiv = document.getElementById("asyncMessage");
                                         asyncDiv.innerHTML = asyncModeMessage;
                                         asyncDiv.setAttribute("style", "display:block");
                                         document.getElementById("onAsyncMode").setAttribute("style", "display:block");
-                                    }else {
-                                        document.getElementById("onSastError").setAttribute("style", "display:block");
-                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
+
                                     }
                                 }
 
 
                                 //functions
-
 
 
                                 function tooltipGenerator(severity) {
@@ -347,7 +354,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                             });
                         }
-                    }, function(error){
+                    }, function (error) {
                         console.log(error)
                     });
                 });
