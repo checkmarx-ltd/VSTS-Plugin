@@ -60,7 +60,7 @@
       "path": "CxScan"
     },
     {
-      "path": "images/sample1.png",
+      "path": "images/config.png",
       "addressable": true
     },
     {
@@ -72,11 +72,11 @@
       "addressable": true
     },
     {
-      "path": "images/sample4.png",
+      "path": "images/sample5.png",
       "addressable": true
     },
     {
-      "path": "images/sample5.png",
+      "path": "images/summaryTab.PNG",
       "addressable": true
     },
     {
@@ -156,7 +156,7 @@
             ]
           }
         ],
-        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"4\">Don’t have a Checkmarx cloud account? </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"4\">Register</font></span></a></span>"
+        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>to register for a cloud Checkmarx account</span>"
       }
     },
     {

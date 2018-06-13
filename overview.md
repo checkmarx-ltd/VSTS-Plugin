@@ -29,9 +29,7 @@ Enhancing your code portfolio risk assessment coverage is merely a few mouse cli
 No time is wasted on trying to understand the required actions items to mitigate the detected security or compliance risk.
 
 
-
-
-![image](images/sample1.png)
+![image](images/summaryTab.PNG)
 
 
 
@@ -72,7 +70,7 @@ The following steps are required to get started.
 
 #Configure Checkmarx Build Step
 
-![image](images/sample4.png)
+![image](images/config.png)
 
 **To complete this step:**
 To complete this step:
