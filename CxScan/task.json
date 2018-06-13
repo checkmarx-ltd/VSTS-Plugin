@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 8,
-    "Minor": 64,
-    "Patch": 1
+    "Minor": 60,
+    "Patch": 5
   },
   "demands": [
   ],
@@ -275,7 +275,7 @@
   ],
   "execution": {
     "PowerShell": {
-      "target": "$(currentDirectory)\\CxVSTS_temp.ps1",
+      "target": "$(currentDirectory)\\CxVSTS.ps1",
       "argumentFormat": "",
       "workingDirectory": "$(currentDirectory)"
     }

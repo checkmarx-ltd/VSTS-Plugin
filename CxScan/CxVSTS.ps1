@@ -332,12 +332,13 @@ else {
         try{
 	        Write-Host "-----------------------------Create CxOSA Scan:-------------------------------"
             $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
-	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll")
-	        [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/System.Net.Http.Formatting.dll")
+            [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/OsaClient.dll") | out-null
+            [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/Newtonsoft.Json.dll")  | out-null
+             [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/System.Net.Http.Formatting.dll")  | out-null
             $pattern = GeneratePattern $osaFolderExclusions $osaFileExclusions
             Write-debug ("OSA exclude pattern {0}" -f $pattern);
             $tmpPath = [System.IO.Path]::GetTempPath();
-            $OsaClient = New-Object CxOsa.CxRestClient $user , $password, $serviceUrl, $scanResponse.ProjectID,$sourceLocation, $tmpPath, $pattern, $osaArchiveInclude, $debugMode;
+            $OsaClient = New-Object OsaClient.CxRestClient $user , $password, $serviceUrl, $scanResponse.ProjectID,$sourceLocation, $tmpPath, $pattern, $osaArchiveInclude, $debugMode;
             $osaScan = $OsaClient.runOSAScan();
         }Catch {
             Write-Host ("##vso[task.logissue type=error;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
@@ -416,8 +417,9 @@ else {
             try{
                	Write-host "-----------------------------Get CxOSA Results:-------------------------------"
                 $osaSummaryResults = $OsaClient.retrieveOsaResults()
-                $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow $osaFailed
-                PrintOSAResults $osaSummaryResults
+                $osaProjectSummaryLink =  ("{0}/CxWebClient/portal#/projectState/{1}/OSA"-f $serviceUrl, $projectID);
+                $scanResults = AddOSAResults $scanResults $osaSummaryResults $osaProjectSummaryLink $osaVulnerabilityThreshold $osaHigh $osaMedium $osaLow $osaFailed
+                PrintOSAResults $osaSummaryResults $osaProjectSummaryLink
 
             }resultresults
         }
