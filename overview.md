@@ -81,8 +81,8 @@ To complete this step:
     d.	Team – which group the project is associated
     e.	Enable the Incremental Scan checkbox if you want to reduce time between scans
     f.	Enter how often a full scan is executed between incremental scans
-    g.	Folder Exclusions – comma delineated list of the folders to exclude from the scan
-    h.	File Exclusions – comma delineated list of the file extensions to exclude from the scan
+    g.	Folder Exclusions – comma delimited list of the folders to exclude from the scan
+    h.	File Exclusions – comma delimited list of the file extensions to exclude from the scan
     i.	Synchronous Mode – enabling this option will cause the build step to wait for scan results, you can see the scan results inside the Checkmarx plug-in results window. If disabled, the results are only displayed inside the Checkmarx web-application.
     j.	Vulnerability Threshold – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
 2.	Control options
@@ -93,6 +93,10 @@ To complete this step:
       3.	Always run – control option is enabled for the rollback task, so that the script can get executed when any of the tasks in the job fail.
     c.	Scan Timeout (minutes) – enter the number of minutes to allow the scan to run before timing out.
 
+3.  CxOSA Scan
+    a.  CxOSA Folder Exclusions - comma delimited list of the folders to exclude from the scan
+    b.  CxOSA Include/Exclude wildcard patterns - Comma separated list of include or exclude wildcard patterns
+    c.  CxOSA Archive Extract Extensions - Comma separated list of archive wildcard patterns to include their extracted content for the scan.
 
 
 #Setup New Checkmarx End-Point
