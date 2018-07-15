@@ -62,6 +62,7 @@ function postRequest($path, $contentType, $body, $expectStatus, $failedMsg, $ret
     try{
         $fullPath = ($config.url + "/CxRestAPI/" + $path)
         $servicePoint = [System.Net.ServicePointManager]::FindServicePoint($fullPath)
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
         $response = Invoke-RestMethod -Uri $fullPath -Method Post -Headers $headers -Body $body
         $servicePoint.CloseConnectionGroup($fullPath) |out-null;
        

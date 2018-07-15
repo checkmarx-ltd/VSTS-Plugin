@@ -150,6 +150,7 @@
       "type": "string",
       "label": "Comment",
       "required": false,
+      "helpMarkDown": "Free text comment that will appear within CxSAST scan information",
       "groupName": "scanSettings"
     },
     {
