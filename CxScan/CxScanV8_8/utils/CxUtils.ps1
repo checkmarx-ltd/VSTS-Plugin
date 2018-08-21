@@ -61,7 +61,7 @@ function PrintConfiguration($config) {
         if ($osaVulnerabilityThreshold) {
             Write-Host("CxOSA high threshold: {0}" -f $config.osaHighThreshold);
             Write-Host("CxOSA medium threshold: {0}" -f $config.osaMediumThreshold);
-            Write-Host("CxOSA low threshold: {0}" -f $config.osaLow);
+            Write-Host("CxOSA low threshold: {0}" -f $config.osaLowThreshold);
         }
     }
         Write-Host "------------------------------------------------------------------------------"
