@@ -28,7 +28,7 @@ function initScanResults($config){
 }
 
 
-function PrintConfiguration($config) {
+function printConfiguration($config) {
 
     Write-Host " "
     Write-Host "-------------------------------Configurations:--------------------------------";
