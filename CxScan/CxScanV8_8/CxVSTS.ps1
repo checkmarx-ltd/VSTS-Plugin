@@ -132,7 +132,7 @@ try{
     [boolean]$osaVulnerabilityThreshold = [System.Convert]::ToBoolean($osaVulnerabilityThreshold);
     $errorMessage ="";
     $tmpPath = [System.IO.Path]::GetTempPath()
-    $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp", "dsdsada", "123")# $env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER)
+    $tmpFolder =[System.IO.Path]::Combine($tmpPath,"cx_temp",$env:BUILD_DEFINITIONNAME, $env:BUILD_BUILDNUMBER);
 
     if (!(Test-Path($tmpFolder))) {
         Write-Host ("Build specific checkmarx reports folder created at: {0}" -f $tmpFolder)
@@ -211,10 +211,9 @@ try{
                 $scanResults.osaScanId = $osaScan.scanId;
                 $scanResults.osaProjectSummaryLink = $osaLink
             }Catch {
-                 Write-Host ("##vso[task.complete result=Failed;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
-                 $scanResults.osaFailed = true;
-                 $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
-                 $scanResults.buildFailed = $true
+                $scanResults.osaFailed = $true;
+                $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
+                Write-Error $osaFailedMessage;
               }
     }
 
@@ -238,9 +237,9 @@ try{
         try{
             $scanResults = getOSAResults $scanResults
         }Catch {
-          Write-Host ("##vso[task.logissue type=error;]Fail to retrieve OSA results : {0}" -f $_.Exception.Message)
           $scanResults.osaFailed = $true
-          $osaFailedMessage = ("Failed to get OSA scan results: {0}" -f $_.Exception.Message)
+          $osaFailedMessage = ("Failed to retrieve OSA scan results: {0}" -f $_.Exception.Message)
+          Write-Error $osaFailedMessage;
         }
     }
 
@@ -257,15 +256,27 @@ try{
     if($config.vulnerabilityThreshold){
         $thresholdExceeded = IsSASTThresholdExceeded $scanResults
     }
-    if (!$osaFailed -and $config.osaEnabled -and $osaVulnerabilityThreshold) {
-        $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
+    if ($config.osaEnabled){
+        if ($scanResults.osaFailed){
+            if (!$global:exceededFirstTime){
+                Write-Host ("##vso[task.logissue type=error;]********************************************")
+                Write-Host ("##vso[task.logissue type=error;] The Build Failed for the Following Reasons: ")
+                Write-Host ("##vso[task.logissue type=error;]********************************************")
+                $global:exceededFirstTime = $true;
+            }
+            Write-Host ("##vso[task.logissue type=error;]{0}" -f $osaFailedMessage);
+        }ElseIf ($osaVulnerabilityThreshold){
+            $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
+        }
+
     }
 
-    if($thresholdExceeded -or $osaThresholdExceeded -or $osaFailed){
+
+    if($thresholdExceeded -or $osaThresholdExceeded -or $scanResults.osaFailed){
         $scanResults.buildFailed = $true;
         if ($thresholdExceeded){  $errorMessage += "CxSAST threshold exceeded."}
         if ($osaThresholdExceeded){  $errorMessage += " CxOSA threshold exceeded"}
-        if ($osaFailed){  $errorMessage += " " + $osaFailedMessage}
+        if ($scanResults.osaFailed){  $errorMessage += " " + $osaFailedMessage}
         Write-Host "##vso[task.complete result=Failed;] Build Failed due to: $errorMessage"
     }
 }catch {
@@ -279,4 +290,3 @@ try{
 if (-not $scanResults.buildFailed ){
     Write-Host "##vso[task.complete result=Succeeded;]Scan completed successfully"
 }
-

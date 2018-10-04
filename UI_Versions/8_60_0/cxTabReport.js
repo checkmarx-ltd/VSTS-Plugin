@@ -741,13 +741,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     if (typeof cveAry != 'undefined' && cveAry != null) {
                                         cveAry = JSON.parse(cveAry);
                                         cveList = new Array();
-                                        for (var i = 0; i < cveAry.length; i++) {
-                                            //  var jsonObj = JSON.parse(cveAry[i]);
-                                            //cveList.push(jsonObj);
-                                            cveList.push(cveAry[i]);
+                                        if (Array.isArray(cveAry)) {
+                                            for (var i = 0; i < cveAry.length; i++) {
+                                                //  var jsonObj = JSON.parse(cveAry[i]);
+                                                //cveList.push(jsonObj);
+                                                cveList.push(cveAry[i]);
+                                            }
+                                        }else{
+                                            cveList.push(cveAry)
                                         }
                                     }
-
                                     return cveList;
                                 }
 

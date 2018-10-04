@@ -107,8 +107,7 @@
     },
     {
       "path": "CxScan/CxScanV8_8/CxOSA/osaDll/CxOSA.dll",
-      "addressable": true,
-      "packagePath": "lib"
+      "addressable": true
     }
   ],
   "contributions": [
