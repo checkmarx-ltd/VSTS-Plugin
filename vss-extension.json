@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "8.80.0",
+  "version": "8.80.2",
   "publisher": "Checkmarx",
   "targets": [
     {
@@ -160,7 +160,7 @@
             ]
           }
         ],
-        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>to register for a cloud Checkmarx account</span>"
+        "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a cloud Checkmarx account</span>"
       }
     },
     {

@@ -6,7 +6,6 @@ Param(
     $presetList,
     [String] $customPreset,
     [String] $incScan,
-    [String] $fsois,
     [String] $sourceFolder,
     [String] $folderExclusion,
     [String] $fileExtension,
@@ -96,7 +95,6 @@ if ($authScheme -ne 'UserNamePassword'){
 }
 
 $ErrorActionPreference = "Stop"
-$reportPath = [String]$env:COMMON_TESTRESULTSDIRECTORY
 $sourceLocation = [String]$env:BUILD_SOURCESDIRECTORY
 $sourceLocation = $sourceLocation.trim()
 $serviceUrl = [string]$serviceEndpoint.Url  #Url to cx server
@@ -228,10 +226,6 @@ $CliScanArgs.IsPrivateScan = 0
 
 if($incScan){
 	$CliScanArgs.IsIncremental = 1
-	if(!([string]::IsNullOrEmpty($fsois))){
-		[Int]$fsois = [convert]::ToInt32($fsois, 10)
-		#write-host "todo: add scans count environment variable"
-	}
 }
 
 $CliScanArgs.Comment = "Scan triggered by CxVSTS"

@@ -6,7 +6,6 @@ Param(
     $presetList,
     [String] $customPreset,
     [String] $incScan,
-    [String] $fsois,
     [String] $sourceFolder,
     [String] $folderExclusion,
     [String] $fileExtension,
@@ -26,7 +25,6 @@ Param(
     [String] $osaHigh,
     [String] $osaMedium,
     [String] $osaLow
-
 )
 
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
