@@ -73,7 +73,7 @@ The following steps are required to get started.
 ![image](images/config.png)
 
 **To complete this step:**
-To complete this step:
+
 1.	CxServer
     a.	Select a Checkmarx Endpoint from the drop-down list or click Manage to associate a new Endpoint (described in the next section).
     b.	Enter a Project Name: Either select an existing project from the list, or type in any name to create a new scan project
