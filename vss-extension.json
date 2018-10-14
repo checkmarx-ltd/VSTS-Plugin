@@ -107,8 +107,7 @@
     },
     {
       "path": "CxScan/CxScanV8_8/CxOSA/osaDll/CxOSA.dll",
-      "addressable": true,
-      "packagePath": "lib"
+      "addressable": true
     }
   ],
   "contributions": [
@@ -161,7 +160,7 @@
             ]
           }
         ],
-        "helpMarkDown": "<span><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>to register for a cloud Checkmarx account</span>"
+        "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a Checkmarx cloud account</span>"
       }
     },
     {
