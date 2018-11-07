@@ -52,7 +52,8 @@ function setScanDetailedReport($reportObj,  $scanResults){
                 For ($i=0; $i -le $qResult.count; $i++) {
                     $result = $qResult[$i];
                     if ("True".equals($result.falsePositive)) {
-                        $qResult.remove($i);
+                        $qResult = [System.Collections.ArrayList]$qResult
+                        $qResult.RemoveAt($i)
                     } elseif ("New".equals($result.status)){
                         switch ($result.severity )
                         {
