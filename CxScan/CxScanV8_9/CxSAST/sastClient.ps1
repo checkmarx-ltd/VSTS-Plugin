@@ -1,4 +1,4 @@
-﻿function createSASTScan()  {
+function createSASTScan()  {
 
     write-host ("-----------------------------------Create CxSAST Scan:-----------------------------------"); 
     
@@ -27,8 +27,6 @@
             $scanRequest | Add-Member -MemberType NoteProperty -Name isIncremental -Value $config.isIncremental
             $scanRequest | Add-Member -MemberType NoteProperty -Name isPublic -Value $config.isPublic
             $scanRequest | Add-Member -MemberType NoteProperty -Name forceScan -Value $config.isForceScan
-            $scanRequest | Add-Member -MemberType NoteProperty -Name comment -Value $config.scanComment
-
             write-host "Sending SAST scan request";
            
             return createScan $scanRequest
@@ -45,19 +43,23 @@ function getSASTResults($scanResults) {
         $scanId = $scanResults.scanId;
         #wait for SAST scan to finish
        (waitForScanToFinish $scanId $config.scanTimeoutInMinutes) |out-null
+       
+        if (![string]::IsNullOrEmpty($config.scanComment)) {
+            $scanComment = New-Object System.Object
+            $scanComment | Add-Member -MemberType NoteProperty -Name comment -Value $config.scanComment
+            (updateScanComment $scanComment $scanId) | out-null
+        }
         
         #retrieve SAST scan results
         write-host "Retrieving SAST scan results";
         ($statisticsResults = getScanStatistics $scanId) |out-null
         $scanResults = addSASTResults $statisticsResults $scanResults;
-
+        printResultsToConsole $scanResults;
       
 
         #SAST detailed report
        ($reportResponse = getScanReport $scanResults.scanId "XML" $CONTENT_TYPE_APPLICATION_XML_V1) | Out-Null
        ($scanResults = ResolveXMLReport $reportResponse $scanResults) | Out-Null
-
-        printResultsToConsole $scanResults;
 
     } catch {
         throw("Failed to get SAST scan results: {0}" -f $_.Exception.Message)
@@ -116,6 +118,11 @@ function getSASTScanStatus($scanId){
     return getRequest $SAST_QUEUE_SCAN_STATUS.replace("{scanId}",$scanId) $CONTENT_TYPE_APPLICATION_JSON_V1 200 "SAST scan status" $true;
 }
 
+function updateScanComment($comment, $scanId) {
+    $json = $comment| ConvertTo-Json -Compress ;
+    patchRequest $SAST_SCAN.replace("{scanId}", $scanId) $CONTENT_TYPE_APPLICATION_JSON_V1 $json 204 "update scan comment" $true;
+}
+
 function getScanStatistics($scanId) { 
     return getRequest $SAST_SCAN_RESULTS_STATISTICS.replace("{scanId}",$scanId) $CONTENT_TYPE_APPLICATION_JSON_V1 200 "SAST scan statistics" $true;
 }
@@ -145,14 +152,14 @@ function waitForScanToFinish($scanId, $scanTimeOut){
         Start-Sleep -s 10 #get  status every 20 seconds
         $scanStatus = getSASTScanStatus $scanId
     }
-      if ($scanStatus.stage.value -eq "Finished" -or  $scanStatus.stageDetails -eq "Scan completed" ) {
+    if ($scanTimeOut -gt 0 -and $elapsedTime -gt $scanTimeoutInMin) {
+            throw ("Waiting for CxSAST scan has reached the time limit. ({0} minutes)." -f $scanTimeout);
+        }
+
+    if ($scanStatus.stage.value -eq "Finished" -or  $scanStatus.stageDetails -eq "Scan completed" ) {
         write-host "SAST scan successfully finished.";
         return $scanStatus;
     } 
-
-       if ($scanTimeOut -gt 0 -and $elapsedTime -ge $scanTimeoutInMin) {
-        throw ("Waiting for CxSAST scan has reached the time limit. ({0} minutes)." -f $scanTimeout);
-    }
 
     throw "SAST scan cannot be completed. status [" + $scanStatus.stage.value + "]."
 }

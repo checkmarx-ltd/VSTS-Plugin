@@ -16,19 +16,41 @@ function ResolveVal($val){
           return "none"
       }
  }
-
 function createScanResults() {
     $scanResults = New-Object System.Object
     $scanResults | Add-Member -MemberType NoteProperty -Name buildFailed -Value $false
+    $scanResults | Add-Member -MemberType NoteProperty -Name errorOccurred -Value $false
 
     return $scanResults;
 }
 
+
 function initScanResults($config, $scanResults){
+
     $scanResults | Add-Member -MemberType NoteProperty -Name url -Value $config.url
     $scanResults | Add-Member -MemberType NoteProperty -Name syncMode -Value $config.isSyncMode
     $scanResults | Add-Member -MemberType NoteProperty -Name osaEnabled -Value $config.osaEnabled
-
+    $scanResults | Add-Member -MemberType NoteProperty -Name enablePolicyViolations -Value $config.enablePolicyViolations
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaThresholdExceeded -Value $false
+    $scanResults | Add-Member -MemberType NoteProperty -Name sastThresholdExceeded -Value $false
+    $scanResults | Add-Member -MemberType NoteProperty -Name sastResultsReady -Value $false
+    $scanResults | Add-Member -MemberType NoteProperty -Name scanId -Value $null
+    $scanResults | Add-Member -MemberType NoteProperty -Name thresholdEnabled -Value $config.vulnerabilityThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name highThreshold -Value $config.highThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name mediumThreshold -Value $config.mediumThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name lowThreshold -Value $config.lowThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaScanId -Value $null
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaProjectSummaryLink -Value $null
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaThresholdEnabled -Value $config.osaVulnerabilityThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaHighThreshold -Value $config.osaHighThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaMediumThreshold -Value $config.osaMediumThreshold
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaLowThreshold -Value $config.osaLowThreshold
+    $osaViolations = New-Object System.Collections.ArrayList;
+    $osaPolicies = New-Object System.Collections.ArrayList;
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaViolations -Value $osaViolations
+    $scanResults | Add-Member -MemberType NoteProperty -Name osaPolicies -Value $osaPolicies
+    $scanResults | Add-Member -MemberType NoteProperty -Name policyViolated -Value $false
     return $scanResults;
 }
 
@@ -62,6 +84,7 @@ function printConfiguration($config) {
         Write-Host("CxOSA folder exclusions: {0}" -f $(ResolveVal $config.osaFolderExclusions));
         Write-Host("CxOSA include/exclude wildcard patterns: {0}" -f $(ResolveVal $config.osaFileExclusions));
         Write-Host("CxOSA archive extract extensions: {0}" -f $config.osaArchiveInclude);
+        Write-Host("CxOSA Policy violations enabled: {0}" -f $config.enablePolicyViolations);
         Write-Host("CxOSA thresholds enabled: {0}" -f $config.osaVulnerabilityThreshold);
         if ($osaVulnerabilityThreshold) {
             Write-Host("CxOSA high threshold: {0}" -f $config.osaHighThreshold);
@@ -120,12 +143,7 @@ function IsLevelThresholdExceeded($result, $threshold, $severity, $scanType){
            }
             [Int]$resultNum = [convert]::ToInt32($result, 10)
             if($resultNum -gt $thresholdNum){
-                if (!$global:exceededFirstTime){
-                    Write-Host ("##vso[task.logissue type=error;]********************************************")
-                    Write-Host ("##vso[task.logissue type=error;] The Build Failed for the Following Reasons: ")
-                    Write-Host ("##vso[task.logissue type=error;]********************************************")
-                    $global:exceededFirstTime = $true;
-                }
+               isExceededFirstTime;
                Write-Host ("##vso[task.logissue type=error;]{0} {1} severity results are above threshold. Results: {2}. Threshold: {3}" -f $scanType, $severity, $resultNum, $thresholdNum)
                return $true
             }
@@ -134,6 +152,15 @@ function IsLevelThresholdExceeded($result, $threshold, $severity, $scanType){
         Write-Warning("Invalid {0} {1} threshold. Error: {2}" -f $scanType, $severity ,$_.Exception.Message);
     }
     return $false;
+}
+
+function isExceededFirstTime(){
+    if (!$global:exceededFirstTime){
+        Write-Host ("##vso[task.logissue type=error;]********************************************")
+        Write-Host ("##vso[task.logissue type=error;] The Build Failed for the Following Reasons: ")
+        Write-Host ("##vso[task.logissue type=error;]********************************************")
+        $global:exceededFirstTime = $true;
+    }
 }
 
 function OnError($scanResults, $cxReportFile){

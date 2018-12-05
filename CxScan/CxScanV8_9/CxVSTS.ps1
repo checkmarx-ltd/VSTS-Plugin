@@ -24,7 +24,8 @@ Param(
     [String] $osaVulnerabilityThreshold,
     [String] $osaHigh,
     [String] $osaMedium,
-    [String] $osaLow
+    [String] $osaLow,
+    [String] $enablePolicyViolations
 )
 
 import-module "Microsoft.TeamFoundation.DistributedTask.Task.Common"
@@ -96,7 +97,9 @@ function createConfig(){
     $config | Add-Member -MemberType NoteProperty -Name token -Value $null
     $config | Add-Member -MemberType NoteProperty -Name projectId -Value $null
     $config | Add-Member -MemberType NoteProperty -Name createSASTResponse -Value $null
-    $config | Add-Member -MemberType NoteProperty -Name debugMode -Value $env:SYSTEM_DEBUG;
+    $config | Add-Member -MemberType NoteProperty -Name debugMode -Value $env:SYSTEM_DEBUG
+    $config | Add-Member -MemberType NoteProperty -Name enablePolicyViolations -Value ([System.Convert]::ToBoolean($enablePolicyViolations))
+    $config | Add-Member -MemberType NoteProperty -Name cxARMUrl -Value $null;
 
     return $config;
 }
@@ -123,6 +126,7 @@ Write-Host
           "            C H E C K M A R X               `n"
 Write-Host "                                               "
 Write-Host "Starting Checkmarx scan"
+
 
 $scanResults = createScanResults
 
@@ -164,14 +168,6 @@ try{
 
         #------- Create SAST Scan ------#
     if ($config.sastEnabled){
-        $scanResults | Add-Member -MemberType NoteProperty -Name sastResultsReady -Value $false
-        $scanResults | Add-Member -MemberType NoteProperty -Name scanId -Value $null
-        $scanResults | Add-Member -MemberType NoteProperty -Name thresholdEnabled -Value $config.vulnerabilityThreshold
-         if($config.vulnerabilityThreshold){
-             $scanResults | Add-Member -MemberType NoteProperty -Name highThreshold -Value $config.highThreshold
-             $scanResults | Add-Member -MemberType NoteProperty -Name mediumThreshold -Value $config.mediumThreshold
-             $scanResults | Add-Member -MemberType NoteProperty -Name lowThreshold -Value $config.lowThreshold
-         }
 
         #Create Zip File
         Write-Host "Zipping sources";
@@ -195,32 +191,23 @@ try{
         #------- Create OSA Scan ------#
     if ($config.osaEnabled){
         try{
-                $scanResults | Add-Member -MemberType NoteProperty -Name osaFailed -Value $false
-                $scanResults | Add-Member -MemberType NoteProperty -Name osaScanId -Value $null
-                $scanResults | Add-Member -MemberType NoteProperty -Name osaProjectSummaryLink -Value $null
-                $scanResults | Add-Member -MemberType NoteProperty -Name osaThresholdEnabled -Value $config.osaVulnerabilityThreshold
-                if($config.osaVulnerabilityThreshold){
-                     $scanResults | Add-Member -MemberType NoteProperty -Name osaHighThreshold -Value $osaHigh
-                     $scanResults | Add-Member -MemberType NoteProperty -Name osaMediumThreshold -Value $osaMedium
-                     $scanResults | Add-Member -MemberType NoteProperty -Name osaLowThreshold -Value $osaLow
-                }
-
                 $osaScan = createOSAScan
                 $osaLink =  ("{0}/CxWebClient/SPA/#/viewer/project/{1}"-f $config.url, $config.projectId);
                 Write-Host "OSA scan created successfully. Link to project state: $osaLink";
                 $scanResults.osaScanId = $osaScan.scanId;
                 $scanResults.osaProjectSummaryLink = $osaLink
             }Catch {
-                $scanResults.osaFailed = $true;
-                $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
-                Write-Error $osaFailedMessage;
+                 Write-Host ("##vso[task.complete result=Failed;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
+                 $scanResults.osaFailed = $true;
+                 $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
+                 $scanResults.errorOccurred = $true
               }
     }
 
         #------ Asynchronous MODE ------#
     if(!$config.isSyncMode){
         Write-host "Running in Asynchronous mode. Not waiting for scan to finish";
-        if ($scanResults.buildFailed -eq $true){
+        if ($scanResults.errorOccurred -eq $true){
             return OnError $scanResults $cxReportFile
         }
         $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
@@ -237,9 +224,9 @@ try{
         try{
             $scanResults = getOSAResults $scanResults
         }Catch {
+          Write-Host ("##vso[task.logissue type=error;]Fail to retrieve OSA results : {0}" -f $_.Exception.Message)
           $scanResults.osaFailed = $true
-          $osaFailedMessage = ("Failed to retrieve OSA scan results: {0}" -f $_.Exception.Message)
-          Write-Error $osaFailedMessage;
+          $osaFailedMessage = ("Failed to get OSA scan results: {0}" -f $_.Exception.Message)
         }
     }
 
@@ -251,42 +238,45 @@ try{
     Write-Host "##vso[task.addattachment type=cxReport;name=cxReport;]$cxReportFile"
 
     #------- Is Build failed by threshold? ------#
-    [bool]$thresholdExceeded=$false
+    [bool]$sastThresholdExceeded=$false
     [bool]$osaThresholdExceeded=$false
-    if($config.vulnerabilityThreshold){
-        $thresholdExceeded = IsSASTThresholdExceeded $scanResults
-    }
-    if ($config.osaEnabled){
-        if ($scanResults.osaFailed){
-            if (!$global:exceededFirstTime){
-                Write-Host ("##vso[task.logissue type=error;]********************************************")
-                Write-Host ("##vso[task.logissue type=error;] The Build Failed for the Following Reasons: ")
-                Write-Host ("##vso[task.logissue type=error;]********************************************")
-                $global:exceededFirstTime = $true;
-            }
-            Write-Host ("##vso[task.logissue type=error;]{0}" -f $osaFailedMessage);
-        }ElseIf ($osaVulnerabilityThreshold){
-            $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
-        }
+
+    if($config.sastEnabled -and $config.vulnerabilityThreshold){
+        $sastThresholdExceeded = IsSASTThresholdExceeded $scanResults
 
     }
+    if (!$scanResults.osaFailed -and $config.osaEnabled -and $osaVulnerabilityThreshold) {
+        $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
+}
 
+    if ($scanResults.policyViolated) {
+        isExceededFirstTime;
+        Write-Host ("##vso[task.logissue type=error;] Project policy status: violated");
+    }
 
-    if($thresholdExceeded -or $osaThresholdExceeded -or $scanResults.osaFailed){
+    if($sastThresholdExceeded -or $osaThresholdExceeded -or  $scanResults.osaFailed -or $scanResults.policyViolated){
         $scanResults.buildFailed = $true;
-        if ($thresholdExceeded){  $errorMessage += "CxSAST threshold exceeded."}
-        if ($osaThresholdExceeded){  $errorMessage += " CxOSA threshold exceeded"}
+        if ($sastThresholdExceeded){
+            $errorMessage += "Exceeded CxSAST Vulnerability Threshold."
+        }
+        if ($osaThresholdExceeded){
+            $errorMessage += " Exceeded CxOSA Vulnerability Threshold"
+        }
+        if ($scanResults.policyViolated){
+            $errorMessage += "Project policy status: violated"
+        }
         if ($scanResults.osaFailed){  $errorMessage += " " + $osaFailedMessage}
         Write-Host "##vso[task.complete result=Failed;] Build Failed due to: $errorMessage"
     }
 }catch {
     $errorMessage = ("Scan cannot be completed: {0}." -f $_.Exception.Message)
-    $scanResults.buildFailed = $true;
+    $scanResults.errorOccurred = $true;
     OnError $scanResults $cxReportFile
     Write-Host "##vso[task.complete result=Failed;]$errorMessage"
     throw $errorMessage
  }
 
-if (-not $scanResults.buildFailed ){
+if (-not $scanResults.buildFailed -and -not $scanResults.errorOccurred ){
     Write-Host "##vso[task.complete result=Succeeded;]Scan completed successfully"
 }
+

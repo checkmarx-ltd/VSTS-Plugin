@@ -1,7 +1,7 @@
-﻿
+
 #OSA API
 function createOSAScan() {
-     write-host ("-----------------------------------Create CxOSA Scan:------------------------------------");
+    write-host ("-----------------------------------Create CxOSA Scan:------------------------------------");
     #OSA FSA
     $tmpPath = [System.IO.Path]::GetTempPath();
     [System.Reflection.Assembly]::LoadFile("$PSScriptRoot/osaDll/CxOSA.dll") | out-null
@@ -31,9 +31,33 @@ function getOSAResults($scanResults){
     $osaLibraries = (getOSALibraries $scanId | ConvertTo-Json)
     $osaCVE = (getOSAVulnerabilities $scanId | ConvertTo-Json)
 
-    $scanResults = AddOSAResults $scanResults $osaLink $osaSummaryResults $osaLibraries $osaCVE $osaScanStatus
-    printOSAResultsToConsole $osaSummaryResults $osaLink
+    if ($config.enablePolicyViolations) {
+        $scanResults = resolveOSAViolation  $scanResults
+    }
 
+    $scanResults = AddOSAResults $scanResults $osaLink $osaSummaryResults $osaLibraries $osaCVE $osaScanStatus
+    printOSAResultsToConsole $osaSummaryResults $osaLink $scanResults.osaPolicies
+
+    return $scanResults;
+}
+
+
+function resolveOSAViolation($scanResults){
+  try {
+        $projectViolations = getProjectViolations $OSA_PROVIDER;
+        foreach ($policy in $projectViolations) {
+            ($scanResults.osaPolicies.Add($policy.policyName)) | out-null;
+            foreach ($violation in $policy.violations) {                 
+                $scanResults = AddOsaViolation $violation  $policy.policyName $scanResults;    
+            }
+        }
+         if (!$osaFailed -and $config.osaEnabled -and $config.enablePolicyViolations -and $scanResults.osaViolations.Count -gt 0) {
+            $scanResults.policyViolated = $true;
+         }
+        
+    }catch {
+         Write-error ("CxARM is not available. Policy violations for OSA cannot be calculated: {0}. "  -f $_.Exception.Message);
+    }
     return $scanResults;
 }
 
@@ -67,7 +91,7 @@ function getOSAScanStatus($scanId) {
 
 #OSA Helpers
 function waitForOSAToFinish($scanId){
-    $osaStart = [DateTime]::Now;
+    $osaStart = [DateTime]::Now;    
     $osaStatus = getOSAScanStatus $scanId
     Write-Host "Waiting for CxOSA scan to finish."
     $elapsedTime = 0;
@@ -87,5 +111,5 @@ function waitForOSAToFinish($scanId){
         return $osaStatus;
     }
 
-    throw "OSA scan cannot be completed. status [" + $osaStatus.state.name + "].";#TODO
+    throw "OSA scan cannot be completed. status [" + $osaStatus.state.name + "]." + " Failure reason: " +  $osaStatus.state.failureReason;#TODO
 }

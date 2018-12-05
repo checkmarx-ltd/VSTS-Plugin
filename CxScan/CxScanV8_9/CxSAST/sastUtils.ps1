@@ -1,4 +1,4 @@
-﻿$newHighCount = 0;
+$newHighCount = 0;
 $newMediumCount = 0;
 $newLowCount = 0;
 $newInfoCount = 0;
@@ -38,30 +38,17 @@ function setScanDetailedReport($reportObj,  $scanResults){
 
         foreach ($query in $XMLResults.Query) {
             $qResult = $query.result;
-            if ([string]::IsNullOrEmpty($qResult.count)){
-                if ("False".equals($qResult.falsePositive) -and "New".equals($qResult.status)) {
-                    switch ($qResult.severity )
+            For ($i=0; $i -le $qResult.count; $i++) {
+                $result = $qResult[$i];
+                if ("True".equals($result.falsePositive)) {
+                    $qResult.remove($i);
+                } elseif ("New".equals($result.status)){
+                     switch ($result.severity )
                     {
-                        High {$newHighCount++;break}
-                        Medium {$newMediumCount++; break}
-                        Low {$newLowCount++; break}
-                        Info{$newInfoCount++;break}
-                    }
-                } 
-            }else{
-                For ($i=0; $i -le $qResult.count; $i++) {
-                    $result = $qResult[$i];
-                    if ("True".equals($result.falsePositive)) {
-                        $qResult = [System.Collections.ArrayList]$qResult
-                        $qResult.RemoveAt($i)
-                    } elseif ("New".equals($result.status)){
-                        switch ($result.severity )
-                        {
-                            High {$newHighCount++;break}
-                            Medium {$newMediumCount++; break}
-                            Low {$newLowCount++; break}
-                            Info{$newInfoCount++;break}
-                        }
+                        High {$newHighCount++}
+                        Medium {$newMediumCount++}
+                        Low {$newLowCount++}
+                        Info{$newInfoCount++}
                     }
                 }
             }
@@ -75,25 +62,14 @@ function setScanDetailedReport($reportObj,  $scanResults){
         return $scanResults;
 }
 
+
 function printResultsToConsole($scanResults) {
-    $highNew= "";
-    $mediumNew= "";
-    $lowNew= "";
-    $infoNew= "";
-
-    if ($scanResults.newHighCount -gt 0){$highNew =  (" ({0} new)" -f $scanResults.newHighCount)}
-    if ($scanResults.newMediumCount -gt 0){$mediumNew =  (" ({0} new)" -f $scanResults.newMediumCount)}
-    if ($scanResults.newLowCount -gt 0){$lowNew =  (" ({0} new)" -f $scanResults.newLowCount)}
-    if ($scanResults.newInfoCount -gt 0){$infoNew =  (" ({0} new)" -f $scanResults.newInfoCount)}
-
-
     Write-Host "----------------------------Checkmarx Scan Results(CxSAST):-------------------------------";
-    Write-Host "High severity results: " $scanResults.highResults $highNew;
-    Write-Host "Medium severity results: " $scanResults.mediumResults $mediumNew;
-    Write-Host "Low severity results: " $scanResults.lowResults $lowNew;
-    Write-Host "Info severity results: " $scanResults.infoResults $infoNew;
+    Write-Host "High severity results: " $scanResults.highResults;
+    Write-Host "Medium severity results: " $scanResults.mediumResults;
+    Write-Host "Low severity results: " $scanResults.lowResults;
+    Write-Host "Info severity results: " $scanResults.infoResults;
     Write-Host "";
     Write-Host "Scan results location: " $scanResults.sastScanResultsLink;
     Write-Host "------------------------------------------------------------------------------------------\n";
 }
-

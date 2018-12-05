@@ -10,9 +10,9 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 88,
+    "Major": 89,
     "Minor": 0,
-    "Patch": 4
+    "Patch": 0
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -97,7 +97,7 @@
       "type": "string",
       "label": "Team",
       "required": true,
-      "helpMarkDown": "The full team name (for example, \\CxServer\\SP\\Company\\Users).",
+      "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users).",
       "groupName": "serverSettings"
     },
     {
@@ -123,7 +123,7 @@
       "type": "string",
       "label": "Include/Exclude File Extensions",
       "required": false,
-      "defaultValue": "!*.DS_Store, !*.ipr,     !*.iws,\n!*.bak,    !*.tmp,     !*.aac,      !*.aif,      !*.iff,     !*.m3u,   !*.mid,   !*.mp3,\n!*.mpa,    !*.ra,        !*.wav,      !*.wma,      !*.3g2,     !*.3gp,   !*.asf,   !*.asx,\n!*.avi,    !*.flv,       !*.mov,     !*.mp4,      !*.mpg,     !*.rm,    !*.swf,   !*.vob,\n!*.wmv,    !*.bmp,       !*.gif,       !*.jpg,      !*.png,     !*.psd,   !*.tif,   !*.swf,\n!*.jar,    !*.zip,       !*.rar,      !*.exe,      !*.dll,     !*.pdb,   !*.7z,    !*.gz,\n!*.tar.gz, !*.tar,       !*.gz,       !*.ahtm,     !*.ahtml,   !*.fhtml, !*.hdm,\n!*.hdml,   !*.hsql,      !*.ht,      !*.hta,      !*.htc,     !*.htd,   !*.war,   !*.ear,\n!*.htmls,  !*.ihtml,     !*.mht,      !*.mhtm,     !*.mhtml,   !*.ssi,   !*.stm,\n!*.stml,   !*.ttml,      !*.txn,      !*.xhtm,     !*.xhtml,   !*.class, !*.iml",
+      "defaultValue": "!*.DS_Store, !*.ipr, !*.iws, !*.bak, !*.tmp, !*.aac, !*.aif, !*.iff, !*.m3u, !*.mid,   !*.mp3,\n!*.mpa, !*.ra, !*.wav, !*.wma, !*.3g2, !*.3gp, !*.asf, !*.asx, !*.avi,!*.flv, !*.mov, !*.mp4, !*.mpg,  !*.rm, !*.swf, !*.vob, !*.wmv, !*.bmp, !*.gif, !*.jpg, !*.png, !*.psd, !*.tif, !*.swf, !*.jar, !*.zip, !*.rar, !*.exe, !*.dll, !*.pdb, !*.7z, !*.gz, !*.tar.gz, !*.tar, !*.gz, !*.ahtm, !*.ahtml, !*.fhtml, !*.hdm, !*.hdml,   !*.hsql, !*.ht, !*.hta, !*.htc, !*.htd, !*.war, !*.ear, !*.htmls, !*.ihtml, !*.mht, !*.mhtm, !*.mhtml, !*.ssi, !*.stm, !*.stml, !*.ttml, !*.txn, !*.xhtm, !*.xhtml, !*.class, !*.iml",
       "helpMarkDown": "Comma separated list of include or exclude wildcard patterns. Exclude patterns start with exclamation mark \"!\" [Exclusion Example: !*.tmp, !*.html.   Inclusion Example: *.java ]",
       "groupName": "scanSettings"
     },
@@ -232,6 +232,16 @@
       "required": false,
       "defaultValue": "*.zip, *.war, *.ear, *.tgz",
       "helpMarkDown": "Comma separated list of archive wildcard patterns to include their extracted content for the scan. eg. *.zip, *.jar, *.ear. Supported archive types are: jar, war, ear, sca, gem, whl, egg, tar, tar.gz, tgz, zip, rar. Leave blank to extract all archives.",
+      "groupName": "scanSettings",
+      "visibleRule": "osaEnabled = true"
+    },
+    {
+      "name": "enablePolicyViolations",
+      "type": "boolean",
+      "label": "Enable Project's OSA Policy Enforcement",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Mark the build as failed or unstable if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST.",
       "groupName": "scanSettings",
       "visibleRule": "osaEnabled = true"
     },

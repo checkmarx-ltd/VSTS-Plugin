@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "9.00.0",
-  "publisher": "Checkmarx",
+  "version": "8.80.96",
+  "publisher": "ilandayan",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -107,6 +107,10 @@
     },
     {
       "path": "CxScan/CxScanV8_8/CxOSA/osaDll/CxOSA.dll",
+      "addressable": true
+    },
+    {
+      "path": "CxScan/CxScanV8_9/CxOSA/osaDll/CxOSA.dll",
       "addressable": true
     }
   ],
