@@ -37,7 +37,9 @@ function printOSAResultsToConsole($scanResults, $osaLink, $osaPolicies) {
             Write-Host "Project policy status: compliant";
         }else{
             Write-Host("Project policy status: violated");
-            Write-Host("OSA violated policies names: {0} " -f  $osaPolicies -join ",");
+
+            $policies =   $osaPolicies -join ", "
+            Write-Host("OSA violated policies names: {0} " -f  $policies);
         }
     }
     Write-Host ""

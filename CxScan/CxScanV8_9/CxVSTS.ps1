@@ -251,7 +251,7 @@ try{
 
     if ($scanResults.policyViolated) {
         isExceededFirstTime;
-        Write-Host ("##vso[task.logissue type=error;] Project policy status: violated");
+        Write-Host ("##vso[task.logissue type=error;]Project policy status: violated");
     }
 
     if($sastThresholdExceeded -or $osaThresholdExceeded -or  $scanResults.osaFailed -or $scanResults.policyViolated){

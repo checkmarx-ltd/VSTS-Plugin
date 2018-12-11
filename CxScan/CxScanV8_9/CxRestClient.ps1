@@ -2,7 +2,7 @@ $AUTHENTICATION = "auth/identity/connect/token";
 $CXPRESETS = "sast/presets";
 $CXTEAMS = "auth/teams";
 $CX_ARM_URL = "/Configurations/Portal";
-$CX_ARM_VIOLATION = "/cxarm/policymanager/projects/{projectId}/violations";
+$CX_ARM_VIOLATION = "/cxarm/policymanager/projects/{projectId}/violations?provider={provider}";
 
 
 
