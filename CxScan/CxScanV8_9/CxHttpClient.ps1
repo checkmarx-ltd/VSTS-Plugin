@@ -42,7 +42,7 @@ function getRequestFullPath($basePath, $relPath,$acceptHeader, $contentType, $ex
             return getRequest $path $contentType $expectStatus $failedMsg $false
         }
         if (!$failedMsg.Contains("project by name")){
-            if ($_.Exception.Response -ne $null){
+            if ($_.Exception.Response -ne $null  -and !$failedMsg.Contains("cx Version")){
                 Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__
                 Write-Host "StatusDescription:" $_.Exception.Response.StatusDescription
             }
@@ -87,46 +87,6 @@ function postRequest($path, $contentType, $body, $expectStatus, $failedMsg, $ret
         throw ("Failed to {0}: {1}" -f $failedMsg, $_.Exception.Message)
     }
 }
-                                                
-function patchRequest($path, $contentType, $body, $expectStatus, $failedMsg, $retry){
-    $headers = @{}
-    #$headers.Add("Accept", $CONTENT_TYPE_APPLICATION_JSON);
 
-    if ($config.token -ne $null) {
-        $headers.Add("Authorization", $config.token.token_type + " " + $config.token.access_token)  
-    }
-    if ($contentType -ne $null) {
-        $headers.Add("Content-type", $contentType);
-    }
-    try{
-        $fullPath = ($config.url + "/CxRestAPI/" + $path)
-        $servicePoint = [System.Net.ServicePointManager]::FindServicePoint($fullPath)
-        $response = Invoke-RestMethod -Uri $fullPath -Method Patch -Headers $headers -Body $body -ContentType $contentType
-        #validateResponse $response $expectStatus ("Failed to get " + $failedMsg);
-        $servicePoint.CloseConnectionGroup("") |out-null;        
-        
-        return $response;
-    }catch{
-         if ($retry-and $_.Exception.Response.StatusCode.value__ -eq 401) { #Token expired
-            Write-Warning "Access token expired, requesting a new token";
-            $config.token = $null;
-            $config.token = login ;
-            
-            return patchRequest $path $contentType $body $expectStatus $failedMsg $false;
-         }
-
-        if ($_.Exception.Response -ne $null){
-            Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__
-            Write-Host "StatusDescription:" $_.Exception.Response.StatusDescription
-        }
-        throw ("Failed to update {0}: {1}" -f $failedMsg, $_.Exception.Message)
-    }
-}
-
-function validateResponse($response, $status, $message){
-    if ([string]::IsNullOrEmpty($response) -and $response.Count -eq 0 -and !$message.Contains("upload zip file") -and !$message.Contains("OSA vulnerabilities")){
-            throw ("Failed to {0}: {1}" -f $messag, $_.Exception.Message)
-    }
-}
 
 

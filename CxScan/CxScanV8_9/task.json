@@ -10,7 +10,7 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 89,
+    "Major": 9,
     "Minor": 0,
     "Patch": 0
   },
@@ -242,8 +242,7 @@
       "required": false,
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed or unstable if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST.",
-      "groupName": "scanSettings",
-      "visibleRule": "osaEnabled = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "osaVulnerabilityThreshold",

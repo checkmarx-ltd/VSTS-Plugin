@@ -27,6 +27,7 @@ function createSASTScan()  {
             $scanRequest | Add-Member -MemberType NoteProperty -Name isIncremental -Value $config.isIncremental
             $scanRequest | Add-Member -MemberType NoteProperty -Name isPublic -Value $config.isPublic
             $scanRequest | Add-Member -MemberType NoteProperty -Name forceScan -Value $config.isForceScan
+            $scanRequest | Add-Member -MemberType NoteProperty -Name comment -Value $config.comment
             write-host "Sending SAST scan request";
            
             return createScan $scanRequest
@@ -43,16 +44,15 @@ function getSASTResults($scanResults) {
         $scanId = $scanResults.scanId;
         #wait for SAST scan to finish
        (waitForScanToFinish $scanId $config.scanTimeoutInMinutes) |out-null
-       
-        if (![string]::IsNullOrEmpty($config.scanComment)) {
-            $scanComment = New-Object System.Object
-            $scanComment | Add-Member -MemberType NoteProperty -Name comment -Value $config.scanComment
-            (updateScanComment $scanComment $scanId) | out-null
-        }
-        
+
         #retrieve SAST scan results
         write-host "Retrieving SAST scan results";
         ($statisticsResults = getScanStatistics $scanId) |out-null
+
+         if ($config.enablePolicyViolations -and ![string]::IsNullOrEmpty($config.cxVersion)) {
+            $scanResults = resolveSASTViolation  $scanResults
+        }
+
         $scanResults = addSASTResults $statisticsResults $scanResults;
         printResultsToConsole $scanResults;
       
@@ -63,6 +63,27 @@ function getSASTResults($scanResults) {
 
     } catch {
         throw("Failed to get SAST scan results: {0}" -f $_.Exception.Message)
+    }
+    return $scanResults;
+}
+
+function resolveSASTViolation($scanResults){
+  try {
+        
+        waitForARMToFinish $config.projectId | out-null;
+        ($projectViolations = getProjectViolations $SAST_PROVIDER) | out-null;
+        foreach ($policy in $projectViolations) {
+            ($scanResults.sastPolicies.Add($policy.policyName)) | out-null;
+            foreach ($violation in $policy.violations) {                 
+                $scanResults = AddSastViolation $violation  $policy.policyName $scanResults;    
+            }
+        }
+         if ($scanResults.sastViolations -and $scanResults.sastViolations.Count -gt 0) {
+            $scanResults.policyViolated = $true;
+         }
+        
+    }catch {
+         Write-error ("CxARM is not available. Policy violations for OSA cannot be calculated: {0}. "  -f $_.Exception.Message);
     }
     return $scanResults;
 }
@@ -83,31 +104,7 @@ function defineScanSetting($scanSetting) {
     postRequest $SAST_UPDATE_SCAN_SETTINGS $CONTENT_TYPE_APPLICATION_JSON_V1 $json 200 "define scan setting" $true;
 }
 
-function uploadZipFile($zipFile, $projectId){
-    try {
-        $LF = "`r`n"
-        $fileBin = [System.IO.File]::ReadAllBytes($zipFile)
-          
-        $enc = [System.Text.Encoding]::GetEncoding("ISO-8859-1")
-        $fileEnc = $enc.GetString($fileBin)
-  
-        $boundary = [System.Guid]::NewGuid().ToString()
-        $bodyLines = (
-        "--$boundary",
-        "Content-Disposition: form-data; name=`"zippedSource`"; filename=`" filename.zip`"",
-                "Content-Type: application/octet-stream$LF",
-        $fileEnc,
-        "--$boundary--$LF"
-        ) -join $LF
 
-        $contentType = "multipart/form-data; boundary=`"$boundary`""
-    }catch{
-        Write-Host ("Failed to upload Zip: {0}" -f  $_.Exception.Message)
-        return
-    }   
-   
-    postRequest $SAST_ZIP_ATTACHMENTS.Replace("{projectId}",$projectId) $contentType $bodyLines 204 "upload zip file" $true;
-}
 
 function createScan($request){ 
     $json = $request| ConvertTo-Json -Compress 
@@ -118,12 +115,11 @@ function getSASTScanStatus($scanId){
     return getRequest $SAST_QUEUE_SCAN_STATUS.replace("{scanId}",$scanId) $CONTENT_TYPE_APPLICATION_JSON_V1 200 "SAST scan status" $true;
 }
 
-function updateScanComment($comment, $scanId) {
-    $json = $comment| ConvertTo-Json -Compress ;
-    patchRequest $SAST_SCAN.replace("{scanId}", $scanId) $CONTENT_TYPE_APPLICATION_JSON_V1 $json 204 "update scan comment" $true;
+function getCxARMStatus($projectId){
+    return getRequest $SAST_GET_CXARM_STATUS.replace("{projectId}",$projectId) $CONTENT_TYPE_APPLICATION_JSON_V1 200 "CxARM status" $true;
 }
 
-function getScanStatistics($scanId) { 
+function getScanStatistics($scanId) {
     return getRequest $SAST_SCAN_RESULTS_STATISTICS.replace("{scanId}",$scanId) $CONTENT_TYPE_APPLICATION_JSON_V1 200 "SAST scan statistics" $true;
 }
 
@@ -162,4 +158,63 @@ function waitForScanToFinish($scanId, $scanTimeOut){
     } 
 
     throw "SAST scan cannot be completed. status [" + $scanStatus.stage.value + "]."
+}
+
+function waitForARMToFinish($projectId){
+    $armStart = [DateTime]::Now;
+    $armStatus = getCxARMStatus $projectId
+
+    $elapsedTime = [timespan]::FromMinutes(0);
+    $scanTimeoutInMin =  [timespan]::FromMinutes(20)
+
+    while($armStatus -ne $null -and
+          $armStatus.status -ne "Finished"  -and
+          $armStatus.status -ne "Failed"  -and
+          $armStatus.status -ne "None"  -and
+         ($scanTimeoutInMin -le 0 -or $elapsedTime -lt $scanTimeoutInMin))
+    {
+        $elapsedTime = [DateTime]::Now.Subtract($armStart).ToString().Split('.')[0]
+        write-host("Waiting for server to retrieve policy violations. Elapsed time: {0}. Status: {3}." -f $elapsedTime ,$armStatus.status);
+
+        Start-Sleep -s 20
+        $armStatus = getCxARMStatus $projectId
+    }
+    if ($scanTimeOut -gt 0 -and $elapsedTime -gt $scanTimeoutInMin) {
+            throw ("Waiting for server to retrieve policy violations has reached the time limit. ({0} minutes)." -f $scanTimeout);
+        }
+
+    if ($armStatus.status -eq "Finished") {
+        return $armStatus ;
+    }
+
+    throw "Generation of scan report [id=" + $armStatus.project.id + "] failed."
+}
+
+
+
+
+function uploadZipFile($zipFile, $projectId){
+    try {
+        $LF = "`r`n"
+        $fileBin = [System.IO.File]::ReadAllBytes($zipFile)
+
+        $enc = [System.Text.Encoding]::GetEncoding("ISO-8859-1")
+        $fileEnc = $enc.GetString($fileBin)
+
+        $boundary = [System.Guid]::NewGuid().ToString()
+        $bodyLines = (
+            "--$boundary",
+                "Content-Disposition: form-data; name=`"zippedSource`"; filename=`" filename.zip`"",
+        "Content-Type: application/octet-stream$LF",
+            $fileEnc,
+            "--$boundary--$LF"
+    ) -join $LF
+
+        $contentType = "multipart/form-data; boundary=`"$boundary`""
+    }catch{
+        Write-Host ("Failed to upload Zip: {0}" -f  $_.Exception.Message)
+        return
+    }   
+   
+    postRequest $SAST_ZIP_ATTACHMENTS.Replace("{projectId}",$projectId) $contentType $bodyLines 204 "upload zip file" $true;
 }

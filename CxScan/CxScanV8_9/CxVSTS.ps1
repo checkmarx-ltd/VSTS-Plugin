@@ -55,6 +55,7 @@ function createConfig(){
     $config | Add-Member -MemberType NoteProperty -Name cxOrigin -Value "VSTS"
     $config | Add-Member -MemberType NoteProperty -Name projectName -Value $projectName
     $config | Add-Member -MemberType NoteProperty -Name teamId -Value $null
+    $fullTeamName = $fullTeamName.Replace("/","\")
     if (!$fullTeamName.StartsWith("\")){
         $fullTeamName =  "\$fullTeamName"
     }
@@ -76,7 +77,7 @@ function createConfig(){
         $scanTimeout = -1;
     }
     $config | Add-Member -MemberType NoteProperty -Name scanTimeoutInMinutes -Value $scanTimeout
-    $config | Add-Member -MemberType NoteProperty -Name scanComment -Value $comment
+    $config | Add-Member -MemberType NoteProperty -Name comment -Value $comment
     $config | Add-Member -MemberType NoteProperty -Name denyProject -Value ([System.Convert]::ToBoolean($denyProject))
     $config | Add-Member -MemberType NoteProperty -Name folderExclusion -Value $folderExclusion
     $config | Add-Member -MemberType NoteProperty -Name fileExtension -Value $fileExtension
@@ -100,6 +101,7 @@ function createConfig(){
     $config | Add-Member -MemberType NoteProperty -Name debugMode -Value $env:SYSTEM_DEBUG
     $config | Add-Member -MemberType NoteProperty -Name enablePolicyViolations -Value ([System.Convert]::ToBoolean($enablePolicyViolations))
     $config | Add-Member -MemberType NoteProperty -Name cxARMUrl -Value $null;
+    $config | Add-Member -MemberType NoteProperty -Name cxVersion -Value $null;
 
     return $config;
 }
@@ -199,7 +201,7 @@ try{
             }Catch {
                  Write-Host ("##vso[task.complete result=Failed;]Failed to create OSA scan : {0}" -f $_.Exception.Message)
                  $scanResults.osaFailed = $true;
-                 $osaFailedMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
+                 $errorMessage = ("Failed to create OSA scan : {0}" -f $_.Exception.Message);
                  $scanResults.errorOccurred = $true
               }
     }
@@ -226,7 +228,7 @@ try{
         }Catch {
           Write-Host ("##vso[task.logissue type=error;]Fail to retrieve OSA results : {0}" -f $_.Exception.Message)
           $scanResults.osaFailed = $true
-          $osaFailedMessage = ("Failed to get OSA scan results: {0}" -f $_.Exception.Message)
+          $errorMessage = ("Failed to get OSA scan results: {0}" -f $_.Exception.Message)
         }
     }
 
@@ -241,18 +243,26 @@ try{
     [bool]$sastThresholdExceeded=$false
     [bool]$osaThresholdExceeded=$false
 
+    if ($scanResults.policyViolated) {
+        PrintIsProjectViolated $config $scanResults;
+        isExceededFirstTime;
+        Write-Host ("##vso[task.logissue type=error;]Project policy status: violated");
+    }
+
+    if (!([string]::IsNullOrEmpty($errorMessage))) {
+        isExceededFirstTime;
+        Write-Host ("##vso[task.logissue type=error;]$errorMessage");
+    }
+
     if($config.sastEnabled -and $config.vulnerabilityThreshold){
         $sastThresholdExceeded = IsSASTThresholdExceeded $scanResults
 
     }
     if (!$scanResults.osaFailed -and $config.osaEnabled -and $osaVulnerabilityThreshold) {
         $osaThresholdExceeded = IsOSAThresholdExceeded $scanResults
-}
-
-    if ($scanResults.policyViolated) {
-        isExceededFirstTime;
-        Write-Host ("##vso[task.logissue type=error;]Project policy status: violated");
     }
+
+
 
     if($sastThresholdExceeded -or $osaThresholdExceeded -or  $scanResults.osaFailed -or $scanResults.policyViolated){
         $scanResults.buildFailed = $true;
@@ -265,7 +275,7 @@ try{
         if ($scanResults.policyViolated){
             $errorMessage += "Project policy status: violated"
         }
-        if ($scanResults.osaFailed){  $errorMessage += " " + $osaFailedMessage}
+
         Write-Host "##vso[task.complete result=Failed;] Build Failed due to: $errorMessage"
     }
 }catch {

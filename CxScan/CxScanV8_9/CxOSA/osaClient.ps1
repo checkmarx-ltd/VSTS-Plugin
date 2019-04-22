@@ -51,7 +51,7 @@ function resolveOSAViolation($scanResults){
                 $scanResults = AddOsaViolation $violation  $policy.policyName $scanResults;    
             }
         }
-         if (!$osaFailed -and $config.osaEnabled -and $config.enablePolicyViolations -and $scanResults.osaViolations.Count -gt 0) {
+         if (!$osaFailed -and $scanResults.osaViolations-and $scanResults.osaViolations.Count -gt 0) {
             $scanResults.policyViolated = $true;
          }
         

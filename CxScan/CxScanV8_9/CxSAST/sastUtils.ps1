@@ -73,3 +73,16 @@ function printResultsToConsole($scanResults) {
     Write-Host "Scan results location: " $scanResults.sastScanResultsLink;
     Write-Host "------------------------------------------------------------------------------------------\n";
 }
+
+function  AddSastViolation($violation, $policyName, $scanResults)
+{   $sastViolation = New-Object System.Object;
+    $sastViolation | Add-Member -MemberType NoteProperty -Name libraryName -Value $violation.source
+    $sastViolation | Add-Member -MemberType NoteProperty -Name policyName -Value $policyName
+    $sastViolation | Add-Member -MemberType NoteProperty -Name ruleName -Value $violation.ruleName
+
+    $date = ([datetime]$violation.firstDetectionDateByArm).ToShortDateString()
+    $sastViolation | Add-Member -MemberType NoteProperty -Name detectionDate -Value $date
+    ($scanResults.sastViolations.Add($sastViolation)) | Out-Null
+
+    return $scanResults;
+}

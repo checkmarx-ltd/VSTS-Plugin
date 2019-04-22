@@ -22,3 +22,5 @@ $CONTENT_TYPE_APPLICATION_JSON_V1 = "application/json;v=1.0";
 $CONTENT_TYPE_APPLICATION_XML_V1 = "application/xml;v=1.0";
 $CONTENT_TYPE_APPLICATION_PDF_V1 = "application/pdf;v=1.0";
 $reportTimeoutSec = 500;
+$SAST_PROVIDER = "sast";
+$SAST_GET_CXARM_STATUS = "sast/projects/{projectId}/publisher/policyFindings/status";

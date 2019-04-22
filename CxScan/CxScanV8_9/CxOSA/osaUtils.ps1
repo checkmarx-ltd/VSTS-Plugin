@@ -32,17 +32,6 @@ function printOSAResultsToConsole($scanResults, $osaLink, $osaPolicies) {
     Write-Host "Vulnerable and updated:  " $scanResults.vulnerableAndUpdated;
     Write-Host "Non-vulnerable libraries: " $scanResults.nonVulnerableLibraries;
     Write-Host "";
-    if ($config.enablePolicyViolations) {
-        if ($osaPolicies.Count -eq 0){
-            Write-Host "Project policy status: compliant";
-        }else{
-            Write-Host("Project policy status: violated");
-
-            $policies =   $osaPolicies -join ", "
-            Write-Host("OSA violated policies names: {0} " -f  $policies);
-        }
-    }
-    Write-Host ""
     Write-Host "OSA scan results location: " $osaLink;
     Write-Host "-----------------------------------------------------------------------------------------";
 }

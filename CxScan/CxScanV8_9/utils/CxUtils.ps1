@@ -16,11 +16,11 @@ function ResolveVal($val){
           return "none"
       }
  }
+
 function createScanResults() {
     $scanResults = New-Object System.Object
     $scanResults | Add-Member -MemberType NoteProperty -Name buildFailed -Value $false
     $scanResults | Add-Member -MemberType NoteProperty -Name errorOccurred -Value $false
-
     return $scanResults;
 }
 
@@ -46,11 +46,18 @@ function initScanResults($config, $scanResults){
     $scanResults | Add-Member -MemberType NoteProperty -Name osaHighThreshold -Value $config.osaHighThreshold
     $scanResults | Add-Member -MemberType NoteProperty -Name osaMediumThreshold -Value $config.osaMediumThreshold
     $scanResults | Add-Member -MemberType NoteProperty -Name osaLowThreshold -Value $config.osaLowThreshold
+
+    $sastViolations = New-Object System.Collections.ArrayList;
+    $sastPolicies = New-Object System.Collections.ArrayList;
+    $scanResults | Add-Member -MemberType NoteProperty -Name sastViolations -Value $sastViolations
+    $scanResults | Add-Member -MemberType NoteProperty -Name sastPolicies -Value $sastPolicies
+
     $osaViolations = New-Object System.Collections.ArrayList;
     $osaPolicies = New-Object System.Collections.ArrayList;
     $scanResults | Add-Member -MemberType NoteProperty -Name osaViolations -Value $osaViolations
     $scanResults | Add-Member -MemberType NoteProperty -Name osaPolicies -Value $osaPolicies
     $scanResults | Add-Member -MemberType NoteProperty -Name policyViolated -Value $false
+
     return $scanResults;
 }
 
@@ -79,12 +86,14 @@ function printConfiguration($config) {
         Write-Host ("CxSAST medium threshold: {0}" -f $config.mediumThreshold)
         Write-Host ("CxSAST low threshold: {0}" -f $config.lowThreshold)
     }
+    Write-Host("Enable Project Policy Enforcement: {0}" -f $config.enablePolicyViolations);
+
     Write-Host("CxOSA enabled: {0}"-f $config.osaEnabled);
     if ($config.osaEnabled) {
         Write-Host("CxOSA folder exclusions: {0}" -f $(ResolveVal $config.osaFolderExclusions));
         Write-Host("CxOSA include/exclude wildcard patterns: {0}" -f $(ResolveVal $config.osaFileExclusions));
         Write-Host("CxOSA archive extract extensions: {0}" -f $config.osaArchiveInclude);
-        Write-Host("CxOSA Policy violations enabled: {0}" -f $config.enablePolicyViolations);
+
         Write-Host("CxOSA thresholds enabled: {0}" -f $config.osaVulnerabilityThreshold);
         if ($osaVulnerabilityThreshold) {
             Write-Host("CxOSA high threshold: {0}" -f $config.osaHighThreshold);
@@ -176,6 +185,29 @@ function OnError($scanResults, $cxReportFile){
     }
     $scanResults | ConvertTo-Json -Compress | Out-File $cxReportFile
     Write-Host "##vso[task.addattachment type=cxReport;name=cxReport;]$cxReportFile"
+}
+
+function PrintIsProjectViolated($config, $scanResults){
+    if ($config.enablePolicyViolations -eq $true) {
+        Write-Host ("-----------------------------------------------------------------------------------------");
+        Write-Host ("Policy Management: ");
+        Write-Host ("--------------------");
+        if ([string]::IsNullOrEmpty($scanResults.sastPolicies) -and [string]::IsNullOrEmpty($scanResults.osaPolicies)){
+            Write-Host ("Project policy status : compliant");
+            Write-Host ("-----------------------------------------------------------------------------------------");
+        }else {
+            Write-Host ("Project policy status : violated");
+            if (![string]::IsNullOrEmpty($scanResults.sastPolicies) ) {
+                $policies = $scanResults.sastPolicies -join ", "
+                Write-Host("SAST violated policies names: {0} " -f  $policies);
+            }
+            if (![string]::IsNullOrEmpty($scanResults.osaPolicies)) {
+                $policies =   $scanResults.osaPolicies -join ", "
+                Write-Host("OSA violated policies names: {0} " -f  $policies);
+            }
+            Write-Host ("-----------------------------------------------------------------------------------------");
+        }
+    }
 }
 
 

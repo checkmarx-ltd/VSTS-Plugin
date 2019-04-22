@@ -8,4 +8,3 @@ $ITEM_PER_PAGE_QUERY_PARAM = "&itemsPerPage=";
 $MAX_ITEMS = 1000000;
 $OSA_LINK_FORMAT = "{url}/CxWebClient/portal#/projectState/{projectId}/OSA";
 $OSA_PROVIDER = "open_source"
-$OSA_FSA_LOCATION = Join-Path "whitesource" "update-request.txt"
