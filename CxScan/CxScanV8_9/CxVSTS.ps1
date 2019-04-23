@@ -243,8 +243,10 @@ try{
     [bool]$sastThresholdExceeded=$false
     [bool]$osaThresholdExceeded=$false
 
+
+    PrintIsProjectViolated $config $scanResults;
     if ($scanResults.policyViolated) {
-        PrintIsProjectViolated $config $scanResults;
+
         isExceededFirstTime;
         Write-Host ("##vso[task.logissue type=error;]Project policy status: violated");
     }

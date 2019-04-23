@@ -238,7 +238,7 @@
     {
       "name": "enablePolicyViolations",
       "type": "boolean",
-      "label": "Enable Project's OSA Policy Enforcement",
+      "label": "Enable Project's Policy Enforcement",
       "required": false,
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed or unstable if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST.",

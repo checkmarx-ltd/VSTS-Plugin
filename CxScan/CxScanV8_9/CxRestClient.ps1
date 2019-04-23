@@ -42,10 +42,10 @@ function resolveCxARMUrl() {
 function getCxVersion() {
     try {
         $version = getRequest $CX_VERSION $CONTENT_TYPE_APPLICATION_JSON_V1 200 "cx Version" $true;
-        write-host("Checkmarx Server version [{0}]. Hotfix [{1}]." -f $version.version, $version.hotfix );
+        write-host("Checkmarx server version [{0}]. Hotfix [{1}]." -f $version.version, $version.hotfix );
         return $version;
     } catch {
-        write-debug ("Checkmarx Server version [lower than 9.0]");
+        write-debug ("Checkmarx server version [lower than 9.0]");
         return $null;
     }
 }
