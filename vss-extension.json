@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "8.90.0",
+  "version": "8.80.152",
   "publisher": "ilandayan",
   "targets": [
     {
@@ -110,7 +110,7 @@
       "addressable": true
     },
     {
-      "path": "CxScan/CxScanV8_9/CxOSA/osaDll/CxOSA.dll",
+      "path": "CxScan/CxScanV9_0/CxOSA/osaDll/CxOSA.dll",
       "addressable": true
     }
   ],

@@ -236,15 +236,6 @@
       "visibleRule": "osaEnabled = true"
     },
     {
-      "name": "enablePolicyViolations",
-      "type": "boolean",
-      "label": "Enable Project's Policy Enforcement",
-      "required": false,
-      "defaultValue": "false",
-      "helpMarkDown": "Mark the build as failed or unstable if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST.",
-      "groupName": "scanSettings"
-    },
-    {
       "name": "osaVulnerabilityThreshold",
       "type": "boolean",
       "label": "Enable CxOSA Vulnerability Thresholds",
@@ -280,6 +271,16 @@
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold. Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "scanSettings",
       "visibleRule": "osaVulnerabilityThreshold = true"
+    },
+    {
+      "name": "enablePolicyViolations",
+      "type": "boolean",
+      "label": "Enable Project's Policy Enforcement",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST.",
+      "groupName": "scanSettings",
+      "visibleRule": "syncMode = true"
     }
   ],
   "execution": {
