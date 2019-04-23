@@ -83,7 +83,7 @@ function resolveSASTViolation($scanResults){
          }
         
     }catch {
-         Write-error ("CxARM is not available. Policy violations for OSA cannot be calculated: {0}. "  -f $_.Exception.Message);
+         Write-error ("CxARM is not available. Policy violations for SAST cannot be calculated: {0}. "  -f $_.Exception.Message);
     }
     return $scanResults;
 }
