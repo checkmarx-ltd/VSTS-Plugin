@@ -164,17 +164,17 @@
     {
       "name": "vulnerabilityThreshold",
       "type": "boolean",
-      "label": "Enable SAST Vulnerability Thresholds",
+      "label": "Enable CxSAST Vulnerability Thresholds",
       "required": false,
       "defaultValue": "true",
-      "helpMarkDown": "Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities of given severity before the scan fails.",
+      "helpMarkDown": "Set the maximum number of CxSAST vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
       "visibleRule": "syncMode = true"
     },
     {
       "name": "high",
       "type": "string",
-      "label": "SAST High",
+      "label": "CxSAST High",
       "required": false,
       "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
       "groupName": "scanSettings",
@@ -183,7 +183,7 @@
     {
       "name": "medium",
       "type": "string",
-      "label": "SAST Medium",
+      "label": "CxSAST Medium",
       "required": false,
       "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the medium severity vulnerabilities is larger than the threshold. Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "scanSettings",
@@ -192,7 +192,7 @@
     {
       "name": "low",
       "type": "string",
-      "label": "SAST Low",
+      "label": "CxSAST Low",
       "required": false,
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold.  Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "scanSettings",
@@ -241,7 +241,7 @@
       "label": "Enable CxOSA Vulnerability Thresholds",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "Enable the vulnerability threshold option (only available if synchronous mode is enabled). ",
+      "helpMarkDown": "Set the maximum number of CxOSA vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
       "visibleRule": "syncMode = true"
     },
