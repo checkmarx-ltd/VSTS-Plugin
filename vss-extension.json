@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "8.80.152",
-  "publisher": "ilandayan",
+  "version": "9.0.0",
+  "publisher": "devcheckmarx",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
