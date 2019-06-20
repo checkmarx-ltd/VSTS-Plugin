@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "9.0.0",
-  "publisher": "devcheckmarx",
+  "publisher": "checkmarxdev",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
