@@ -10,12 +10,11 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 86,
+    "Major": 92,
     "Minor": 0,
-    "Patch": 6
+    "Patch": 0
   },
-  "demands": [
-  ],
+  "demands": [],
   "minimumAgentVersion": "1.0.0",
   "groups": [
     {
@@ -76,6 +75,7 @@
         "OWASP Mobile TOP 10 - 2016": "OWASP Mobile TOP 10 - 2016",
         "OWASP TOP 10 - 2010": "OWASP TOP 10 - 2010",
         "OWASP TOP 10 - 2013": "OWASP TOP 10 - 2013",
+        "OWASP TOP 10 - 2017": "OWASP TOP 10 - 2017",
         "PCI": "PCI",
         "SANS top 25": "SANS top 25",
         "STIG": "STIG",
@@ -114,7 +114,7 @@
       "type": "string",
       "label": "Folder Exclusion",
       "required": false,
-      "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea",
+      "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea, node_modules",
       "helpMarkDown": "Comma delineated list of the folders to exclude from the scan (for example: dto,target,WEB-INF)",
       "groupName": "scanSettings"
     },
@@ -123,8 +123,33 @@
       "type": "string",
       "label": "Include/Exclude File Extensions",
       "required": false,
-      "defaultValue": "!*.DS_Store, !*.ipr,     !*.iws,\n!*.bak,    !*.tmp,     !*.aac,      !*.aif,      !*.iff,     !*.m3u,   !*.mid,   !*.mp3,\n!*.mpa,    !*.ra,        !*.wav,      !*.wma,      !*.3g2,     !*.3gp,   !*.asf,   !*.asx,\n!*.avi,    !*.flv,       !*.mov,     !*.mp4,      !*.mpg,     !*.rm,    !*.swf,   !*.vob,\n!*.wmv,    !*.bmp,   !*.gif,       !*.jpg,      !*.png,     !*.psd,   !*.tif,   !*.swf,\n!*.jar,    !*.zip,       !*.rar,      !*.exe,      !*.dll,     !*.pdb,   !*.7z,    !*.gz,\n!*.tar.gz, !*.tar,       !*.gz,       !*.ahtm,     !*.ahtml,   !*.fhtml, !*.hdm,\n!*.hdml,   !*.hsql,      !*.ht,      !*.hta,      !*.htc,     !*.htd,   !*.war,   !*.ear,\n!*.htmls,  !*.ihtml,     !*.mht,      !*.mhtm,     !*.mhtml,   !*.ssi,   !*.stm,\n!*.stml,   !*.ttml,      !*.txn,      !*.xhtm,     !*.xhtml,   !*.class, !*.iml",
+      "defaultValue": "!*.DS_Store, !*.ipr, !*.iws, !*.bak, !*.tmp, !*.aac, !*.aif, !*.iff, !*.m3u, !*.mid,   !*.mp3,\n!*.mpa, !*.ra, !*.wav, !*.wma, !*.3g2, !*.3gp, !*.asf, !*.asx, !*.avi,!*.flv, !*.mov, !*.mp4, !*.mpg,  !*.rm, !*.swf, !*.vob, !*.wmv, !*.bmp, !*.gif, !*.jpg, !*.png, !*.psd, !*.tif, !*.swf, !*.jar, !*.zip, !*.rar, !*.exe, !*.dll, !*.pdb, !*.7z, !*.gz, !*.tar.gz, !*.tar, !*.gz, !*.ahtm, !*.ahtml, !*.fhtml, !*.hdm, !*.hdml,   !*.hsql, !*.ht, !*.hta, !*.htc, !*.htd, !*.war, !*.ear, !*.htmls, !*.ihtml, !*.mht, !*.mhtm, !*.mhtml, !*.ssi, !*.stm, !*.stml, !*.ttml, !*.txn, !*.xhtm, !*.xhtml, !*.class, !*.iml",
       "helpMarkDown": "Comma separated list of include or exclude wildcard patterns. Exclude patterns start with exclamation mark \"!\" [Exclusion Example: !*.tmp, !*.html.   Inclusion Example: *.java ]",
+      "groupName": "scanSettings"
+    },
+    {
+      "name": "scanTimeout",
+      "type": "string",
+      "label": "Scan Timeout In Minutes",
+      "required": false,
+      "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "scanSettings"
+    },
+    {
+      "name": "denyProject",
+      "type": "boolean",
+      "label": "Deny new Checkmarx projects creation",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Enabling this option will prohibit creation of new projects in Checkmarx, or assigning an existing project to a different team. Disabling this option will allow this action. ",
+      "groupName": "scanSettings"
+    },
+    {
+      "name": "comment",
+      "type": "string",
+      "label": "Comment",
+      "required": false,
+      "helpMarkDown": "Free text comment that will appear within CxSAST scan information",
       "groupName": "scanSettings"
     },
     {
@@ -187,7 +212,7 @@
       "type": "string",
       "label": "CxOSA Folder Exclusions",
       "required": false,
-      "helpMarkDown": "Comma separated list of the folders to exclude from OSA scan (for example: dto,target,WEB-INF)",
+      "helpMarkDown": "Comma separated list of the folders to exclude from CxOSA scan (for example: dto,target,WEB-INF)",
       "groupName": "scanSettings",
       "visibleRule": "osaEnabled = true"
     },
@@ -216,7 +241,7 @@
       "label": "Enable CxOSA Vulnerability Thresholds",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "Set the maximum number of CxOSA vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
+      "helpMarkDown": "Set the maximum number of CxOSA vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled).",
       "groupName": "scanSettings",
       "visibleRule": "syncMode = true"
     },
@@ -246,13 +271,21 @@
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold. Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "scanSettings",
       "visibleRule": "osaVulnerabilityThreshold = true"
+    },
+    {
+      "name": "enablePolicyViolations",
+      "type": "boolean",
+      "label": "Enable Project's Policy Enforcement",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST. (Only available if synchronous mode is enabled).",
+      "groupName": "scanSettings",
+      "visibleRule": "syncMode = true"
     }
   ],
   "execution": {
-    "PowerShell": {
-      "target": "$(currentDirectory)\\CxVSTS.ps1",
-      "argumentFormat": "",
-      "workingDirectory": "$(currentDirectory)"
+    "Node": {
+      "target": "target/index.js"
     }
   },
   "messages": {

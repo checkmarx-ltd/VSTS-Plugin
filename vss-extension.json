@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "9.0.0",
+  "version": "9.2.0",
   "publisher": "checkmarxdev",
   "targets": [
     {
@@ -12,7 +12,7 @@
   "public": false,
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
-    "default": "extension-icon.png"
+    "default": "images/extension-icon.png"
   },
   "categories": [
     "Build and release"
@@ -77,40 +77,6 @@
     },
     {
       "path": "images/summaryTab.PNG",
-      "addressable": true
-    },
-    {
-      "path": "UI_Versions/8_60_0",
-      "addressable": true,
-      "packagePath": "UI_Versions/8_60_0/scripts"
-    },
-    {
-      "path": "UI_Versions/8_60_0/cxreport.html",
-      "addressable": true
-    },
-    {
-      "path": "UI_Versions/8_60_0/cxSummary.html",
-      "addressable": true
-    },
-    {
-      "path": "UI_Versions/8_60_0/css/cxreport.css",
-      "addressable": true
-    },
-    {
-      "path": "node_modules/vss-web-extension-sdk/lib",
-      "addressable": true,
-      "packagePath": "lib"
-    },
-    {
-      "path": "CxScan/CxScanV8_6/osaDLL/OsaClient.dll",
-      "addressable": true
-    },
-    {
-      "path": "CxScan/CxScanV8_8/CxOSA/osaDll/CxOSA.dll",
-      "addressable": true
-    },
-    {
-      "path": "CxScan/CxScanV9_0/CxOSA/osaDll/CxOSA.dll",
       "addressable": true
     }
   ],
