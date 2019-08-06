@@ -24,6 +24,4 @@ steps:
 
 - script: |
     npm install
-    rm -f *.vsix
-    tfx extension create --manifest-globs vss-extension.json
   displayName: 'npm install and build'
