@@ -34,7 +34,8 @@ steps:
     script: 'cd .. tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
 
+
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: '$(Build.Repository.LocalPath)/checkmarxdev.cxsast-9.2.0.vsix'
     ArtifactName: 'drop'
