@@ -34,13 +34,12 @@ steps:
     script: 'cd .. tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
 
-- task: CopyFiles@2
+- task: CmdLine@2
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
-    Contents: '*.vsix'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    script: 'll'
+  displayName: 'Find vsix file'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.Repository.LocalPath)/checkmarxdev.cxsast-9.2.0.vsix'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
