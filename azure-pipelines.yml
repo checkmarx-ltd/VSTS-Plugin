@@ -31,7 +31,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'cd .. tfx extension create --manifest-globs vss-extension.json'
+    script: '$(Agent.BuildDirectory) tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
 
 - task: CopyFiles@2
@@ -40,13 +40,6 @@ steps:
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Build Source Directory'
-
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: ''
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Empty source directory'
 
 - task: PublishBuildArtifacts@1
   inputs:
