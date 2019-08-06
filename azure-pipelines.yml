@@ -20,6 +20,6 @@ steps:
     npm install -g tfx-cli
     npm install
     npm build
-    rm *.vsix
+    rm -f *.vsix
     tfx extension create --manifest-globs vss-extension.json
   displayName: 'npm install and build'
