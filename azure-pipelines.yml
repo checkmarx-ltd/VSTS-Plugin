@@ -37,7 +37,7 @@ steps:
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Agent.BuildDirectory)'
-    Contents: '**'
+    Contents: '*.vsix'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Build Source Directory'
 
