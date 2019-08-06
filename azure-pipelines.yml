@@ -27,9 +27,5 @@ steps:
   displayName: 'npm install'
 - task: CmdLine@2
   inputs:
-    script: 'find CxScan/node_modules'
-  displayName: 'find CxScan/node_modules'
-- task: CmdLine@2
-  inputs:
-    script: 'tfx extension create --manifest-globs vss-extension.json'
+    script: 'cd .. tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
