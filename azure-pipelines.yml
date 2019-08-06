@@ -31,12 +31,12 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: '$(Agent.BuildDirectory) tfx extension create --manifest-globs vss-extension.json'
+    script: 'cd.. tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(Agent.BuildDirectory)'
+    SourceFolder: '/home/vsts/work/_temp/'
     Contents: '*.vsix'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Build Source Directory'
