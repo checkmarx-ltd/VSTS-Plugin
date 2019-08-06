@@ -5,6 +5,7 @@
 
 trigger:
 - master
+- origin/Version_9.20
 
 pool:
   vmImage: 'ubuntu-latest'
