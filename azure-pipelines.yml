@@ -16,6 +16,10 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
+    npm install -g typescript
+    npm install -g tfx-cli
     npm install
     npm build
+    rm *.vsix
+    tfx extension create --manifest-globs vss-extension.json
   displayName: 'npm install and build'
