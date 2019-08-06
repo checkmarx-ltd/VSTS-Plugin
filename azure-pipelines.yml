@@ -21,10 +21,9 @@ steps:
 - task: TfxInstaller@2
   inputs:
     version: 'v0.6.x'
-
-- script: |
-    cd CxScan
-    npm install
-    cd ..
-    tfx extension create --manifest-globs vss-extension.json
-  displayName: 'npm install and build'
+- task: CmdLine@2
+  inputs:
+    script: 'npm install'
+- task: CmdLine@2
+  inputs:
+    script: 'tfx extension create --manifest-globs vss-extension.json'
