@@ -14,18 +14,27 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
+
 - task: Npm@1
   inputs:
     command: 'install'
     workingDir: 'CxScan'
+
 - task: TfxInstaller@2
   inputs:
     version: 'v0.6.x'
+
 - task: CmdLine@2
   inputs:
     script: 'npm install'
   displayName: 'npm install'
+
 - task: CmdLine@2
   inputs:
     script: 'cd .. tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
