@@ -16,7 +16,6 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    cd /home/vsts/work/1/s
     npm install
-    npm run build
+    npm build
   displayName: 'npm install and build'
