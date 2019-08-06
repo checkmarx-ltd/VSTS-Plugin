@@ -25,5 +25,6 @@ steps:
 - script: |
     cd CxScan
     npm install
+    cd ..
     tfx extension create --manifest-globs vss-extension.json
   displayName: 'npm install and build'
