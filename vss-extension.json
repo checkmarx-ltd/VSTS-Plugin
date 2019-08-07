@@ -102,10 +102,6 @@
       "packagePath": "lib"
     },
     {
-      "path": "CxScan/CxScanV8_6/osaDLL/OsaClient.dll",
-      "addressable": true
-    },
-    {
       "path": "CxScan/CxScanV8_8/CxOSA/osaDll/CxOSA.dll",
       "addressable": true
     },
