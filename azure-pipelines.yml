@@ -31,7 +31,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'echo "ROOT"; ls; tfx extension create --manifest-globs vss-extension.json'
+    script: 'echo "BEFORE"; ls; tfx extension create --manifest-globs vss-extension.json; echo "AFTER"; ls;'
   displayName: 'tfx extension create'
 
 - task: PublishBuildArtifacts@1
