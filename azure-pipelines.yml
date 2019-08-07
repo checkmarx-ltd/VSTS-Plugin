@@ -31,15 +31,8 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'echo "IMAGES:"; cd images; ls; cd ..; echo "TFX DIRECTORY:"; ls; tfx extension create --manifest-globs vss-extension.json'
+    script: ' cd ..; tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
-
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '/home/vsts/work/_temp/s/'
-    Contents: '*.vsix'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Build Source Directory'
 
 - task: PublishBuildArtifacts@1
   inputs:
