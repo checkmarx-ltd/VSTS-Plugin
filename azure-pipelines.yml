@@ -41,7 +41,7 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '/home/vsts/work/_temp/'
+    SourceFolder: '/home/vsts/work/_temp/s/'
     Contents: '*.vsix'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Build Source Directory'
