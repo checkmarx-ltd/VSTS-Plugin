@@ -15,7 +15,7 @@
     "default": "extension-icon.png"
   },
   "categories": [
-    "Build and release"
+    "Azure Pipelines"
   ],
   "tags": [
     "Security",
