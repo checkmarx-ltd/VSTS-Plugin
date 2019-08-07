@@ -70,7 +70,7 @@ The following steps are required to get started.
 
 #Configure Checkmarx Build Step
 
-![image](images/config.png)
+![image](images/config.PNG)
 
 **To complete this step:**
 
