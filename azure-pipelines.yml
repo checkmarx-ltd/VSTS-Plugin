@@ -38,3 +38,4 @@ steps:
   inputs:
     PathtoPublish: 'checkmarxdev.cxsast-9.2.0.vsix'
     ArtifactName: 'drop'
+    
