@@ -36,5 +36,5 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.SourceDirectory)/checkmarxdev.cxsast-9.2.0.vsix'
+    PathtoPublish: 'checkmarxdev.cxsast-9.2.0.vsix'
     ArtifactName: 'drop'
