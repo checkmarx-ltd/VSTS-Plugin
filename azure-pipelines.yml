@@ -7,7 +7,7 @@ trigger:
 - '*'
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'macOS-latest'
 
 steps:
 - task: NodeTool@0
@@ -31,17 +31,11 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'echo "IMAGES:"; cd images; ls; cd ..; echo "TFX DIRECTORY:"; ls; tfx extension create --manifest-globs vss-extension.json'
+    script: 'tfx extension create --manifest-globs vss-extension.json'
   displayName: 'tfx extension create'
-
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '/home/vsts/work/_temp/s/'
-    Contents: '*.vsix'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Build Source Directory'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: 'checkmarxdev.cxsast-9.2.0.vsix'
     ArtifactName: 'drop'
+    
