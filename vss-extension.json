@@ -78,6 +78,28 @@
     {
       "path": "images/summaryTab.PNG",
       "addressable": true
+    },
+    {
+      "path": "Reports",
+      "addressable": true,
+      "packagePath": "Reports/scripts"
+    },
+    {
+      "path": "Reports/cxreport.html",
+      "addressable": true
+    },
+    {
+      "path": "Reports/cxSummary.html",
+      "addressable": true
+    },
+    {
+      "path": "node_modules/vss-web-extension-sdk/lib",
+      "addressable": true,
+      "packagePath": "lib"
+    },
+    {
+      "path": "Reports/css/cxreport.css",
+      "addressable": true
     }
   ],
   "contributions": [
@@ -142,7 +164,7 @@
       ],
       "properties": {
         "name": "Checkmarx",
-        "uri": "UI_Versions/8_60_0/cxreport.html",
+        "uri": "Reports/cxreport.html",
         "height": "175%",
         "width": "100%"
       }
@@ -156,7 +178,7 @@
       ],
       "properties": {
         "name": "Checkmarx Scan Results",
-        "uri": "UI_Versions/8_60_0/cxSummary.html",
+        "uri": "Reports/cxSummary.html",
         "height": "700px",
         "width": "1150px"
       }
