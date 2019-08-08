@@ -18,7 +18,7 @@ async function run() {
         const password = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false);
         const serverURL = taskLib.getEndpointUrl(endpointId, false);
 
-        const client = new Client(new URL(serverURL));
+        const client = new Client(serverURL);
 
         await client.login(username, password);
 
