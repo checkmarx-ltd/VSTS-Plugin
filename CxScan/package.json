@@ -10,13 +10,13 @@
   "license": "SEE LICENSE IN checkmarx-license-terms.md",
   "dependencies": {
     "@types/archiver": "^2.1.3",
+    "@types/node": "^6.14.7",
     "archiver": "^3.0.0",
     "azure-pipelines-task-lib": "^2.8.0",
     "superagent": "^5.1.0"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.8",
     "@types/q": "^1.5.2"
   }
 }
