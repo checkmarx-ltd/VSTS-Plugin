@@ -289,6 +289,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
                                 }
 
+                                // Ensure proper height after DOM manipulations.
+                                VSS.resize();
 
                                 //functions
 

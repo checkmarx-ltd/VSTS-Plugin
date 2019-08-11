@@ -172,9 +172,7 @@
       ],
       "properties": {
         "name": "Checkmarx",
-        "uri": "UI_Versions/8_60_0/cxreport.html",
-        "height": "175%",
-        "width": "100%"
+        "uri": "UI_Versions/8_60_0/cxreport.html"
       }
     },
     {
@@ -185,10 +183,8 @@
         "ms.vss-build-web.build-results-summary-tab"
       ],
       "properties": {
-        "name": "Checkmarx Scan Results",
-        "uri": "UI_Versions/8_60_0/cxSummary.html",
-        "height": "700px",
-        "width": "1150px"
+          "name": "Checkmarx Scan Results",
+        "uri": "UI_Versions/8_60_0/cxSummary.html"
       }
     }
   ]

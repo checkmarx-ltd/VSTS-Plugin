@@ -434,9 +434,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         asyncDiv.innerHTML = asyncModeMessage;
                                         asyncDiv.setAttribute("style", "display:block");
                                         document.getElementById("onAsyncMode").setAttribute("style", "display:block");
-
                                     }
                                 }
+
+                                // Ensure proper height after DOM manipulations.
+                                VSS.resize();
 
 
                                 //functions
