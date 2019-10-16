@@ -4,13 +4,12 @@ import * as fs from 'fs';
 const request = require('superagent');
 
 export class Client {
-    private serverURL: string;
-    private accessToken: String;
-    private zipper: Zipper;
+    private readonly serverURL: string;
+    private readonly zipper: Zipper;
+    private accessToken: string | undefined;
 
-    constructor(host: string) {
-        this.serverURL = host;
-        this.accessToken = '';
+    constructor(serverUrl: string) {
+        this.serverURL = serverUrl;
         this.zipper = new Zipper();
     }
 
@@ -25,7 +24,7 @@ export class Client {
                 grant_type: 'password',
                 scope: 'sast_rest_api offline_access',
                 client_id: 'resource_owner_client',
-                client_secret: `014DF517-39D1-4453-B7B3-9930C563627C`
+                client_secret: '014DF517-39D1-4453-B7B3-9930C563627C'
             })
             .then(
                 (response: any) => {
@@ -40,9 +39,7 @@ export class Client {
 
     //TODO: add getTeamByName, uses hard coded team 1 CxServer
     public async createProject(owningTeam: string, projectName: string, isPublic: boolean): Promise<number> {
-        if (this.accessToken === '') {
-            throw Error('Must login first');
-        }
+        this.ensureLogin();
 
         return request
             .post(`${this.serverURL}/CxRestAPI/projects`)
@@ -73,9 +70,7 @@ export class Client {
     }
 
     public async uploadSourceCode(projectId: number, pathToSource: string, tempFileName: string): Promise<any> {
-        if (this.accessToken === '') {
-            throw Error('Must login first');
-        }
+        this.ensureLogin();
 
         let compressedSource = await this.zipSource(pathToSource, tempFileName);
 
@@ -87,7 +82,7 @@ export class Client {
             .attach('zippedSource', compressedSource.fullPath)
             .then(
                 (response: any) => {
-                    console.log(response);
+                    console.log('Uploaded source code.');
                 },
                 (rejected: any) => {
                     throw new Error(`addScanToProject error: ${rejected}`);
@@ -101,9 +96,8 @@ export class Client {
     }
 
     public async getProject(projectName: string, teamId: number): Promise<string> {
-        if (this.accessToken === '') {
-            throw Error('Must login first');
-        }
+        this.ensureLogin();
+
         let projectData: string;
         return request
             .get(`${this.serverURL}/CxRestAPI/projects?projectName=${projectName}&teamId=${teamId}`)
@@ -127,9 +121,7 @@ export class Client {
         isForcedScan: boolean,
         scanComment: string
     ) {
-        if (this.accessToken === '') {
-            throw Error('Must login first');
-        }
+        this.ensureLogin();
 
         let response;
         try {
@@ -152,9 +144,7 @@ export class Client {
     }
 
     public async getScanStatus(scanId: number) {
-        if (this.accessToken === '') {
-            throw Error('Must login first');
-        }
+        this.ensureLogin();
 
         let response;
         try {
@@ -170,9 +160,8 @@ export class Client {
     }
 
     public generateScanReport(scanId: number, filePath: string): any {
-        if (this.accessToken === '') {
-            throw Error('Must login first');
-        }
+        this.ensureLogin();
+
         let reportURI;
         (async () => {
             try {
@@ -243,5 +232,11 @@ export class Client {
 
     private wait(waitMs: number) {
         return new Promise(resolve => setTimeout(resolve, waitMs));
+    }
+
+    private ensureLogin() {
+        if (!this.accessToken) {
+            throw Error('Must login first');
+        }
     }
 }
