@@ -1,5 +1,6 @@
 import taskLib = require('azure-pipelines-task-lib/task');
-import { Client } from './services/client';
+import {ScanConfig} from "./scanConfig";
+import {RestClient} from "./services/restClient";
 
 async function run() {
     // To run this task in console, the following environment variables must be defined:
@@ -9,32 +10,41 @@ async function run() {
     // INPUT_FULLTEAMNAME=CxServer
 
     try {
-        const pathToSource = taskLib.getVariable('Build.SourcesDirectory');
-        const projectName = taskLib.getInput('projectName', true);
-        const owningTeam =  taskLib.getInput('fullTeamName', true);
-        const endpointId = taskLib.getInput('CheckmarxService', true);
+        const config = createConfig();
 
-        if (pathToSource && projectName && owningTeam && endpointId) {
-            const username = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false);
-            const password = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false);
-            if (username && password) {
-                const serverURL = taskLib.getEndpointUrl(endpointId, false);
-                const client = new Client(serverURL);
-
-                await client.login(username, password);
-
-                const projectId: number = await client.createProject(owningTeam, projectName, true);
-                const tempFilename: string = projectName + projectId;
-                await client.uploadSourceCode(projectId, pathToSource, tempFilename);
-
-                let scanId = await client.createNewScan(projectId, false, true, true, 'Scan from VSTS');
-                console.log(`Scan ID: ${scanId}`);
-            }
-        }
+        const restClient = new RestClient(config);
+        await restClient.init();
+        await restClient.createSASTScan();
     } catch (err) {
         console.log(err);
         taskLib.setResult(taskLib.TaskResult.Failed, err.message);
     }
+}
+
+function createConfig(): ScanConfig {
+    const endpointId = taskLib.getInput('CheckmarxService', true) || '';
+
+    const sourceDir = taskLib.getVariable('Build.SourcesDirectory');
+    if (typeof sourceDir === 'undefined') {
+        throw Error('Sources directory is not provided.');
+    }
+
+    return {
+        serverUrl: taskLib.getEndpointUrl(endpointId, false),
+        username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
+        password: taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '',
+
+        sourceDir,
+        projectName: taskLib.getInput('projectName', true) || '',
+        teamName: taskLib.getInput('fullTeamName', true),
+        denyProject: taskLib.getBoolInput('denyProject', false),
+        isIncremental: taskLib.getBoolInput('incScan', true),
+        comment: taskLib.getInput('comment', false) || '',
+
+        // TODO: make sure the hardcoding is OK.
+        forceScan: false,
+        isPublic: true
+    };
 }
 
 run();
