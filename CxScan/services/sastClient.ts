@@ -2,10 +2,10 @@ import {ScanRequest} from "../dto/scanRequest";
 import {ScanConfig} from "../dto/scanConfig";
 import {HttpClient} from "./httpClient";
 import promisePoller from "promise-poller";
-// @ts-ignore
-import Duration from "duration";
 import {ScanStatus} from "../dto/scanStatus";
 import {ScanStage} from "../dto/scanStage";
+
+const parseMilliseconds = require('parse-ms');
 
 export class SastClient {
     private static readonly scanCompletedDetails = 'Scan completed';
@@ -73,13 +73,17 @@ export class SastClient {
     };
 
     private logWaitingProgress = (retriesRemaining: number, scanStatus: ScanStatus) => {
-        const now = new Date();
-        const duration = new Duration(this.lastScanStart, now);
-        const elapsed = duration.toString('%H:%M:%S');
-        const totalPercent = scanStatus ? scanStatus.totalPercent : 0;
-        const padding = (totalPercent < 10 ? ' ' : '');
+        let duration = parseMilliseconds(Date.now() - this.lastScanStart.getTime());
+        const elapsed = `${pad(duration.hours)}:${pad(duration.minutes)}:${pad(duration.seconds)}`;
+        const totalPercent = pad(scanStatus ? scanStatus.totalPercent : 0, ' ');
         const stage = scanStatus && scanStatus.stage ? scanStatus.stage.value : 'n/a';
-        console.log(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${padding}${totalPercent}% processed. Status: ${stage}.`);
+        console.log(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${totalPercent}% processed. Status: ${stage}.`);
+
+        function pad(input: number, padChar?: string) {
+            padChar = padChar || '0';
+            const padding = input < 10 ? padChar : '';
+            return padding + input;
+        }
     };
 
     private static isFinishedSuccessfully(status: ScanStatus) {
