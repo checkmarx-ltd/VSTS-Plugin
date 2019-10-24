@@ -4,7 +4,7 @@ import archiver from 'archiver';
 export default class Zipper {
 	async zipDirectory(srcDir: string, targetPath: string): Promise<any> {
 		try {
-			return new Promise<any>((fulfill, reject) => {
+			return new Promise<any>((resolve, reject) => {
 				const zipOutput = fs.createWriteStream(targetPath);
 				const archive = archiver('zip', {zlib: {level: 9}});
 
@@ -29,7 +29,7 @@ export default class Zipper {
 							console.log('Archiver:: ZipFile fs.readFile ERROR ' + err);
 							reject(err);
 						} else {
-							fulfill();
+							resolve();
 						}
 					});
 				});

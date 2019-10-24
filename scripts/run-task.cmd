@@ -9,10 +9,13 @@ set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=mypassword
 set BUILD_SOURCESDIRECTORY=c:\projectsToScan\MyProject
 set INPUT_PROJECTNAME=VstsTest1
 set INPUT_FULLTEAMNAME=\CxServer
-
 set INPUT_DENYPROJECT=false
 set INPUT_INCSCAN=true
 set INPUT_COMMENT=Greetings from TypeScript
+set ENDPOINT_AUTH_SCHEME_endpointId=UserNamePassword
+set BUILD_DEFINITIONNAME=builddef
+set BUILD_BUILDNUMBER=23
+set INPUT_SYNCMODE=true
 
 node target\index.js
 
