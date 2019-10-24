@@ -2,6 +2,9 @@ import * as url from 'url';
 import Zipper from './zipper';
 import * as request from 'superagent';
 
+/**
+ * Implements low-level API request logic.
+ */
 export class HttpClient {
     private static readonly JSON_V1 = 'application/json;v=1.0';
 

@@ -1,30 +1,66 @@
-import {ScanConfig} from "../scanConfig";
+import {ScanConfig} from "../dto/scanConfig";
 import {HttpClient} from "./httpClient";
 import Zipper from "./zipper";
 import {tmpNameSync} from 'tmp';
-import {ScanRequest} from "../scanRequest";
 import * as fs from "fs";
+import {TaskSkippedError} from "../dto/taskSkippedError";
+import {ScanResults} from "../dto/scanResults";
+import {SastClient} from "./sastClient";
 
 export class RestClient {
+    readonly scanResults: ScanResults;
+
     private readonly httpClient: HttpClient;
+    private readonly sastClient: SastClient;
     private readonly zipper = new Zipper();
 
-    private teamId: number = 0;
-    private projectId: number = 0;
+    private teamId = 0;
+    private projectId = 0;
 
     constructor(readonly config: ScanConfig) {
         this.httpClient = new HttpClient(config.serverUrl, config.username, config.password);
+        this.sastClient = new SastClient(this.config, this.httpClient);
+        this.scanResults = this.initScanResults();
     }
 
-    async init(): Promise<any> {
+    async init(): Promise<void> {
         await this.login();
         await this.resolveTeam();
         await this.resolveProject();
     }
 
-    async createSASTScan(): Promise<any> {
+    async createSASTScan(): Promise<void> {
         await this.uploadSourceCode();
-        await this.createScan();
+        this.scanResults.scanId = await this.sastClient.createScan(this.projectId);
+
+        const projectStateUrl = `${this.config.serverUrl}/CxWebClient/portal#/projectState/${this.projectId}/Summary`;
+        console.log(`SAST scan created successfully. CxLink to project state: ${projectStateUrl}`);
+    }
+
+    async getSASTResults() {
+        console.log('------------------------------------Get CxSAST Results:----------------------------------');
+        console.log('Retrieving SAST scan results');
+        await this.sastClient.waitForScanToFinish();
+    }
+
+    private initScanResults(): ScanResults {
+        return {
+            errorOccurred: false,
+            buildFailed: false,
+            url: this.config.serverUrl,
+            syncMode: this.config.isSyncMode,
+            osaEnabled: false,
+            enablePolicyViolations: this.config.enablePolicyViolations,
+            sastThresholdExceeded: false,
+            sastResultsReady: false,
+            scanId: null,
+            thresholdEnabled: this.config.vulnerabilityThreshold,
+            highThreshold: this.config.highThreshold,
+            mediumThreshold: this.config.mediumThreshold,
+            lowThreshold: this.config.lowThreshold,
+            sastViolations: [],
+            sastPolicies: []
+        }
     }
 
     private async login() {
@@ -65,11 +101,17 @@ export class RestClient {
         }
     }
 
-    private async uploadSourceCode(): Promise<any> {
+    private async uploadSourceCode(): Promise<void> {
         const tempFilename = tmpNameSync({postfix: '.zip'});
 
         console.log(`Zipping source code at ${this.config.sourceDir} into file ${tempFilename}`);
         await this.zipper.zipDirectory(this.config.sourceDir, tempFilename);
+
+        if (!fs.existsSync(tempFilename)) {
+            const error = new TaskSkippedError('Zip file is empty: no source to scan');
+            console.log(error.message);
+            throw error;
+        }
 
         const urlPath = `projects/${this.projectId}/sourceCode/attachments`;
         console.log(`Uploading the zipped source code to ${urlPath}.`);
@@ -79,20 +121,6 @@ export class RestClient {
 
         console.log(`Removing ${tempFilename}`);
         fs.unlinkSync(tempFilename);
-    }
-
-    private async createScan() {
-        const request: ScanRequest = {
-            projectId: this.projectId,
-            isIncremental: this.config.isIncremental,
-            isPublic: this.config.isPublic,
-            forceScan: this.config.forceScan,
-            comment: this.config.comment
-        };
-        const response = await this.httpClient.postRequest('sast/scans', request);
-        const projectStateUrl = `${this.config.serverUrl}/CxWebClient/portal#/projectState/${this.projectId}/Summary`;
-        console.log(`SAST scan created successfully. CxLink to project state: ${projectStateUrl}`);
-        return response;
     }
 
     private async getCurrentProjectId(): Promise<number> {
