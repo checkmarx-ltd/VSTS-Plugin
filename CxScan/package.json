@@ -3,6 +3,7 @@
   "version": "92.0.0",
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "main": "index.js",
+  "repository": "https://github.com/checkmarx-ltd/VSTS-Plugin",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,8 +12,8 @@
   "dependencies": {
     "archiver": "^3.0.0",
     "azure-pipelines-task-lib": "^2.8.0",
-    "duration": "^0.2.2",
     "mkdirp": "^0.5.1",
+    "parse-ms": "^2.1.0",
     "promise-poller": "^1.9.1",
     "superagent": "^5.1.0",
     "tmp": "^0.1.0"
