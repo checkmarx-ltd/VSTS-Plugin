@@ -10,4 +10,11 @@ export interface ScanConfig {
     isIncremental: boolean;
     forceScan: boolean;
     comment: string;
+    isSyncMode: boolean;
+
+    enablePolicyViolations: boolean;
+    vulnerabilityThreshold: boolean;
+    highThreshold?: string;
+    mediumThreshold?: string;
+    lowThreshold?: string;
 }
