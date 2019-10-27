@@ -6,6 +6,7 @@ import * as fs from "fs";
 import {TaskSkippedError} from "../dto/taskSkippedError";
 import {ScanResults} from "../dto/scanResults";
 import {SastClient} from "./sastClient";
+import * as url from "url";
 
 export class RestClient {
     readonly scanResults: ScanResults;
@@ -33,7 +34,7 @@ export class RestClient {
         await this.uploadSourceCode();
         this.scanResults.scanId = await this.sastClient.createScan(this.projectId);
 
-        const projectStateUrl = `${this.config.serverUrl}/CxWebClient/portal#/projectState/${this.projectId}/Summary`;
+        const projectStateUrl = url.resolve(this.config.serverUrl, `CxWebClient/portal#/projectState/${this.projectId}/Summary`);
         console.log(`SAST scan created successfully. CxLink to project state: ${projectStateUrl}`);
     }
 
