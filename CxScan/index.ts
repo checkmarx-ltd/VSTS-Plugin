@@ -51,7 +51,7 @@ async function run() {
 }
 
 function createConfig(): ScanConfig {
-    const supportedAuthScheme = 'UserNamePassword';
+    const supportedAuthScheme = 'UsernamePassword';
     const endpointId = taskLib.getInput('CheckmarxService', true) || '';
 
     const sourceDir = taskLib.getVariable('Build.SourcesDirectory');
