@@ -1,9 +1,8 @@
 import {HttpClient} from "./httpClient";
-import promisePoller from "promise-poller";
-import {PollingSettings} from "../pollingSettings";
 import {ArmStatus} from "../dto/armStatus";
 import {Stopwatch} from "./stopwatch";
 import {ScanProvider} from "../dto/scanProvider";
+import {Waiter} from "./waiter";
 
 /**
  * Works with policy-related APIs.
@@ -30,15 +29,13 @@ export class ArmClient {
 
         let lastStatus: ArmStatus;
         try {
-            lastStatus = await promisePoller({
-                taskFn: () => this.checkIfPolicyCheckFinished(projectId),
-                progressCallback: this.logWaitingProgress,
-                interval: PollingSettings.intervalSeconds * 1000,
-                masterTimeout: PollingSettings.scanTimeoutMinutes * 60 * 1000,
-                retries: Number.MAX_SAFE_INTEGER
-            });
+            const waiter = new Waiter();
+            lastStatus = await waiter.waitForTaskToFinish<ArmStatus>(
+                () => this.checkIfPolicyCheckFinished(projectId),
+                this.logWaitingProgress
+            );
         } catch (e) {
-            throw Error(`Waiting for server to retrieve policy violations has reached the time limit. (${PollingSettings.scanTimeoutMinutes} minutes).`);
+            throw Error(`Waiting for server to retrieve policy violations has reached the time limit. (${Waiter.PollingSettings.masterTimeoutMinutes} minutes).`);
         }
 
         if (lastStatus !== ArmStatus.Finished) {
@@ -68,7 +65,7 @@ export class ArmClient {
         }
     };
 
-    private logWaitingProgress = (retriesRemaining: number, armStatus: ArmStatus) => {
+    private logWaitingProgress = (armStatus: ArmStatus) => {
         console.log(`Waiting for server to retrieve policy violations. Elapsed time: ${this.stopwatch.getElapsed()}. Status: ${armStatus}`)
     };
 }
