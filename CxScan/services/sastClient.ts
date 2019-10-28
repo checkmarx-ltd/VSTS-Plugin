@@ -4,21 +4,42 @@ import {HttpClient} from "./httpClient";
 import promisePoller from "promise-poller";
 import {ScanStatus} from "../dto/scanStatus";
 import {ScanStage} from "../dto/scanStage";
-
-const parseMilliseconds = require('parse-ms');
+import {PollingSettings} from "../pollingSettings";
+import {Stopwatch} from "./stopwatch";
+import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 
 export class SastClient {
     private static readonly scanCompletedDetails = 'Scan completed';
 
-    private static readonly pollingSettings = {
-        scanTimeoutMinutes: 20,
-        intervalSeconds: 10
-    };
+    private readonly stopwatch = new Stopwatch();
 
     private scanId: number = 0;
-    private lastScanStart: Date = new Date(0);
 
-    constructor(private config: ScanConfig, private httpClient: HttpClient) {
+    constructor(private readonly config: ScanConfig, private readonly httpClient: HttpClient) {
+    }
+
+    async getPresetIdByName(presetName: string) {
+        console.log(`Getting preset ID by name: [${presetName}]`);
+        const allPresets = await this.httpClient.getRequest('sast/presets') as [{ name: string, id: number }];
+        const currentPresetName = this.config.presetName.toUpperCase();
+        let result: number = 0;
+        for (const preset of allPresets) {
+            if (preset.name.toUpperCase() === currentPresetName) {
+                result = preset.id;
+                break;
+            }
+        }
+
+        if (!result) {
+            throw Error(`Could not resolve preset ID from preset Name: ${presetName}`);
+        }
+
+        return result;
+    }
+
+    getScanSettings(projectId: number) {
+        console.log('Getting scan settings.');
+        return this.httpClient.getRequest(`sast/scanSettings/${projectId}`);
     }
 
     async createScan(projectId: number) {
@@ -33,8 +54,17 @@ export class SastClient {
         const scan = await this.httpClient.postRequest('sast/scans', request);
         this.scanId = scan.id;
 
-        this.lastScanStart = new Date();
+        this.stopwatch.start();
         return scan.id;
+    }
+
+    getScanStatistics(scanId: number) {
+        return this.httpClient.getRequest(`sast/scans/${scanId}/resultsStatistics`);
+    }
+
+    updateScanSettings(request: UpdateScanSettingsRequest) {
+        console.log('Updating scan settings.');
+        return this.httpClient.postRequest('sast/scanSettings', request);
     }
 
     async waitForScanToFinish() {
@@ -44,8 +74,8 @@ export class SastClient {
             const lastStatus = await promisePoller({
                 taskFn: this.checkIfScanFinished,
                 progressCallback: this.logWaitingProgress,
-                interval: SastClient.pollingSettings.intervalSeconds * 1000,
-                masterTimeout: SastClient.pollingSettings.scanTimeoutMinutes * 60 * 1000,
+                interval: PollingSettings.intervalSeconds * 1000,
+                masterTimeout: PollingSettings.scanTimeoutMinutes * 60 * 1000,
                 retries: Number.MAX_SAFE_INTEGER
             });
 
@@ -55,7 +85,7 @@ export class SastClient {
                 console.log(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
             }
         } catch (e) {
-            console.log(`Waiting for CxSAST scan has reached the time limit (${SastClient.pollingSettings.scanTimeoutMinutes} minutes).`);
+            console.log(`Waiting for CxSAST scan has reached the time limit (${PollingSettings.scanTimeoutMinutes} minutes).`);
         }
     }
 
@@ -73,17 +103,9 @@ export class SastClient {
     };
 
     private logWaitingProgress = (retriesRemaining: number, scanStatus: ScanStatus) => {
-        let duration = parseMilliseconds(Date.now() - this.lastScanStart.getTime());
-        const elapsed = `${pad(duration.hours)}:${pad(duration.minutes)}:${pad(duration.seconds)}`;
-        const totalPercent = pad(scanStatus ? scanStatus.totalPercent : 0, ' ');
+        const elapsed = this.stopwatch.getElapsed();
         const stage = scanStatus && scanStatus.stage ? scanStatus.stage.value : 'n/a';
-        console.log(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${totalPercent}% processed. Status: ${stage}.`);
-
-        function pad(input: number, padChar?: string) {
-            padChar = padChar || '0';
-            const padding = input < 10 ? padChar : '';
-            return padding + input;
-        }
+        console.log(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${scanStatus.totalPercent}% processed. Status: ${stage}.`);
     };
 
     private static isFinishedSuccessfully(status: ScanStatus) {

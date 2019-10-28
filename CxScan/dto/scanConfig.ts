@@ -11,6 +11,8 @@ export interface ScanConfig {
     forceScan: boolean;
     comment: string;
     isSyncMode: boolean;
+    presetName: string;
+    engineConfigurationId: number;
 
     enablePolicyViolations: boolean;
     vulnerabilityThreshold: boolean;

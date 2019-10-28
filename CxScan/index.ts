@@ -9,9 +9,10 @@ import {ScanResults} from "./dto/scanResults";
 
 const recursiveMkdir = require('mkdirp');
 
+const jsonReportFilename = 'cxreport.json';
+const reportAttachmentName = 'cxReport';
+
 async function run() {
-    const jsonReportFilename = 'cxreport.json';
-    const reportAttachmentName = 'cxReport';
 
     // To run this task in console, the following environment variables must be defined:
     // INPUT_PROJECTNAME=VstsTest1;ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=myusername;
@@ -31,12 +32,12 @@ async function run() {
 
         if (!config.isSyncMode) {
             console.log('Running in Asynchronous mode. Not waiting for scan to finish');
-            await createJsonReport(restClient.scanResults, jsonReportPath);
-            taskLib.addAttachment(reportAttachmentName, reportAttachmentName, jsonReportPath);
+            await attachJsonReport(restClient.scanResults, jsonReportPath);
             return;
         }
 
         await restClient.getSASTResults();
+        await attachJsonReport(restClient.scanResults, jsonReportPath);
 
     } catch (err) {
         console.log(err);
@@ -64,6 +65,15 @@ function createConfig(): ScanConfig {
         throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
     }
 
+    let presetName;
+    const customPreset = taskLib.getInput('customPreset', false);
+    if (customPreset) {
+        presetName = customPreset;
+    }
+    else {
+        presetName = taskLib.getInput('preset', true) || '';
+    }
+
     return {
         serverUrl: taskLib.getEndpointUrl(endpointId, false),
         username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
@@ -75,6 +85,7 @@ function createConfig(): ScanConfig {
         denyProject: taskLib.getBoolInput('denyProject', false),
         isIncremental: taskLib.getBoolInput('incScan', true),
         isSyncMode: taskLib.getBoolInput('syncMode', false),
+        presetName,
         comment: taskLib.getInput('comment', false) || '',
 
         enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
@@ -85,7 +96,8 @@ function createConfig(): ScanConfig {
 
         // TODO: make sure the hardcoding is OK.
         forceScan: false,
-        isPublic: true
+        isPublic: true,
+        engineConfigurationId: 0
     };
 }
 
@@ -103,10 +115,10 @@ function createTempDirectory() {
     return tempDir;
 }
 
-function createJsonReport(scanResults: ScanResults, jsonReportPath: string) {
+async function attachJsonReport(scanResults: ScanResults, jsonReportPath: string) {
     const reportJson = JSON.stringify(scanResults);
 
-    return new Promise(function (resolve, reject) {
+    await new Promise(function (resolve, reject) {
         fs.writeFile(jsonReportPath, reportJson, err => {
             if (err) {
                 reject(err);
@@ -116,6 +128,8 @@ function createJsonReport(scanResults: ScanResults, jsonReportPath: string) {
         });
 
     });
+
+    taskLib.addAttachment(reportAttachmentName, reportAttachmentName, jsonReportPath);
 }
 
 run();

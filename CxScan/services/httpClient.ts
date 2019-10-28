@@ -8,29 +8,29 @@ import * as request from 'superagent';
 export class HttpClient {
     private static readonly JSON_V1 = 'application/json;v=1.0';
 
-    private readonly serverUrl: string;
-    private readonly username: string;
-    private readonly password: string;
+    private readonly baseUrl: string;
 
     private readonly zipper: Zipper;
-    private accessToken: string = '';
+    accessToken: string = '';
 
-    constructor(serverUrl: string, username: string, password: string) {
-        this.serverUrl = serverUrl;
-        this.username = username;
-        this.password = password;
+    constructor(baseUrl: string, accessToken?: string) {
+        this.baseUrl = baseUrl;
+
+        if (accessToken) {
+            this.accessToken = accessToken;
+        }
 
         this.zipper = new Zipper();
     }
 
-    async login() {
+    async login(username: string, password: string) {
         const fullUrl = this.getFullUrl('auth/identity/connect/token');
         return await request
             .post(fullUrl)
             .type('form')
             .send({
-                userName: this.username,
-                password: this.password,
+                userName: username,
+                password: password,
                 grant_type: 'password',
                 scope: 'sast_rest_api offline_access',
                 client_id: 'resource_owner_client',
@@ -102,6 +102,6 @@ export class HttpClient {
     }
 
     private getFullUrl(relativePath: string) {
-        return url.resolve(this.serverUrl, `CxRestAPI/${relativePath}`);
+        return url.resolve(this.baseUrl, relativePath);
     }
 }

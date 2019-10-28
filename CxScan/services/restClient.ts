@@ -7,30 +7,48 @@ import {TaskSkippedError} from "../dto/taskSkippedError";
 import {ScanResults} from "../dto/scanResults";
 import {SastClient} from "./sastClient";
 import * as url from "url";
+import {ArmClient} from "./armClient";
+import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 
+/**
+ * High-level CX API client that uses specialized clients internally.
+ */
 export class RestClient {
     readonly scanResults: ScanResults;
-
     private readonly httpClient: HttpClient;
     private readonly sastClient: SastClient;
-    private readonly zipper = new Zipper();
+    private readonly armClient: ArmClient;
 
+    private readonly zipper = new Zipper();
     private teamId = 0;
     private projectId = 0;
+    private presetId = 0;
 
     constructor(readonly config: ScanConfig) {
-        this.httpClient = new HttpClient(config.serverUrl, config.username, config.password);
+        const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
+        this.httpClient = new HttpClient(baseUrl);
+
         this.sastClient = new SastClient(this.config, this.httpClient);
+        this.armClient = new ArmClient(this.httpClient);
         this.scanResults = this.initScanResults();
     }
 
     async init(): Promise<void> {
         await this.login();
+
+        await this.resolvePreset();
+
+        if (this.config.enablePolicyViolations) {
+            await this.armClient.init();
+        }
+
         await this.resolveTeam();
         await this.resolveProject();
     }
 
     async createSASTScan(): Promise<void> {
+        await this.defineScanSettings();
+
         await this.uploadSourceCode();
         this.scanResults.scanId = await this.sastClient.createScan(this.projectId);
 
@@ -42,6 +60,16 @@ export class RestClient {
         console.log('------------------------------------Get CxSAST Results:----------------------------------');
         console.log('Retrieving SAST scan results');
         await this.sastClient.waitForScanToFinish();
+
+        const statistics = await this.sastClient.getScanStatistics(this.scanResults.scanId);
+        if (this.config.enablePolicyViolations) {
+            await this.armClient.waitForArmToFinish(this.projectId);
+            const projectViolations = this.armClient.getProjectViolations(this.projectId, 'SAST');
+            // this.addViolationsToScanResults(projectViolations);
+        }
+
+        // this.addStatisticsToScanResults(statistics);
+        // this.printScanResults();
     }
 
     private initScanResults(): ScanResults {
@@ -66,7 +94,11 @@ export class RestClient {
 
     private async login() {
         console.log('Logging into the Checkmarx service.');
-        await this.httpClient.login();
+        await this.httpClient.login(this.config.username, this.config.password);
+    }
+
+    private async resolvePreset() {
+        this.presetId = await this.sastClient.getPresetIdByName(this.config.presetName);
     }
 
     private async resolveTeam() {
@@ -156,5 +188,25 @@ export class RestClient {
     private static normalizeTeamName(path: string | undefined): string {
         // TODO: check if the normalization is correct: differences between powershell and common client.
         return (path || '').replace('\\', '/').toUpperCase();
+    }
+
+    private async defineScanSettings() {
+        const settingsResponse = await this.sastClient.getScanSettings(this.projectId);
+
+        const engineConfigurationId = this.config.engineConfigurationId || settingsResponse.engineConfiguration.id;
+
+        const request: UpdateScanSettingsRequest = {
+            projectId: this.projectId,
+            presetId: this.presetId,
+            engineConfigurationId,
+            emailNotifications: settingsResponse.emailNotifications
+        };
+
+        // TODO: PowerShell code uses postScanActionId = settingsResponse.postScanAction    - is this correct?
+        if (settingsResponse.postScanAction) {
+            request.postScanActionId = settingsResponse.postScanAction.id;
+        }
+
+        await this.sastClient.updateScanSettings(request);
     }
 }
