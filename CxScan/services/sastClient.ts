@@ -1,12 +1,11 @@
 import {ScanRequest} from "../dto/scanRequest";
 import {ScanConfig} from "../dto/scanConfig";
 import {HttpClient} from "./httpClient";
-import promisePoller from "promise-poller";
 import {ScanStatus} from "../dto/scanStatus";
 import {ScanStage} from "../dto/scanStage";
-import {PollingSettings} from "../pollingSettings";
 import {Stopwatch} from "./stopwatch";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
+import {Waiter} from "./waiter";
 
 export class SastClient {
     private static readonly scanCompletedDetails = 'Scan completed';
@@ -71,13 +70,8 @@ export class SastClient {
         console.log('Waiting for CxSAST scan to finish.');
 
         try {
-            const lastStatus = await promisePoller({
-                taskFn: this.checkIfScanFinished,
-                progressCallback: this.logWaitingProgress,
-                interval: PollingSettings.intervalSeconds * 1000,
-                masterTimeout: PollingSettings.scanTimeoutMinutes * 60 * 1000,
-                retries: Number.MAX_SAFE_INTEGER
-            });
+            const waiter = new Waiter();
+            const lastStatus = await waiter.waitForTaskToFinish(this.checkIfScanFinished, this.logWaitingProgress);
 
             if (SastClient.isFinishedSuccessfully(lastStatus)) {
                 console.log('SAST scan successfully finished.');
@@ -85,7 +79,7 @@ export class SastClient {
                 console.log(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
             }
         } catch (e) {
-            console.log(`Waiting for CxSAST scan has reached the time limit (${PollingSettings.scanTimeoutMinutes} minutes).`);
+            console.log(`Waiting for CxSAST scan has reached the time limit (${Waiter.PollingSettings.masterTimeoutMinutes} minutes).`);
         }
     }
 
@@ -102,7 +96,7 @@ export class SastClient {
         });
     };
 
-    private logWaitingProgress = (retriesRemaining: number, scanStatus: ScanStatus) => {
+    private logWaitingProgress = (scanStatus: ScanStatus) => {
         const elapsed = this.stopwatch.getElapsed();
         const stage = scanStatus && scanStatus.stage ? scanStatus.stage.value : 'n/a';
         console.log(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${scanStatus.totalPercent}% processed. Status: ${stage}.`);
