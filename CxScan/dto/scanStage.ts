@@ -1,4 +1,4 @@
-export const enum ScanStage {
+export enum ScanStage {
     Finished = 'Finished',
     Failed = 'Failed',
     Canceled = 'Canceled',
