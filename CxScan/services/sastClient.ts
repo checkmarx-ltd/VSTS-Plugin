@@ -7,8 +7,14 @@ import {Stopwatch} from "./stopwatch";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Waiter} from "./waiter";
 import {Logger} from "./logger";
+import {PollingSettings} from "../dto/pollingSettings";
 
 export class SastClient {
+    private static readonly pollingSettings: PollingSettings = {
+        intervalSeconds: 10,
+        masterTimeoutMinutes: 20
+    };
+
     private static readonly scanCompletedDetails = 'Scan completed';
 
     private readonly stopwatch = new Stopwatch();
@@ -74,7 +80,10 @@ export class SastClient {
 
         try {
             const waiter = new Waiter();
-            const lastStatus = await waiter.waitForTaskToFinish(this.checkIfScanFinished, this.logWaitingProgress);
+            const lastStatus = await waiter.waitForTaskToFinish(
+                this.checkIfScanFinished,
+                this.logWaitingProgress,
+                SastClient.pollingSettings);
 
             if (SastClient.isFinishedSuccessfully(lastStatus)) {
                 this.log.info('SAST scan successfully finished.');
@@ -82,7 +91,7 @@ export class SastClient {
                 this.log.info(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
             }
         } catch (e) {
-            this.log.info(`Waiting for CxSAST scan has reached the time limit (${Waiter.PollingSettings.masterTimeoutMinutes} minutes).`);
+            this.log.info(`Waiting for CxSAST scan has reached the time limit (${SastClient.pollingSettings.masterTimeoutMinutes} minutes).`);
         }
     }
 
@@ -100,7 +109,7 @@ export class SastClient {
     };
 
     private logWaitingProgress = (scanStatus: ScanStatus) => {
-        const elapsed = this.stopwatch.getElapsed();
+        const elapsed = this.stopwatch.getElapsedString();
         const stage = scanStatus && scanStatus.stage ? scanStatus.stage.value : 'n/a';
         this.log.info(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${scanStatus.totalPercent}% processed. Status: ${stage}.`);
     };

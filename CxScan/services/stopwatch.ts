@@ -7,9 +7,15 @@ export class Stopwatch {
         this.lastOperationStart = new Date();
     }
 
-    getElapsed(): string {
+    getElapsedString(): string {
         let duration = parseMilliseconds(Date.now() - this.lastOperationStart.getTime());
         return `${Stopwatch.pad(duration.hours)}:${Stopwatch.pad(duration.minutes)}:${Stopwatch.pad(duration.seconds)}`;
+    }
+
+    getElapsedSeconds(): number {
+        const elapsedMilliseconds = Date.now() - this.lastOperationStart.getTime();
+        const millisecondsInSecond = 1000;
+        return Math.round(elapsedMilliseconds / millisecondsInSecond);
     }
 
     private static pad(input: number) {
