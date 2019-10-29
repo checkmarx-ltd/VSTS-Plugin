@@ -198,7 +198,7 @@ export class RestClient {
                     libraryName: violation.source,
                     policyName: policy.policyName,
                     ruleName: violation.ruleName,
-                    detectionDate: violation.firstDetectionDateByArm.toString()    // TODO: proper conversion to string
+                    detectionDate: (new Date(violation.firstDetectionDateByArm)).toLocaleDateString()
                 });
             }
         }
