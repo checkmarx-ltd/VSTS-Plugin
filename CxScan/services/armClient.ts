@@ -5,11 +5,17 @@ import {ScanProvider} from "../dto/scanProvider";
 import {Waiter} from "./waiter";
 import {PolicyViolationGroup} from "../dto/policyViolationGroup";
 import {Logger} from "./logger";
+import {PollingSettings} from "../dto/pollingSettings";
 
 /**
  * Works with policy-related APIs.
  */
 export class ArmClient {
+    private static readonly pollingSettings: PollingSettings = {
+        intervalSeconds: 10,
+        masterTimeoutMinutes: 20
+    };
+
     private readonly stopwatch = new Stopwatch();
 
     private readonly generalHttpClient: HttpClient;
@@ -35,10 +41,11 @@ export class ArmClient {
             const waiter = new Waiter();
             lastStatus = await waiter.waitForTaskToFinish<ArmStatus>(
                 () => this.checkIfPolicyVerificationCompleted(projectId),
-                this.logWaitingProgress
+                this.logWaitingProgress,
+                ArmClient.pollingSettings
             );
         } catch (e) {
-            throw Error(`Waiting for server to retrieve policy violations has reached the time limit. (${Waiter.PollingSettings.masterTimeoutMinutes} minutes).`);
+            throw Error(`Waiting for server to retrieve policy violations has reached the time limit. (${ArmClient.pollingSettings.masterTimeoutMinutes} minutes).`);
         }
 
         if (lastStatus !== ArmStatus.Finished) {
@@ -73,6 +80,6 @@ export class ArmClient {
     };
 
     private logWaitingProgress = (armStatus: ArmStatus) => {
-        this.log.info(`Waiting for server to retrieve policy violations. Elapsed time: ${this.stopwatch.getElapsed()}. Status: ${armStatus}`)
+        this.log.info(`Waiting for server to retrieve policy violations. Elapsed time: ${this.stopwatch.getElapsedString()}. Status: ${armStatus}`)
     };
 }
