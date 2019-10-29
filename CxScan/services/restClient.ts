@@ -10,6 +10,7 @@ import * as url from "url";
 import {ArmClient} from "./armClient";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Logger} from "./logger";
+import {ReportingClient} from "./reportingClient";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -71,9 +72,9 @@ export class RestClient {
             await this.addPolicyViolationsToScanResults();
         }
 
-        // this.printScanResults();
+        this.log.info(this.scanResults.toString());
 
-        // await this.addDetailedReportToScanResults();
+        await this.addDetailedReportToScanResults();
     }
 
     private async login() {
@@ -227,5 +228,12 @@ export class RestClient {
         this.scanResults.sastSummaryResultsLink = url.resolve(this.config.serverUrl, sastProjectLink);
 
         this.scanResults.sastResultsReady = true;
+    }
+
+    private async addDetailedReportToScanResults() {
+        const reporting = new ReportingClient(this.httpClient, this.log);
+        const reportId = await reporting.startReportCreation(this.scanResults.scanId);
+        await reporting.waitForReportToFinish(reportId);
+        // const report = await reporting.getReport(reportId);
     }
 }
