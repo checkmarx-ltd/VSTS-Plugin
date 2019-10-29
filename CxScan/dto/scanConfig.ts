@@ -16,7 +16,8 @@ export interface ScanConfig {
 
     enablePolicyViolations: boolean;
     vulnerabilityThreshold: boolean;
-    highThreshold?: string;
-    mediumThreshold?: string;
-    lowThreshold?: string;
+
+    highThreshold?: number;
+    mediumThreshold?: number;
+    lowThreshold?: number;
 }
