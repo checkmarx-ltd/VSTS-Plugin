@@ -9,6 +9,7 @@ import {SastClient} from "./sastClient";
 import * as url from "url";
 import {ArmClient} from "./armClient";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
+import {Logger} from "./logger";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -18,18 +19,20 @@ export class RestClient {
     private readonly httpClient: HttpClient;
     private readonly sastClient: SastClient;
     private readonly armClient: ArmClient;
+    private readonly zipper: Zipper;
 
-    private readonly zipper = new Zipper();
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
 
-    constructor(readonly config: ScanConfig) {
+    constructor(readonly config: ScanConfig, private readonly log: Logger) {
         const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
-        this.httpClient = new HttpClient(baseUrl);
+        this.httpClient = new HttpClient(baseUrl, log);
 
-        this.sastClient = new SastClient(this.config, this.httpClient);
-        this.armClient = new ArmClient(this.httpClient);
+        this.sastClient = new SastClient(this.config, this.httpClient, log);
+        this.armClient = new ArmClient(this.httpClient, log);
+        this.zipper = new Zipper(log);
+
         this.scanResults = new ScanResults(this.config);
     }
 
@@ -53,12 +56,12 @@ export class RestClient {
         this.scanResults.scanId = await this.sastClient.createScan(this.projectId);
 
         const projectStateUrl = url.resolve(this.config.serverUrl, `CxWebClient/portal#/projectState/${this.projectId}/Summary`);
-        console.log(`SAST scan created successfully. CxLink to project state: ${projectStateUrl}`);
+        this.log.info(`SAST scan created successfully. CxLink to project state: ${projectStateUrl}`);
     }
 
     async getSASTResults() {
-        console.log('------------------------------------Get CxSAST Results:----------------------------------');
-        console.log('Retrieving SAST scan results');
+        this.log.info('------------------------------------Get CxSAST Results:----------------------------------');
+        this.log.info('Retrieving SAST scan results');
         await this.sastClient.waitForScanToFinish();
 
         await this.addStatisticsToScanResults();
@@ -69,10 +72,12 @@ export class RestClient {
         }
 
         // this.printScanResults();
+
+        // await this.addDetailedReportToScanResults();
     }
 
     private async login() {
-        console.log('Logging into the Checkmarx service.');
+        this.log.info('Logging into the Checkmarx service.');
         await this.httpClient.login(this.config.username, this.config.password);
     }
 
@@ -81,7 +86,7 @@ export class RestClient {
     }
 
     private async resolveTeam() {
-        console.log(`Resolving team: ${this.config.teamName}`);
+        this.log.info(`Resolving team: ${this.config.teamName}`);
         const allTeams = await this.httpClient.getRequest('auth/teams') as any[];
         const currentTeamName = RestClient.normalizeTeamName(this.config.teamName);
         const foundTeam = allTeams.find(team =>
@@ -96,12 +101,12 @@ export class RestClient {
     }
 
     private async resolveProject() {
-        console.log(`Resolving project: ${this.config.projectName}`);
+        this.log.info(`Resolving project: ${this.config.projectName}`);
 
         this.projectId = await this.getCurrentProjectId();
 
         if (!this.projectId) {
-            console.log('Project not found, creating a new one.');
+            this.log.info('Project not found, creating a new one.');
 
             if (this.config.denyProject) {
                 throw Error(
@@ -116,22 +121,22 @@ export class RestClient {
     private async uploadSourceCode(): Promise<void> {
         const tempFilename = tmpNameSync({postfix: '.zip'});
 
-        console.log(`Zipping source code at ${this.config.sourceDir} into file ${tempFilename}`);
+        this.log.info(`Zipping source code at ${this.config.sourceDir} into file ${tempFilename}`);
         await this.zipper.zipDirectory(this.config.sourceDir, tempFilename);
 
         if (!fs.existsSync(tempFilename)) {
             const error = new TaskSkippedError('Zip file is empty: no source to scan');
-            console.log(error.message);
+            this.log.info(error.message);
             throw error;
         }
 
         const urlPath = `projects/${this.projectId}/sourceCode/attachments`;
-        console.log(`Uploading the zipped source code to ${urlPath}.`);
+        this.log.info(`Uploading the zipped source code to ${urlPath}.`);
         await this.httpClient.postMultipartRequest(urlPath,
             {id: this.projectId},
             {zippedSource: tempFilename});
 
-        console.log(`Removing ${tempFilename}`);
+        this.log.info(`Removing ${tempFilename}`);
         fs.unlinkSync(tempFilename);
     }
 

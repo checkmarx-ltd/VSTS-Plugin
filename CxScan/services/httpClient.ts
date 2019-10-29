@@ -1,6 +1,6 @@
 import * as url from 'url';
-import Zipper from './zipper';
 import * as request from 'superagent';
+import {Logger} from "./logger";
 
 /**
  * Implements low-level API request logic.
@@ -8,17 +8,14 @@ import * as request from 'superagent';
 export class HttpClient {
     private readonly baseUrl: string;
 
-    private readonly zipper: Zipper;
     accessToken: string = '';
 
-    constructor(baseUrl: string, accessToken?: string) {
+    constructor(baseUrl: string, private readonly log: Logger, accessToken?: string) {
         this.baseUrl = baseUrl;
 
         if (accessToken) {
             this.accessToken = accessToken;
         }
-
-        this.zipper = new Zipper();
     }
 
     async login(username: string, password: string) {
@@ -36,11 +33,11 @@ export class HttpClient {
             })
             .then(
                 (response: request.Response) => {
-                    console.log('Login was successful');
+                    this.log.info('Login was successful');
                     this.accessToken = response.body.access_token;
                 },
                 (err: any) => {
-                    console.log('Login failed');
+                    this.log.info('Login failed');
                     throw err;
                 }
             );
@@ -68,7 +65,7 @@ export class HttpClient {
 
         return result.then((response: request.Response) => response.body,
             (err: any) => {
-                console.log(`${method.toUpperCase()} request failed to ${fullUrl}`);
+                this.log.info(`${method.toUpperCase()} request failed to ${fullUrl}`);
                 throw err;
             });
     }
@@ -93,7 +90,7 @@ export class HttpClient {
                 return response.body;
             },
             (err: any) => {
-                console.log(`Multipart request failed to ${fullUrl}`);
+                this.log.info(`Multipart request failed to ${fullUrl}`);
                 throw err;
             }
         );

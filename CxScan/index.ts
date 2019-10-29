@@ -6,12 +6,16 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import {ScanResults} from "./dto/scanResults";
+import {Logger} from "./services/logger";
+import {ConsoleLogger} from "./services/consoleLogger";
 
 const recursiveMkdir = require('mkdirp');
 
 class TaskRunner {
     private static readonly jsonReportFilename = 'cxreport.json';
     private static readonly reportAttachmentName = 'cxReport';
+
+    private readonly log: Logger = new ConsoleLogger();
 
     /*
      To run this task in console, task inputs must be provided in environment variables.
@@ -30,15 +34,15 @@ class TaskRunner {
         try {
             const config = TaskRunner.createConfig();
 
-            const tempDir = TaskRunner.createTempDirectory();
+            const tempDir = this.createTempDirectory();
             const jsonReportPath = path.join(tempDir, TaskRunner.jsonReportFilename);
 
-            const restClient = new RestClient(config);
+            const restClient = new RestClient(config, this.log);
             await restClient.init();
             await restClient.createSASTScan();
 
             if (!config.isSyncMode) {
-                console.log('Running in Asynchronous mode. Not waiting for scan to finish');
+                this.log.info('Running in Asynchronous mode. Not waiting for scan to finish');
                 await this.attachJsonReport(restClient.scanResults, jsonReportPath);
                 return;
             }
@@ -47,7 +51,7 @@ class TaskRunner {
             await this.attachJsonReport(restClient.scanResults, jsonReportPath);
 
         } catch (err) {
-            console.log(err);
+            this.log.info(err);
             let taskResult;
             if (err instanceof TaskSkippedError) {
                 taskResult = taskLib.TaskResult.Skipped;
@@ -116,7 +120,7 @@ class TaskRunner {
         return result;
     }
 
-    private static createTempDirectory(): string {
+    private createTempDirectory(): string {
         const tempDir = path.join(
             os.tmpdir(),
             'cx_temp',
@@ -125,7 +129,7 @@ class TaskRunner {
 
         if (!fs.existsSync(tempDir)) {
             recursiveMkdir.sync(tempDir);
-            console.log(`Build-specific Checkmarx reports folder created at: ${tempDir}`);
+            this.log.info(`Build-specific Checkmarx reports folder created at: ${tempDir}`);
         }
         return tempDir;
     }

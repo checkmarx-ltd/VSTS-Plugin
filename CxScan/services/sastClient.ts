@@ -6,6 +6,7 @@ import {ScanStage} from "../dto/scanStage";
 import {Stopwatch} from "./stopwatch";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Waiter} from "./waiter";
+import {Logger} from "./logger";
 
 export class SastClient {
     private static readonly scanCompletedDetails = 'Scan completed';
@@ -14,11 +15,13 @@ export class SastClient {
 
     private scanId: number = 0;
 
-    constructor(private readonly config: ScanConfig, private readonly httpClient: HttpClient) {
+    constructor(private readonly config: ScanConfig,
+                private readonly httpClient: HttpClient,
+                private readonly log: Logger) {
     }
 
     async getPresetIdByName(presetName: string) {
-        console.log(`Getting preset ID by name: [${presetName}]`);
+        this.log.info(`Getting preset ID by name: [${presetName}]`);
         const allPresets = await this.httpClient.getRequest('sast/presets') as [{ name: string, id: number }];
         const currentPresetName = this.config.presetName.toUpperCase();
         let result: number = 0;
@@ -37,7 +40,7 @@ export class SastClient {
     }
 
     getScanSettings(projectId: number) {
-        console.log('Getting scan settings.');
+        this.log.info('Getting scan settings.');
         return this.httpClient.getRequest(`sast/scanSettings/${projectId}`);
     }
 
@@ -62,24 +65,24 @@ export class SastClient {
     }
 
     updateScanSettings(request: UpdateScanSettingsRequest) {
-        console.log('Updating scan settings.');
+        this.log.info('Updating scan settings.');
         return this.httpClient.postRequest('sast/scanSettings', request);
     }
 
     async waitForScanToFinish() {
-        console.log('Waiting for CxSAST scan to finish.');
+        this.log.info('Waiting for CxSAST scan to finish.');
 
         try {
             const waiter = new Waiter();
             const lastStatus = await waiter.waitForTaskToFinish(this.checkIfScanFinished, this.logWaitingProgress);
 
             if (SastClient.isFinishedSuccessfully(lastStatus)) {
-                console.log('SAST scan successfully finished.');
+                this.log.info('SAST scan successfully finished.');
             } else {
-                console.log(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
+                this.log.info(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
             }
         } catch (e) {
-            console.log(`Waiting for CxSAST scan has reached the time limit (${Waiter.PollingSettings.masterTimeoutMinutes} minutes).`);
+            this.log.info(`Waiting for CxSAST scan has reached the time limit (${Waiter.PollingSettings.masterTimeoutMinutes} minutes).`);
         }
     }
 
@@ -99,7 +102,7 @@ export class SastClient {
     private logWaitingProgress = (scanStatus: ScanStatus) => {
         const elapsed = this.stopwatch.getElapsed();
         const stage = scanStatus && scanStatus.stage ? scanStatus.stage.value : 'n/a';
-        console.log(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${scanStatus.totalPercent}% processed. Status: ${stage}.`);
+        this.log.info(`Waiting for SAST scan results. Elapsed time: ${elapsed}. ${scanStatus.totalPercent}% processed. Status: ${stage}.`);
     };
 
     private static isFinishedSuccessfully(status: ScanStatus) {

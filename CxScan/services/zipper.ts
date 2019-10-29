@@ -1,49 +1,52 @@
 import * as fs from 'fs';
 import archiver from 'archiver';
+import {Logger} from "./logger";
 
 export default class Zipper {
-	async zipDirectory(srcDir: string, targetPath: string): Promise<any> {
-		try {
-			return new Promise<any>((resolve, reject) => {
-				const zipOutput = fs.createWriteStream(targetPath);
-				const archive = archiver('zip', {zlib: {level: 9}});
+    constructor(private readonly log: Logger) {
+    }
 
-				archive.on('warning', function (err: any) {
-					if (err.code === 'ENOENT') {
-						console.log(err);
-					} else {
-						// throw error
-						throw err;
-					}
-				});
+    async zipDirectory(srcDir: string, targetPath: string): Promise<any> {
+        try {
+            return new Promise<any>((resolve, reject) => {
+                const zipOutput = fs.createWriteStream(targetPath);
+                const archive = archiver('zip', {zlib: {level: 9}});
 
-				archive.on('error', function (err: any) {
-					throw err;
-				});
+                archive.on('warning', (err: any) => {
+                    if (err.code === 'ENOENT') {
+                        this.log.info(err);
+                    } else {
+                        throw err;
+                    }
+                });
 
-				zipOutput.on('close', function () {
-					console.log('Archiver:: INFO ' + archive.pointer() + ' total bytes');
-					console.log('Archiver:: INFO Archiver has been finalized and the output file descriptor has closed.');
-					fs.readFile(targetPath, 'base64', function (err) {
-						if (err) {
-							console.log('Archiver:: ZipFile fs.readFile ERROR ' + err);
-							reject(err);
-						} else {
-							resolve();
-						}
-					});
-				});
+                archive.on('error', (err: any) => {
+                    throw err;
+                });
 
-				archive.on('error', function (err: any) {
-					console.log('Archiver:: ERROR ' + err);
-					reject(err);
-				});
-				archive.pipe(zipOutput);
-				archive.directory(srcDir, false);
-				archive.finalize();
-			});
-		} catch (err) {
-			console.log('Archiver:: zipDirectory() ERROR ' + err);
-		}
-	}
+                zipOutput.on('close', () => {
+                    this.log.info('Archiver:: INFO ' + archive.pointer() + ' total bytes');
+                    this.log.info('Archiver:: INFO Archiver has been finalized and the output file descriptor has closed.');
+                    fs.readFile(targetPath, 'base64', err => {
+                        if (err) {
+                            this.log.info('Archiver:: ZipFile fs.readFile ERROR ' + err);
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+
+                archive.on('error', err => {
+                    this.log.info('Archiver:: ERROR ' + err);
+                    reject(err);
+                });
+                archive.pipe(zipOutput);
+                archive.directory(srcDir, false);
+                archive.finalize();
+            });
+        } catch (err) {
+            this.log.info('Archiver:: zipDirectory() ERROR ' + err);
+        }
+    }
 }
