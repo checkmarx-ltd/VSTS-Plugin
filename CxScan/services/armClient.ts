@@ -3,6 +3,7 @@ import {ArmStatus} from "../dto/armStatus";
 import {Stopwatch} from "./stopwatch";
 import {ScanProvider} from "../dto/scanProvider";
 import {Waiter} from "./waiter";
+import {PolicyViolationGroup} from "../dto/policyViolationGroup";
 
 /**
  * Works with policy-related APIs.
@@ -43,7 +44,7 @@ export class ArmClient {
         }
     }
 
-    getProjectViolations(projectId: number, provider: ScanProvider) {
+    getProjectViolations(projectId: number, provider: ScanProvider): Promise<PolicyViolationGroup[]> {
         const path = `/cxarm/policymanager/projects/${projectId}/violations?provider=${provider}`;
         if (!this.armHttpClient) {
             throw Error('The client was not initialized.');
