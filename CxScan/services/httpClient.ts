@@ -6,8 +6,6 @@ import * as request from 'superagent';
  * Implements low-level API request logic.
  */
 export class HttpClient {
-    private static readonly JSON_V1 = 'application/json;v=1.0';
-
     private readonly baseUrl: string;
 
     private readonly zipper: Zipper;
@@ -62,7 +60,7 @@ export class HttpClient {
 
         let result = request[method](fullUrl)
             .auth(this.accessToken, {type: 'bearer'})
-            .set('Content-Type', HttpClient.JSON_V1);
+            .accept('json');
 
         if (data) {
             result = result.send(data);
@@ -83,7 +81,7 @@ export class HttpClient {
         let result = request
             .post(fullUrl)
             .auth(this.accessToken, {type: 'bearer'})
-            .accept('application/json')
+            .accept('json')
             .field(fields);
 
         for (const prop in attachments) {
