@@ -30,7 +30,7 @@ export class RestClient {
 
         this.sastClient = new SastClient(this.config, this.httpClient);
         this.armClient = new ArmClient(this.httpClient);
-        this.scanResults = this.initScanResults();
+        this.scanResults = new ScanResults(this.config);
     }
 
     async init(): Promise<void> {
@@ -69,31 +69,6 @@ export class RestClient {
         }
 
         // this.printScanResults();
-    }
-
-    private initScanResults(): ScanResults {
-        return {
-            errorOccurred: false,
-            buildFailed: false,
-            url: this.config.serverUrl,
-            syncMode: this.config.isSyncMode,
-            osaEnabled: false,
-            enablePolicyViolations: this.config.enablePolicyViolations,
-            sastThresholdExceeded: false,
-            sastResultsReady: false,
-            scanId: 0,
-            thresholdEnabled: this.config.vulnerabilityThreshold,
-            highThreshold: this.config.highThreshold,
-            mediumThreshold: this.config.mediumThreshold,
-            lowThreshold: this.config.lowThreshold,
-            sastViolations: [],
-            sastPolicies: [],
-            policyViolated: false,
-            highResults: 0,
-            mediumResults: 0,
-            lowResults: 0,
-            infoResults: 0,
-        }
     }
 
     private async login() {

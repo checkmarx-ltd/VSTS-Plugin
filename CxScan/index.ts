@@ -90,15 +90,24 @@ function createConfig(): ScanConfig {
 
         enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
         vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false),
-        highThreshold: taskLib.getInput('high', false),
-        mediumThreshold: taskLib.getInput('medium', false),
-        lowThreshold: taskLib.getInput('low', false),
+        highThreshold: getNumericInput('high'),
+        mediumThreshold: getNumericInput('medium'),
+        lowThreshold: getNumericInput('low'),
 
         // TODO: make sure the hardcoding is OK.
         forceScan: false,
         isPublic: true,
         engineConfigurationId: 0
     };
+}
+
+function getNumericInput(name: string): number | undefined {
+    const rawValue = taskLib.getInput(name, false);
+    let result;
+    if (typeof rawValue !== 'undefined') {
+        result = +rawValue;
+    }
+    return result;
 }
 
 function createTempDirectory() {
