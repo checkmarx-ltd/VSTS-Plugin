@@ -61,14 +61,13 @@ export class RestClient {
         console.log('Retrieving SAST scan results');
         await this.sastClient.waitForScanToFinish();
 
-        const statistics = await this.sastClient.getScanStatistics(this.scanResults.scanId);
+        await this.addStatisticsToScanResults();
+
         if (this.config.enablePolicyViolations) {
             await this.armClient.waitForArmToFinish(this.projectId);
-            const projectViolations = this.armClient.getProjectViolations(this.projectId, 'SAST');
-            // this.addViolationsToScanResults(projectViolations);
+            await this.addPolicyViolationsToScanResults();
         }
 
-        // this.addStatisticsToScanResults(statistics);
         // this.printScanResults();
     }
 
@@ -82,13 +81,18 @@ export class RestClient {
             enablePolicyViolations: this.config.enablePolicyViolations,
             sastThresholdExceeded: false,
             sastResultsReady: false,
-            scanId: null,
+            scanId: 0,
             thresholdEnabled: this.config.vulnerabilityThreshold,
             highThreshold: this.config.highThreshold,
             mediumThreshold: this.config.mediumThreshold,
             lowThreshold: this.config.lowThreshold,
             sastViolations: [],
-            sastPolicies: []
+            sastPolicies: [],
+            policyViolated: false,
+            highResults: 0,
+            mediumResults: 0,
+            lowResults: 0,
+            infoResults: 0,
         }
     }
 
@@ -208,5 +212,40 @@ export class RestClient {
         }
 
         await this.sastClient.updateScanSettings(request);
+    }
+
+    private async addPolicyViolationsToScanResults() {
+        const projectViolations = await this.armClient.getProjectViolations(this.projectId, 'SAST');
+        for (const policy of projectViolations) {
+            this.scanResults.sastPolicies.push(policy.policyName);
+            for (const violation of policy.violations) {
+                this.scanResults.sastViolations.push({
+                    libraryName: violation.source,
+                    policyName: policy.policyName,
+                    ruleName: violation.ruleName,
+                    detectionDate: violation.firstDetectionDateByArm.toString()    // TODO: proper conversion to string
+                });
+            }
+        }
+
+        if (this.scanResults.sastViolations.length) {
+            this.scanResults.policyViolated = true;
+        }
+    }
+
+    private async addStatisticsToScanResults() {
+        const statistics = await this.sastClient.getScanStatistics(this.scanResults.scanId);
+        this.scanResults.highResults = statistics.highSeverity;
+        this.scanResults.mediumResults = statistics.mediumSeverity;
+        this.scanResults.lowResults = statistics.lowSeverity;
+        this.scanResults.infoResults = statistics.infoSeverity;
+
+        const sastScanPath = `CxWebClient/ViewerMain.aspx?scanId=${this.scanResults.scanId}&ProjectID=${this.projectId}`;
+        this.scanResults.sastScanResultsLink = url.resolve(this.config.serverUrl, sastScanPath);
+
+        const sastProjectLink = `CxWebClient/portal#/projectState/${this.projectId}/Summary`;
+        this.scanResults.sastSummaryResultsLink = url.resolve(this.config.serverUrl, sastProjectLink);
+
+        this.scanResults.sastResultsReady = true;
     }
 }

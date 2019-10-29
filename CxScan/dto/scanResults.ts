@@ -7,11 +7,25 @@ export interface ScanResults {
     enablePolicyViolations: boolean;
     sastThresholdExceeded: boolean;
     sastResultsReady: boolean;
-    scanId: any;
+    scanId: number;
     thresholdEnabled: boolean;
     highThreshold: any;
     mediumThreshold: any;
     lowThreshold: any;
-    sastViolations: any[];
-    sastPolicies: any[];
+    sastViolations: {
+        libraryName: string,
+        policyName: string,
+        ruleName: string,
+        detectionDate: string
+    }[];
+    sastPolicies: string[];
+    policyViolated: boolean;
+
+    highResults: number;
+    mediumResults: number;
+    lowResults: number;
+    infoResults: number;
+
+    sastScanResultsLink?: string;
+    sastSummaryResultsLink?: string;
 }
