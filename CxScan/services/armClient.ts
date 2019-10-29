@@ -4,6 +4,7 @@ import {Stopwatch} from "./stopwatch";
 import {ScanProvider} from "../dto/scanProvider";
 import {Waiter} from "./waiter";
 import {PolicyViolationGroup} from "../dto/policyViolationGroup";
+import {Logger} from "./logger";
 
 /**
  * Works with policy-related APIs.
@@ -15,24 +16,25 @@ export class ArmClient {
 
     private armHttpClient: HttpClient | null = null;
 
-    constructor(httpClient: HttpClient) {
+    constructor(httpClient: HttpClient, private readonly log: Logger) {
         this.generalHttpClient = httpClient;
     }
 
     async init() {
-        console.log('Resolving CxARM URL.');
+        this.log.info('Resolving CxARM URL.');
         const response = await this.generalHttpClient.getRequest('Configurations/Portal');
-        this.armHttpClient = new HttpClient(response.cxARMPolicyURL, this.generalHttpClient.accessToken);
+        this.armHttpClient = new HttpClient(response.cxARMPolicyURL, this.log, this.generalHttpClient.accessToken);
     }
 
     async waitForArmToFinish(projectId: number) {
         this.stopwatch.start();
 
+        this.log.info('Waiting for server to retrieve policy violations.');
         let lastStatus: ArmStatus;
         try {
             const waiter = new Waiter();
             lastStatus = await waiter.waitForTaskToFinish<ArmStatus>(
-                () => this.checkIfPolicyCheckFinished(projectId),
+                () => this.checkIfPolicyVerificationCompleted(projectId),
                 this.logWaitingProgress
             );
         } catch (e) {
@@ -53,13 +55,17 @@ export class ArmClient {
         return this.armHttpClient.getRequest(path);
     }
 
-    private async checkIfPolicyCheckFinished(projectId: number) {
+    private async checkIfPolicyVerificationCompleted(projectId: number) {
         const path = `sast/projects/${projectId}/publisher/policyFindings/status`;
         const statusResponse = await this.generalHttpClient.getRequest(path) as { status: ArmStatus };
         const {status} = statusResponse;
-        if (status === ArmStatus.Finished ||
+
+        const isCompleted =
+            status === ArmStatus.Finished ||
             status === ArmStatus.Failed ||
-            status === ArmStatus.None) {
+            status === ArmStatus.None;
+
+        if (isCompleted) {
             return Promise.resolve(status);
         } else {
             return Promise.reject(status);
@@ -67,6 +73,6 @@ export class ArmClient {
     };
 
     private logWaitingProgress = (armStatus: ArmStatus) => {
-        console.log(`Waiting for server to retrieve policy violations. Elapsed time: ${this.stopwatch.getElapsed()}. Status: ${armStatus}`)
+        this.log.info(`Waiting for server to retrieve policy violations. Elapsed time: ${this.stopwatch.getElapsed()}. Status: ${armStatus}`)
     };
 }
