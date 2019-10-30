@@ -8,6 +8,7 @@ import * as fs from "fs";
 import {ScanResults} from "./dto/scanResults";
 import {Logger} from "./services/logger";
 import {ConsoleLogger} from "./services/consoleLogger";
+import {ScanConfigFormatter} from "./services/scanConfigFormatter";
 
 const recursiveMkdir = require('mkdirp');
 
@@ -32,10 +33,17 @@ class TaskRunner {
     */
     async run() {
         try {
-            const config = TaskRunner.createConfig();
-
+            this.printHeader();
+            
             const tempDir = this.createTempDirectory();
             const jsonReportPath = path.join(tempDir, TaskRunner.jsonReportFilename);
+
+            this.log.info('Entering CxScanner...');
+
+            const config = TaskRunner.createConfig();
+
+            const formatter = new ScanConfigFormatter(this.log);
+            formatter.format(config);
 
             const restClient = new RestClient(config, this.log);
             await restClient.init();
@@ -66,8 +74,8 @@ class TaskRunner {
         const supportedAuthScheme = 'UsernamePassword';
         const endpointId = taskLib.getInput('CheckmarxService', true) || '';
 
-        const sourceDir = taskLib.getVariable('Build.SourcesDirectory');
-        if (typeof sourceDir === 'undefined') {
+        const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
+        if (typeof sourceLocation === 'undefined') {
             throw Error('Sources directory is not provided.');
         }
 
@@ -84,18 +92,27 @@ class TaskRunner {
             presetName = taskLib.getInput('preset', true) || '';
         }
 
+        let rawTimeout = taskLib.getInput('scanTimeout',false) as any;
+        let scanTimeoutInMinutes = +rawTimeout;
+        if (!scanTimeoutInMinutes) {
+            scanTimeoutInMinutes = -1;
+        }
+
         return {
             serverUrl: taskLib.getEndpointUrl(endpointId, false),
             username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
             password: taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '',
 
-            sourceDir,
+            sourceLocation,
             projectName: taskLib.getInput('projectName', true) || '',
             teamName: taskLib.getInput('fullTeamName', true) || '',
             denyProject: taskLib.getBoolInput('denyProject', false),
+            folderExclusion: taskLib.getInput('folderExclusion', false) || '',
+            fileExtension: taskLib.getInput('fileExtension', false) || '',
             isIncremental: taskLib.getBoolInput('incScan', true),
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             presetName,
+            scanTimeoutInMinutes,
             comment: taskLib.getInput('comment', false) || '',
 
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
@@ -149,6 +166,29 @@ class TaskRunner {
         });
 
         taskLib.addAttachment(TaskRunner.reportAttachmentName, TaskRunner.reportAttachmentName, jsonReportPath);
+    }
+
+    private printHeader() {
+        this.log.info(`
+         CxCxCxCxCxCxCxCxCxCxCxCx          
+        CxCxCxCxCxCxCxCxCxCxCxCxCx         
+       CxCxCxCxCxCxCxCxCxCxCxCxCxCx        
+      CxCxCx                CxCxCxCx       
+      CxCxCx                CxCxCxCx       
+      CxCxCx  CxCxCx      CxCxCxCxC        
+      CxCxCx  xCxCxCx  .CxCxCxCxCx         
+      CxCxCx   xCxCxCxCxCxCxCxCx           
+      CxCxCx    xCxCxCxCxCxCx              
+      CxCxCx     CxCxCxCxCx   CxCxCx       
+      CxCxCx       xCxCxC     CxCxCx       
+      CxCxCx                 CxCxCx        
+       CxCxCxCxCxCxCxCxCxCxCxCxCxCx        
+        CxCxCxCxCxCxCxCxCxCxCxCxCx         
+          CxCxCxCxCxCxCxCxCxCxCx           
+                                           
+            C H E C K M A R X              
+                                           
+Starting Checkmarx scan`);
     }
 }
 

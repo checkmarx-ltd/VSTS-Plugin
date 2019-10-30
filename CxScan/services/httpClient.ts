@@ -33,7 +33,6 @@ export class HttpClient {
             })
             .then(
                 (response: request.Response) => {
-                    this.log.info('Login was successful');
                     this.accessToken = response.body.access_token;
                 },
                 (err: any) => {
