@@ -91,7 +91,7 @@ class TaskRunner {
 
             sourceDir,
             projectName: taskLib.getInput('projectName', true) || '',
-            teamName: taskLib.getInput('fullTeamName', true),
+            teamName: taskLib.getInput('fullTeamName', true) || '',
             denyProject: taskLib.getBoolInput('denyProject', false),
             isIncremental: taskLib.getBoolInput('incScan', true),
             isSyncMode: taskLib.getBoolInput('syncMode', false),
