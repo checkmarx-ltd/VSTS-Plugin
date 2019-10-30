@@ -170,9 +170,14 @@ export class RestClient {
         return newProject.id;
     }
 
-    private static normalizeTeamName(path: string | undefined): string {
-        // TODO: check if the normalization is correct: differences between powershell and common client.
-        return (path || '').replace('\\', '/').toUpperCase();
+    private static normalizeTeamName(path: string): string {
+        let result = path;
+        while (result.includes('\\') || result.includes('//')) {
+            result = result
+                .replace('\\', '/')
+                .replace('//', '/');
+        }
+        return result;
     }
 
     private async defineScanSettings() {

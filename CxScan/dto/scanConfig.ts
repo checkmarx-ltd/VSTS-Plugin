@@ -3,7 +3,7 @@ export interface ScanConfig {
     password: string;
     sourceDir: string;
     projectName: string;
-    teamName?: string;
+    teamName: string;
     serverUrl: string;
     isPublic: boolean;
     denyProject: boolean;
