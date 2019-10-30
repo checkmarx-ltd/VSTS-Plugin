@@ -38,6 +38,9 @@ export class RestClient {
     }
 
     async init(): Promise<void> {
+        this.log.info('Initializing Cx client');
+        await this.printCxServerVersion();
+
         await this.login();
 
         await this.resolvePreset();
@@ -51,6 +54,7 @@ export class RestClient {
     }
 
     async createSASTScan(): Promise<void> {
+        this.log.info('-----------------------------------Create CxSAST Scan:-----------------------------------');
         await this.defineScanSettings();
 
         await this.uploadSourceCode();
@@ -122,8 +126,8 @@ export class RestClient {
     private async uploadSourceCode(): Promise<void> {
         const tempFilename = tmpNameSync({postfix: '.zip'});
 
-        this.log.info(`Zipping source code at ${this.config.sourceDir} into file ${tempFilename}`);
-        await this.zipper.zipDirectory(this.config.sourceDir, tempFilename);
+        this.log.info(`Zipping source code at ${this.config.sourceLocation} into file ${tempFilename}`);
+        await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename);
 
         if (!fs.existsSync(tempFilename)) {
             const error = new TaskSkippedError('Zip file is empty: no source to scan');
@@ -260,5 +264,15 @@ export class RestClient {
                 resultLength: query.Result.Length
             })
         ).join(separator);
+    }
+
+    private async printCxServerVersion() {
+        try {
+            const versionInfo = await this.httpClient.getRequest('system/version');
+            this.log.info(`Checkmarx server version [${versionInfo.version}]. Hotfix [${versionInfo.hotFix}].`)
+        } catch (e) {
+            // TODO: PowerShell version continues execution in this case. Check if it's correct.
+            throw Error('Checkmarx server version is lower than 9.0');
+        }
     }
 }

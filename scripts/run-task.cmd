@@ -19,6 +19,11 @@ set INPUT_SYNCMODE=true
 set INPUT_ENABLEPOLICYVIOLATIONS=true
 set INPUT_PRESET=Checkmarx Default
 
+set INPUT_VULNERABILITYTHRESHOLD=true
+set INPUT_HIGH=1
+set INPUT_MEDIUM=1
+set INPUT_LOW=1
+
 node target\index.js
 
 popd

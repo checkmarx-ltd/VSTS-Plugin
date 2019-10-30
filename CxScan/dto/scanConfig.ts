@@ -1,17 +1,20 @@
 export interface ScanConfig {
     username: string;
     password: string;
-    sourceDir: string;
+    sourceLocation: string;
     projectName: string;
     teamName: string;
     serverUrl: string;
     isPublic: boolean;
     denyProject: boolean;
+    folderExclusion: string;
+    fileExtension: string;
     isIncremental: boolean;
     forceScan: boolean;
     comment: string;
     isSyncMode: boolean;
     presetName: string;
+    scanTimeoutInMinutes: number;
     engineConfigurationId: number;
 
     enablePolicyViolations: boolean;

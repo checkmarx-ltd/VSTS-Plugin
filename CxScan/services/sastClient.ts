@@ -10,10 +10,7 @@ import {Logger} from "./logger";
 import {PollingSettings} from "../dto/pollingSettings";
 
 export class SastClient {
-    private static readonly pollingSettings: PollingSettings = {
-        intervalSeconds: 10,
-        masterTimeoutMinutes: 20
-    };
+    private static readonly pollingIntervalInSeconds = 10;
 
     private static readonly scanCompletedDetails = 'Scan completed';
 
@@ -78,20 +75,26 @@ export class SastClient {
     async waitForScanToFinish() {
         this.log.info('Waiting for CxSAST scan to finish.');
 
+        const polling: PollingSettings = {
+            masterTimeoutMinutes: this.config.scanTimeoutInMinutes,
+            intervalSeconds: SastClient.pollingIntervalInSeconds
+        };
+
+        let lastStatus;
+        const waiter = new Waiter();
         try {
-            const waiter = new Waiter();
-            const lastStatus = await waiter.waitForTaskToFinish(
+            lastStatus = await waiter.waitForTaskToFinish(
                 this.checkIfScanFinished,
                 this.logWaitingProgress,
-                SastClient.pollingSettings);
-
-            if (SastClient.isFinishedSuccessfully(lastStatus)) {
-                this.log.info('SAST scan successfully finished.');
-            } else {
-                this.log.info(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
-            }
+                polling);
         } catch (e) {
-            this.log.info(`Waiting for CxSAST scan has reached the time limit (${SastClient.pollingSettings.masterTimeoutMinutes} minutes).`);
+            throw Error(`Waiting for CxSAST scan has reached the time limit (${polling.masterTimeoutMinutes} minutes).`);
+        }
+
+        if (SastClient.isFinishedSuccessfully(lastStatus)) {
+            this.log.info('SAST scan successfully finished.');
+        } else if (lastStatus) {
+            this.log.info(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
         }
     }
 
