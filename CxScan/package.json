@@ -16,7 +16,8 @@
     "parse-ms": "^2.1.0",
     "promise-poller": "^1.9.1",
     "superagent": "^5.1.0",
-    "tmp": "^0.1.0"
+    "tmp": "^0.1.0",
+    "xml2js": "^0.4.22"
   },
   "devDependencies": {
     "@types/archiver": "^2.1.3",
