@@ -232,8 +232,28 @@ export class RestClient {
 
     private async addDetailedReportToScanResults() {
         const reporting = new ReportingClient(this.httpClient, this.log);
-        const reportId = await reporting.startReportCreation(this.scanResults.scanId);
-        await reporting.waitForReportToFinish(reportId);
-        // const report = await reporting.getReport(reportId);
+        const reportId = await reporting.startReportGeneration(this.scanResults.scanId);
+        await reporting.waitForReportGenerationToFinish(reportId);
+        const reportXml = await reporting.getReport(reportId);
+
+        const doc = reportXml.CxXMLResults;
+        this.scanResults.scanStart = doc.$.ScanStart;
+        this.scanResults.scanTime = doc.$.ScanTime;
+        this.scanResults.locScanned = doc.$.LinesOfCodeScanned;
+        this.scanResults.filesScanned = doc.$.FilesScanned;
+        this.scanResults.queryList = RestClient.toJsonQueries(doc.Query);
+
+        // TODO: PowerShell code also adds properties such as newHighCount, but they are not used in the UI.
+    }
+
+    private static toJsonQueries(queries: any[]) {
+        const separator = ';';
+        return queries.map(query =>
+            JSON.stringify({
+                name: query.$.name,
+                severity: query.$.Severity,
+                resultLength: query.Result.Length
+            })
+        ).join(separator);
     }
 }

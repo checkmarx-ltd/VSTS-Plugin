@@ -36,7 +36,7 @@ export class ArmClient {
         this.stopwatch.start();
 
         this.log.info('Waiting for server to retrieve policy violations.');
-        let lastStatus: ArmStatus;
+        let lastStatus = ArmStatus.None;
         try {
             const waiter = new Waiter();
             lastStatus = await waiter.waitForTaskToFinish<ArmStatus>(

@@ -53,12 +53,15 @@ export class ScanResults {
 
     locScanned = 0;
     filesScanned = 0;
-    riskLevel = null;
-    projectId = 0;
-    newHighCount = 0;
-    newMediumCount = 0;
-    newLowCount = 0;
-    newInfoCount = 0;
+
+    // TODO: check if this is needed anywhere.
+    // riskLevel = null;
+    // projectId = 0;
+    // newHighCount = 0;
+    // newMediumCount = 0;
+    // newLowCount = 0;
+    // newInfoCount = 0;
+
     queryList = '';
     osaStartTime = '';  // E.g. "2019-10-27T12:22:50.223"
     osaEndTime = '';

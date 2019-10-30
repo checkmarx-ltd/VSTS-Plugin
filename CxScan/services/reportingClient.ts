@@ -4,6 +4,7 @@ import {Waiter} from "./waiter";
 import {ReportStatus} from "../dto/reportStatus";
 import {PollingSettings} from "../dto/pollingSettings";
 import {Stopwatch} from "./stopwatch";
+import * as xml2js from "xml2js";
 
 export class ReportingClient {
     private static readonly reportType = 'XML';
@@ -18,7 +19,7 @@ export class ReportingClient {
     constructor(private readonly httpClient: HttpClient, private readonly log: Logger) {
     }
 
-    async startReportCreation(scanId: number) {
+    async startReportGeneration(scanId: number) {
         const request = {
             scanId: scanId,
             reportType: ReportingClient.reportType
@@ -27,7 +28,7 @@ export class ReportingClient {
         return response.reportId;
     }
 
-    async waitForReportToFinish(reportId: number) {
+    async waitForReportGenerationToFinish(reportId: number) {
         this.stopwatch.start();
 
         this.log.info(`Waiting for server to generate ${ReportingClient.reportType} report.`);
@@ -48,6 +49,12 @@ export class ReportingClient {
         } else {
             throw Error(`${ReportingClient.reportType} report cannot be generated. Status [${lastStatus}].`);
         }
+    }
+
+    async getReport(reportId: number) {
+        const reportBytes = await this.httpClient.getRequest(`reports/sastScan/${reportId}`) as Uint8Array;
+        const reportBuffer = new Buffer(reportBytes);
+        return xml2js.parseStringPromise(reportBuffer);
     }
 
     private async checkIfReportIsCompleted(reportId: number) {
