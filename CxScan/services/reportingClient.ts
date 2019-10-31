@@ -6,6 +6,9 @@ import {PollingSettings} from "../dto/pollingSettings";
 import {Stopwatch} from "./stopwatch";
 import * as xml2js from "xml2js";
 
+/**
+ * Uses Cx API to generate and download XMl reports.
+ */
 export class ReportingClient {
     private static readonly reportType = 'XML';
 
@@ -19,7 +22,13 @@ export class ReportingClient {
     constructor(private readonly httpClient: HttpClient, private readonly log: Logger) {
     }
 
-    async startReportGeneration(scanId: number) {
+    async generateReport(scanId: number) {
+        const reportId = await this.startReportGeneration(scanId);
+        await this.waitForReportGenerationToFinish(reportId);
+        return this.getReport(reportId);
+    }
+
+    private async startReportGeneration(scanId: number) {
         const request = {
             scanId: scanId,
             reportType: ReportingClient.reportType
@@ -28,7 +37,7 @@ export class ReportingClient {
         return response.reportId;
     }
 
-    async waitForReportGenerationToFinish(reportId: number) {
+    private async waitForReportGenerationToFinish(reportId: number) {
         this.stopwatch.start();
 
         this.log.info(`Waiting for server to generate ${ReportingClient.reportType} report.`);
@@ -51,7 +60,7 @@ export class ReportingClient {
         }
     }
 
-    async getReport(reportId: number) {
+    private async getReport(reportId: number) {
         const reportBytes = await this.httpClient.getRequest(`reports/sastScan/${reportId}`) as Uint8Array;
         const reportBuffer = new Buffer(reportBytes);
         return xml2js.parseStringPromise(reportBuffer);
