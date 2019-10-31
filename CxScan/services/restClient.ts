@@ -278,7 +278,7 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
             JSON.stringify({
                 name: query.$.name,
                 severity: query.$.Severity,
-                resultLength: query.Result.Length
+                resultLength: query.Result.length
             })
         ).join(separator);
     }
