@@ -11,6 +11,7 @@ import {ArmClient} from "./armClient";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Logger} from "./logger";
 import {ReportingClient} from "./reportingClient";
+import {ScanResultsEvaluator} from "./scanResultsEvaluator";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -25,7 +26,6 @@ export class RestClient {
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
-    private buildFailureHeaderPrinted = false;
 
     constructor(readonly config: ScanConfig, private readonly log: Logger) {
         const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
@@ -78,8 +78,8 @@ export class RestClient {
 
         await this.addDetailedReportToScanResults();
 
-        this.checkForPolicyViolations();
-        this.checkForExceededThresholds();
+        const evaluator = new ScanResultsEvaluator(this.scanResults, this.config, this.log);
+        evaluator.evaluate();
     }
 
     private async login() {
@@ -293,66 +293,5 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
         }
     }
 
-    private checkForPolicyViolations() {
-        if (!this.config.enablePolicyViolations) {
-            return;
-        }
 
-        this.log.info(
-            `-----------------------------------------------------------------------------------------
-Policy Management:
---------------------`);
-
-        if (!this.scanResults.sastPolicies.length) {
-            this.log.info('Project policy status: compliant');
-        } else {
-            this.log.info('Project policy status: violated');
-
-            const names = this.scanResults.sastPolicies.join(', ');
-            this.log.info(`SAST violated policies names: ${names}`);
-        }
-        this.log.info('-----------------------------------------------------------------------------------------');
-
-        if (this.scanResults.policyViolated) {
-            this.logBuildFailure('Project policy status: violated');
-        }
-    }
-
-    private checkForExceededThresholds() {
-        if (this.config.vulnerabilityThreshold && this.checkIfSastThresholdExceeded()) {
-            this.logBuildFailure('Exceeded CxSAST Vulnerability Threshold.');
-        }
-    }
-
-    private checkIfSastThresholdExceeded() {
-        const highExceeded = this.isLevelThresholdExceeded(this.scanResults.highResults, this.scanResults.highThreshold, 'high');
-        const mediumExceeded = this.isLevelThresholdExceeded(this.scanResults.mediumResults, this.scanResults.mediumThreshold, 'medium');
-        const lowExceeded = this.isLevelThresholdExceeded(this.scanResults.lowResults, this.scanResults.lowThreshold, 'low');
-        return highExceeded || mediumExceeded || lowExceeded;
-    }
-
-    private isLevelThresholdExceeded(amountToCheck: number, threshold: number | undefined, severity: string): boolean {
-        let result = false;
-        if (typeof threshold !== 'undefined') {
-            if (threshold <= 0) {
-                throw Error('Threshold must be 0 or greater');
-            }
-
-            if (amountToCheck > threshold) {
-                this.logBuildFailure(`SAST ${severity} severity results are above threshold. Results: ${amountToCheck}. Threshold: ${threshold}`);
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    private logBuildFailure(reason: string) {
-        if (!this.buildFailureHeaderPrinted) {
-            this.log.info(`********************************************
-The Build Failed for the Following Reasons:
-********************************************`);
-            this.buildFailureHeaderPrinted = true;
-        }
-        this.log.info(reason);
-    }
 }

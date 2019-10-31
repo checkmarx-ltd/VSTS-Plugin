@@ -57,6 +57,10 @@ class TaskRunner {
 
             await restClient.getSASTResults();
             await this.attachJsonReport(restClient.scanResults, jsonReportPath);
+
+            if (restClient.scanResults.buildFailed) {
+                taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
+            }
         } catch (err) {
             this.log.info(err);
 
