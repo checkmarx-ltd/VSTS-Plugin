@@ -25,6 +25,7 @@ export class RestClient {
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
+    private buildFailureHeaderPrinted = false;
 
     constructor(readonly config: ScanConfig, private readonly log: Logger) {
         const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
@@ -67,18 +68,18 @@ export class RestClient {
     async getSASTResults() {
         this.log.info('------------------------------------Get CxSAST Results:----------------------------------');
         this.log.info('Retrieving SAST scan results');
+
         await this.sastClient.waitForScanToFinish();
 
         await this.addStatisticsToScanResults();
+        await this.addPolicyViolationsToScanResults();
 
-        if (this.config.enablePolicyViolations) {
-            await this.armClient.waitForArmToFinish(this.projectId);
-            await this.addPolicyViolationsToScanResults();
-        }
-
-        this.log.info(this.scanResults.toString());
+        this.printStatistics();
 
         await this.addDetailedReportToScanResults();
+
+        this.checkForPolicyViolations();
+        this.checkForExceededThresholds();
     }
 
     private async login() {
@@ -205,6 +206,12 @@ export class RestClient {
     }
 
     private async addPolicyViolationsToScanResults() {
+        if (!this.config.enablePolicyViolations) {
+            return;
+        }
+
+        await this.armClient.waitForArmToFinish(this.projectId);
+
         const projectViolations = await this.armClient.getProjectViolations(this.projectId, 'SAST');
         for (const policy of projectViolations) {
             this.scanResults.sastPolicies.push(policy.policyName);
@@ -240,10 +247,8 @@ export class RestClient {
     }
 
     private async addDetailedReportToScanResults() {
-        const reporting = new ReportingClient(this.httpClient, this.log);
-        const reportId = await reporting.startReportGeneration(this.scanResults.scanId);
-        await reporting.waitForReportGenerationToFinish(reportId);
-        const reportXml = await reporting.getReport(reportId);
+        const client = new ReportingClient(this.httpClient, this.log);
+        const reportXml = await client.generateReport(this.scanResults.scanId);
 
         const doc = reportXml.CxXMLResults;
         this.scanResults.scanStart = doc.$.ScanStart;
@@ -253,6 +258,18 @@ export class RestClient {
         this.scanResults.queryList = RestClient.toJsonQueries(doc.Query);
 
         // TODO: PowerShell code also adds properties such as newHighCount, but they are not used in the UI.
+    }
+
+    private printStatistics() {
+        this.log.info(`----------------------------Checkmarx Scan Results(CxSAST):-------------------------------
+High severity results: ${this.scanResults.highResults}
+Medium severity results: ${this.scanResults.mediumResults}
+Low severity results: ${this.scanResults.lowResults}
+Info severity results: ${this.scanResults.infoResults}
+
+Scan results location:  ${this.scanResults.sastScanResultsLink}
+------------------------------------------------------------------------------------------
+`);
     }
 
     private static toJsonQueries(queries: any[]) {
@@ -274,5 +291,68 @@ export class RestClient {
             // TODO: PowerShell version continues execution in this case. Check if it's correct.
             throw Error('Checkmarx server version is lower than 9.0');
         }
+    }
+
+    private checkForPolicyViolations() {
+        if (!this.config.enablePolicyViolations) {
+            return;
+        }
+
+        this.log.info(
+            `-----------------------------------------------------------------------------------------
+Policy Management:
+--------------------`);
+
+        if (!this.scanResults.sastPolicies.length) {
+            this.log.info('Project policy status: compliant');
+        } else {
+            this.log.info('Project policy status: violated');
+
+            const names = this.scanResults.sastPolicies.join(', ');
+            this.log.info(`SAST violated policies names: ${names}`);
+        }
+        this.log.info('-----------------------------------------------------------------------------------------');
+
+        if (this.scanResults.policyViolated) {
+            this.logBuildFailure('Project policy status: violated');
+        }
+    }
+
+    private checkForExceededThresholds() {
+        if (this.config.vulnerabilityThreshold && this.checkIfSastThresholdExceeded()) {
+            this.logBuildFailure('Exceeded CxSAST Vulnerability Threshold.');
+        }
+    }
+
+    private checkIfSastThresholdExceeded() {
+        const highExceeded = this.isLevelThresholdExceeded(this.scanResults.highResults, this.scanResults.highThreshold, 'high');
+        const mediumExceeded = this.isLevelThresholdExceeded(this.scanResults.mediumResults, this.scanResults.mediumThreshold, 'medium');
+        const lowExceeded = this.isLevelThresholdExceeded(this.scanResults.lowResults, this.scanResults.lowThreshold, 'low');
+        return highExceeded || mediumExceeded || lowExceeded;
+    }
+
+    private isLevelThresholdExceeded(amountToCheck: number, threshold: number | undefined, severity: string): boolean {
+        let result = false;
+        if (typeof threshold !== 'undefined') {
+            if (threshold <= 0) {
+                throw Error('Threshold must be 0 or greater');
+            }
+
+            if (amountToCheck > threshold) {
+                this.logBuildFailure(`SAST ${severity} severity results are above threshold. Results: ${amountToCheck}. Threshold: ${threshold}`);
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private logBuildFailure(reason: string) {
+        if (!this.buildFailureHeaderPrinted) {
+            this.log.info(`********************************************
+The Build Failed for the Following Reasons:
+********************************************`);
+            this.buildFailureHeaderPrinted = true;
+        }
+        this.log.info(reason);
     }
 }

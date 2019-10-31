@@ -13,8 +13,8 @@ import {ScanConfigFormatter} from "./services/scanConfigFormatter";
 const recursiveMkdir = require('mkdirp');
 
 class TaskRunner {
-    private static readonly jsonReportFilename = 'cxreport.json';
-    private static readonly reportAttachmentName = 'cxReport';
+    private static readonly JSON_REPORT_FILENAME = 'cxreport.json';
+    private static readonly REPORT_ATTACHMENT_NAME = 'cxReport';
 
     private readonly log: Logger = new ConsoleLogger();
 
@@ -34,9 +34,9 @@ class TaskRunner {
     async run() {
         try {
             this.printHeader();
-            
+
             const tempDir = this.createTempDirectory();
-            const jsonReportPath = path.join(tempDir, TaskRunner.jsonReportFilename);
+            const jsonReportPath = path.join(tempDir, TaskRunner.JSON_REPORT_FILENAME);
 
             this.log.info('Entering CxScanner...');
 
@@ -57,16 +57,14 @@ class TaskRunner {
 
             await restClient.getSASTResults();
             await this.attachJsonReport(restClient.scanResults, jsonReportPath);
-
         } catch (err) {
             this.log.info(err);
-            let taskResult;
+
             if (err instanceof TaskSkippedError) {
-                taskResult = taskLib.TaskResult.Skipped;
+                taskLib.setResult(taskLib.TaskResult.Skipped, err.message);
             } else {
-                taskResult = taskLib.TaskResult.Failed;
+                taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed: ${err.message}`);
             }
-            taskLib.setResult(taskResult, err.message);
         }
     }
 
@@ -92,7 +90,7 @@ class TaskRunner {
             presetName = taskLib.getInput('preset', true) || '';
         }
 
-        let rawTimeout = taskLib.getInput('scanTimeout',false) as any;
+        let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
         if (!scanTimeoutInMinutes) {
             scanTimeoutInMinutes = -1;
@@ -154,7 +152,7 @@ class TaskRunner {
     private async attachJsonReport(scanResults: ScanResults, jsonReportPath: string) {
         const reportJson = JSON.stringify(scanResults);
 
-        await new Promise(function (resolve, reject) {
+        await new Promise((resolve, reject) => {
             fs.writeFile(jsonReportPath, reportJson, err => {
                 if (err) {
                     reject(err);
@@ -162,10 +160,10 @@ class TaskRunner {
                     resolve();
                 }
             });
-
         });
 
-        taskLib.addAttachment(TaskRunner.reportAttachmentName, TaskRunner.reportAttachmentName, jsonReportPath);
+        taskLib.addAttachment(TaskRunner.REPORT_ATTACHMENT_NAME, TaskRunner.REPORT_ATTACHMENT_NAME, jsonReportPath);
+        this.log.info('Generated Checkmarx summary results');
     }
 
     private printHeader() {
