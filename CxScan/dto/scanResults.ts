@@ -81,16 +81,4 @@ export class ScanResults {
         this.mediumThreshold = config.mediumThreshold;
         this.lowThreshold = config.lowThreshold;
     }
-
-    toString() {
-        return `----------------------------Checkmarx Scan Results(CxSAST):-------------------------------
-High severity results: ${this.highResults}
-Medium severity results: ${this.mediumResults}
-Low severity results: ${this.lowResults}
-Info severity results: ${this.infoResults}
-
-Scan results location:  ${this.sastScanResultsLink}
-------------------------------------------------------------------------------------------
-`;
-    }
 }

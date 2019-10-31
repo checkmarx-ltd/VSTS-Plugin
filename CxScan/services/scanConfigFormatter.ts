@@ -6,6 +6,9 @@ export class ScanConfigFormatter {
     }
 
     format(config: ScanConfig): void {
+        const formatOptionalString = (input:string) => input || 'none';
+        const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
+
         this.log.info(`
 -------------------------------Configurations:--------------------------------
 URL: ${config.serverUrl}
@@ -17,23 +20,19 @@ Scan timeout in minutes: ${config.scanTimeoutInMinutes}
 Deny project creation: ${config.denyProject}
 
 Is incremental scan: ${config.isIncremental}
-Folder exclusions: ${ScanConfigFormatter.resolveVal(config.folderExclusion)}
-File exclusions: ${ScanConfigFormatter.resolveVal(config.fileExtension)}
+Folder exclusions: ${formatOptionalString(config.folderExclusion)}
+File exclusions: ${formatOptionalString(config.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 
 CxSAST thresholds enabled: ${config.vulnerabilityThreshold}`);
 
         if (config.vulnerabilityThreshold) {
-            this.log.info(`CxSAST high threshold: ${config.highThreshold}`);
-            this.log.info(`CxSAST medium threshold: ${config.mediumThreshold}`);
-            this.log.info(`CxSAST low threshold: ${config.lowThreshold}`);
+            this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.highThreshold)}`);
+            this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.mediumThreshold)}`);
+            this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.lowThreshold)}`);
         }
 
         this.log.info(`Enable Project Policy Enforcement: ${config.enablePolicyViolations}`);
         this.log.info('------------------------------------------------------------------------------');
-    }
-
-    private static resolveVal(input: string): string {
-        return input || 'none';
     }
 }
