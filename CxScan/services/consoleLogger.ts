@@ -15,4 +15,8 @@ export class ConsoleLogger implements Logger {
             taskLib.error(line);
         }
     }
+
+    debug(message: string): void {
+        taskLib.debug(message);
+    }
 }

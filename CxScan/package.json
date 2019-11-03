@@ -17,6 +17,7 @@
     "promise-poller": "^1.9.1",
     "superagent": "^5.1.0",
     "tmp": "^0.1.0",
+    "walk": "^2.3.14",
     "xml2js": "^0.4.22"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
     "@types/promise-poller": "^1.7.0",
     "@types/q": "^1.5.2",
     "@types/superagent": "^4.1.3",
-    "@types/tmp": "^0.1.0"
+    "@types/tmp": "^0.1.0",
+    "@types/walk": "^2.3.0"
   }
 }
