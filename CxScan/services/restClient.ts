@@ -17,12 +17,14 @@ import {ScanResultsEvaluator} from "./scanResultsEvaluator";
  * High-level CX API client that uses specialized clients internally.
  */
 export class RestClient {
+    private static readonly EXCLUDED_FOLDER_SEPARATOR = ',';
+
     readonly scanResults: ScanResults;
     private readonly httpClient: HttpClient;
     private readonly sastClient: SastClient;
     private readonly armClient: ArmClient;
-    private readonly zipper: Zipper;
 
+    private readonly zipper: Zipper;
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
@@ -59,6 +61,7 @@ export class RestClient {
         await this.defineScanSettings();
 
         await this.uploadSourceCode();
+
         this.scanResults.scanId = await this.sastClient.createScan(this.projectId);
 
         const projectStateUrl = url.resolve(this.config.serverUrl, `CxWebClient/portal#/projectState/${this.projectId}/Summary`);
@@ -128,7 +131,8 @@ export class RestClient {
         const tempFilename = tmpNameSync({postfix: '.zip'});
 
         this.log.info(`Zipping source code at ${this.config.sourceLocation} into file ${tempFilename}`);
-        await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename);
+        const excludedFolders = this.normalizeExcludedFolders(this.config.folderExclusion);
+        await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename, excludedFolders);
 
         if (!fs.existsSync(tempFilename)) {
             const error = new TaskSkippedError('Zip file is empty: no source to scan');
@@ -144,6 +148,12 @@ export class RestClient {
 
         this.log.info(`Removing ${tempFilename}`);
         fs.unlinkSync(tempFilename);
+    }
+
+    private normalizeExcludedFolders(folderExclusion: string) {
+        return folderExclusion.split(RestClient.EXCLUDED_FOLDER_SEPARATOR)
+            .map(folder => folder.trim())
+            .filter(folder => !!folder);
     }
 
     private async getCurrentProjectId(): Promise<number> {
