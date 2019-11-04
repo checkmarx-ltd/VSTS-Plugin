@@ -12,13 +12,12 @@ import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Logger} from "./logger";
 import {ReportingClient} from "./reportingClient";
 import {ScanResultsEvaluator} from "./scanResultsEvaluator";
+import {FilePatternParser} from "./filePatternParser";
 
 /**
  * High-level CX API client that uses specialized clients internally.
  */
 export class RestClient {
-    private static readonly EXCLUDED_FOLDER_SEPARATOR = ',';
-
     readonly scanResults: ScanResults;
     private readonly httpClient: HttpClient;
     private readonly sastClient: SastClient;
@@ -131,8 +130,10 @@ export class RestClient {
         const tempFilename = tmpNameSync({postfix: '.zip'});
 
         this.log.info(`Zipping source code at ${this.config.sourceLocation} into file ${tempFilename}`);
-        const excludedFolders = this.normalizeExcludedFolders(this.config.folderExclusion);
-        await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename, excludedFolders);
+
+        const excludedFolders = FilePatternParser.getNormalizedPatterns(this.config.folderExclusion);
+        const filter = FilePatternParser.parseFilenameFilter(this.config.fileExtension);
+        await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename, excludedFolders, filter);
 
         if (!fs.existsSync(tempFilename)) {
             const error = new TaskSkippedError('Zip file is empty: no source to scan');
@@ -148,12 +149,6 @@ export class RestClient {
 
         this.log.info(`Removing ${tempFilename}`);
         fs.unlinkSync(tempFilename);
-    }
-
-    private normalizeExcludedFolders(folderExclusion: string) {
-        return folderExclusion.split(RestClient.EXCLUDED_FOLDER_SEPARATOR)
-            .map(folder => folder.trim())
-            .filter(folder => !!folder);
     }
 
     private async getCurrentProjectId(): Promise<number> {
@@ -302,6 +297,4 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
             throw Error('Checkmarx server version is lower than 9.0');
         }
     }
-
-
 }
