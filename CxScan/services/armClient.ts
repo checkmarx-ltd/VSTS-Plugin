@@ -18,18 +18,16 @@ export class ArmClient {
 
     private readonly stopwatch = new Stopwatch();
 
-    private readonly generalHttpClient: HttpClient;
+    private armUrl = '';
 
-    private armHttpClient: HttpClient | null = null;
-
-    constructor(httpClient: HttpClient, private readonly log: Logger) {
-        this.generalHttpClient = httpClient;
+    constructor(private readonly httpClient: HttpClient, private readonly log: Logger) {
     }
 
     async init() {
         this.log.info('Resolving CxARM URL.');
-        const response = await this.generalHttpClient.getRequest('Configurations/Portal');
-        this.armHttpClient = new HttpClient(response.cxARMPolicyURL, this.log, this.generalHttpClient.accessToken);
+
+        const response = await this.httpClient.getRequest('Configurations/Portal');
+        this.armUrl = response.cxARMPolicyURL;
     }
 
     async waitForArmToFinish(projectId: number) {
@@ -55,16 +53,12 @@ export class ArmClient {
 
     getProjectViolations(projectId: number, provider: ScanProvider): Promise<PolicyViolationGroup[]> {
         const path = `/cxarm/policymanager/projects/${projectId}/violations?provider=${provider}`;
-        if (!this.armHttpClient) {
-            throw Error('The client was not initialized.');
-        }
-
-        return this.armHttpClient.getRequest(path);
+        return this.httpClient.getRequest(path, this.armUrl);
     }
 
     private async checkIfPolicyVerificationCompleted(projectId: number) {
         const path = `sast/projects/${projectId}/publisher/policyFindings/status`;
-        const statusResponse = await this.generalHttpClient.getRequest(path) as { status: ArmStatus };
+        const statusResponse = await this.httpClient.getRequest(path) as { status: ArmStatus };
         const {status} = statusResponse;
 
         const isCompleted =
