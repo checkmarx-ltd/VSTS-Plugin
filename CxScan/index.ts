@@ -120,7 +120,6 @@ class TaskRunner {
             mediumThreshold: TaskRunner.getNumericInput('medium'),
             lowThreshold: TaskRunner.getNumericInput('low'),
 
-            // TODO: make sure the hardcoding is OK.
             forceScan: false,
             isPublic: true,
             engineConfigurationId: 0
