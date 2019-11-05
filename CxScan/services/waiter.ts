@@ -10,7 +10,7 @@ export class Waiter {
         const UNLIMITED_TIMEOUT = undefined;
 
         let effectiveMasterTimeout;
-        if (polling.masterTimeoutMinutes <= 0) {
+        if (!polling.masterTimeoutMinutes) {
             effectiveMasterTimeout = UNLIMITED_TIMEOUT;
         }
         else {

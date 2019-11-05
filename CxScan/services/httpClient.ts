@@ -28,6 +28,7 @@ export class HttpClient {
     }
 
     login(username: string, password: string) {
+        this.log.info('Logging into the Checkmarx service.');
         this.username = username;
         this.password = password;
         return this.loginWithStoredCredentials();
@@ -59,9 +60,12 @@ export class HttpClient {
 
         const method = options.singlePostData || options.multipartPostData ? 'post' : 'get';
 
+        this.log.debug(`Sending ${method.toUpperCase()} request to ${fullUrl}`);
+
         let result = request[method](fullUrl)
             .auth(this.accessToken, {type: 'bearer'})
             .accept('json');
+
         result = HttpClient.includePostData(result, options);
 
         return result.then(
@@ -80,6 +84,7 @@ export class HttpClient {
                     return this.sendRequest(relativePath, optionsClone);
                 } else {
                     this.log.warning(`${method.toUpperCase()} request failed to ${fullUrl}`);
+                    return Promise.reject(err);
                 }
             }
         );
@@ -116,8 +121,10 @@ export class HttpClient {
                     this.accessToken = response.body.access_token;
                 },
                 (err: any) => {
-                    this.log.error('Login failed');
-                    throw err;
+                    const status = err && err.response ? (err.response as request.Response).status : 'n/a';
+                    const message = err && err.message ? err.message : 'n/a';
+                    this.log.error(`POST request failed to ${fullUrl}. HTTP status: ${status}, message: ${message}`);
+                    throw Error('Login failed');
                 }
             );
     }

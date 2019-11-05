@@ -10,14 +10,14 @@ import * as xml2js from "xml2js";
  * Uses Cx API to generate and download XMl reports.
  */
 export class ReportingClient {
-    private static readonly reportType = 'XML';
+    private static readonly REPORT_TYPE = 'XML';
 
-    private readonly stopwatch = new Stopwatch();
-
-    private static pollingSettings: PollingSettings = {
+    private static readonly pollingSettings: PollingSettings = {
         intervalSeconds: 5,
         masterTimeoutMinutes: 8
     };
+
+    private readonly stopwatch = new Stopwatch();
 
     constructor(private readonly httpClient: HttpClient, private readonly log: Logger) {
     }
@@ -31,7 +31,7 @@ export class ReportingClient {
     private async startReportGeneration(scanId: number) {
         const request = {
             scanId: scanId,
-            reportType: ReportingClient.reportType
+            reportType: ReportingClient.REPORT_TYPE
         };
         const response = await this.httpClient.postRequest('reports/sastScan', request);
         return response.reportId;
@@ -40,7 +40,7 @@ export class ReportingClient {
     private async waitForReportGenerationToFinish(reportId: number) {
         this.stopwatch.start();
 
-        this.log.info(`Waiting for server to generate ${ReportingClient.reportType} report.`);
+        this.log.info(`Waiting for server to generate ${ReportingClient.REPORT_TYPE} report.`);
         let lastStatus: ReportStatus;
         try {
             const waiter = new Waiter();
@@ -50,13 +50,13 @@ export class ReportingClient {
                 ReportingClient.pollingSettings
             );
         } catch (e) {
-            throw Error(`Waiting for ${ReportingClient.reportType} report generation has reached the time limit (${ReportingClient.pollingSettings.masterTimeoutMinutes} minutes).`);
+            throw Error(`Waiting for ${ReportingClient.REPORT_TYPE} report generation has reached the time limit (${ReportingClient.pollingSettings.masterTimeoutMinutes} minutes).`);
         }
 
         if (lastStatus === ReportStatus.Created) {
-            this.log.info(`${ReportingClient.reportType} report was created successfully.`);
+            this.log.info(`${ReportingClient.REPORT_TYPE} report was created successfully.`);
         } else {
-            throw Error(`${ReportingClient.reportType} report cannot be generated. Status [${lastStatus}].`);
+            throw Error(`${ReportingClient.REPORT_TYPE} report cannot be generated. Status [${lastStatus}].`);
         }
     }
 
@@ -84,10 +84,11 @@ export class ReportingClient {
     }
 
     private logWaitingProgress = () => {
-        let secondsLeft = ReportingClient.pollingSettings.masterTimeoutMinutes * 60 - this.stopwatch.getElapsedSeconds();
+        const timeout = ReportingClient.pollingSettings.masterTimeoutMinutes as number;
+        let secondsLeft = timeout * 60 - this.stopwatch.getElapsedSeconds();
         if (secondsLeft < 0) {
             secondsLeft = 0;
         }
-        this.log.info(`Waiting for server to generate ${ReportingClient.reportType} report. ${secondsLeft} seconds left to timeout`);
+        this.log.info(`Waiting for server to generate ${ReportingClient.REPORT_TYPE} report. ${secondsLeft} seconds left to timeout`);
     };
 }

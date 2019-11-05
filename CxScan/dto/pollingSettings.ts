@@ -1,4 +1,4 @@
 export interface PollingSettings {
-    masterTimeoutMinutes: number;
+    masterTimeoutMinutes?: number;
     intervalSeconds: number;
 }

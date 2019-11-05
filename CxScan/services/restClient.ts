@@ -28,7 +28,7 @@ export class RestClient {
     private projectId = 0;
     private presetId = 0;
 
-    constructor(readonly config: ScanConfig, private readonly log: Logger) {
+    constructor(private readonly config: ScanConfig, private readonly log: Logger) {
         const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
         this.httpClient = new HttpClient(baseUrl, log);
 
@@ -43,9 +43,9 @@ export class RestClient {
         this.log.info('Initializing Cx client');
         await this.printCxServerVersion();
 
-        await this.login();
+        await this.httpClient.login(this.config.username, this.config.password);
 
-        await this.resolvePreset();
+        this.presetId = await this.sastClient.getPresetIdByName(this.config.presetName);
 
         if (this.config.enablePolicyViolations) {
             await this.armClient.init();
@@ -84,15 +84,6 @@ export class RestClient {
         evaluator.evaluate();
     }
 
-    private async login() {
-        this.log.info('Logging into the Checkmarx service.');
-        await this.httpClient.login(this.config.username, this.config.password);
-    }
-
-    private async resolvePreset() {
-        this.presetId = await this.sastClient.getPresetIdByName(this.config.presetName);
-    }
-
     private async resolveTeam() {
         this.log.info(`Resolving team: ${this.config.teamName}`);
         const allTeams = await this.httpClient.getRequest('auth/teams') as any[];
@@ -103,17 +94,18 @@ export class RestClient {
 
         if (foundTeam) {
             this.teamId = foundTeam.id;
+            this.log.debug(`Resolved team ID: ${this.teamId}`);
         } else {
             throw Error(`Could not resolve team ID from team name: ${this.config.teamName}`);
         }
     }
 
     private async resolveProject() {
-        this.log.info(`Resolving project: ${this.config.projectName}`);
-
         this.projectId = await this.getCurrentProjectId();
 
-        if (!this.projectId) {
+        if (this.projectId) {
+            this.log.debug(`Resolved project ID: ${this.projectId}`);
+        } else {
             this.log.info('Project not found, creating a new one.');
 
             if (this.config.denyProject) {
@@ -152,6 +144,7 @@ export class RestClient {
     }
 
     private async getCurrentProjectId(): Promise<number> {
+        this.log.info(`Resolving project: ${this.config.projectName}`);
         let result;
         const encodedName = encodeURIComponent(this.config.projectName);
         const path = `projects?projectname=${encodedName}&teamid=${this.teamId}`;
@@ -177,6 +170,8 @@ export class RestClient {
         };
 
         const newProject = await this.httpClient.postRequest('projects', request);
+        this.log.debug(`Created new project, ID: ${newProject.id}`);
+
         return newProject.id;
     }
 

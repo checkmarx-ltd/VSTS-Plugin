@@ -59,12 +59,14 @@ class TaskRunner {
                 taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
             }
         } catch (err) {
-            this.log.info(err);
-
             if (err instanceof TaskSkippedError) {
                 taskLib.setResult(taskLib.TaskResult.Skipped, err.message);
-            } else {
-                taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed: ${err.message}`);
+            } else if (err instanceof Error) {
+                this.log.error(`Scan cannot be completed. ${err.stack}`);
+                taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err.message}`);
+            }
+            else {
+                this.log.error(err.toString());
             }
         }
     }
@@ -94,9 +96,6 @@ class TaskRunner {
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
-        if (!scanTimeoutInMinutes) {
-            scanTimeoutInMinutes = -1;
-        }
 
         return {
             serverUrl: taskLib.getEndpointUrl(endpointId, false),
@@ -112,7 +111,7 @@ class TaskRunner {
             isIncremental: taskLib.getBoolInput('incScan', true),
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             presetName,
-            scanTimeoutInMinutes,
+            scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
 
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
