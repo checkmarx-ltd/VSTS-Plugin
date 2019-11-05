@@ -14,7 +14,7 @@ export interface ScanConfig {
     comment: string;
     isSyncMode: boolean;
     presetName: string;
-    scanTimeoutInMinutes: number;
+    scanTimeoutInMinutes?: number;
     engineConfigurationId: number;
 
     enablePolicyViolations: boolean;

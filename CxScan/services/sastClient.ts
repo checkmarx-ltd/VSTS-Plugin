@@ -24,7 +24,7 @@ export class SastClient {
     }
 
     async getPresetIdByName(presetName: string) {
-        this.log.info(`Getting preset ID by name: [${presetName}]`);
+        this.log.debug(`Getting preset ID by name: [${presetName}]`);
         const allPresets = await this.httpClient.getRequest('sast/presets') as [{ name: string, id: number }];
         const currentPresetName = this.config.presetName.toUpperCase();
         let result: number = 0;
@@ -35,8 +35,10 @@ export class SastClient {
             }
         }
 
-        if (!result) {
-            throw Error(`Could not resolve preset ID from preset Name: ${presetName}`);
+        if (result) {
+            this.log.debug(`Resolved preset ID: ${result}`);
+        } else {
+            throw Error(`Could not resolve preset ID from preset name: ${presetName}`);
         }
 
         return result;

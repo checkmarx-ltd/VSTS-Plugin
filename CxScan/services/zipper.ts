@@ -35,11 +35,11 @@ export default class Zipper {
             this.archive = archiver('zip', {zlib: {level: 9}});
 
             this.archive.on('warning', (err: any) => {
-                this.log.info(`Archiver:: WARN ${err}`);
+                this.log.warning(`Archiver: ${err}`);
             });
 
             this.archive.on('error', (err: any, reject: any) => {
-                this.log.info(`Archiver:: ERROR ${err}`);
+                this.log.error(`Archiver: ${err}`);
                 reject(err);
             });
 
@@ -48,14 +48,14 @@ export default class Zipper {
             zipOutput.on('close', () => this.onArchiveCreated(targetPath, reject, resolve));
             this.archive.pipe(zipOutput);
 
-            this.log.debug('Scanning source directory.');
+            this.log.debug('Discovering files in source directory.');
             // followLinks is set to true to conform to Common Client behavior.
             const walker = walk(this.srcDir, {filters: foldersToExclude, followLinks: true});
 
             walker.on('file', this.addFileToArchive);
 
             walker.on('end', () => {
-                this.log.debug('Finished scanning source directory.');
+                this.log.debug('Finished discovering files in source directory.');
                 (this.archive as archiver.Archiver).finalize();
             });
         });
