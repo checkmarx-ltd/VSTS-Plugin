@@ -1,10 +1,11 @@
 import * as fs from 'fs';
-import archiver from 'archiver';
+import archiver, {Archiver, ArchiverError, ProgressData} from 'archiver';
 import {Logger} from "./logger";
 import {walk} from "walk";
 import * as path from "path";
 import {FilenameFilter} from "../dto/filenameFilter";
 import * as micromatch from "micromatch";
+import {ZipResult} from "../dto/zipResult";
 
 export default class Zipper {
     private static readonly fileMatcherOptions = {
@@ -17,36 +18,26 @@ export default class Zipper {
         noquantifiers: true
     };
 
-    private archive: archiver.Archiver | undefined;
+    private archiver: Archiver | undefined;
 
     private srcDir: string = '';
 
     private filenameFilter: FilenameFilter | undefined;
 
+    private totalAddedFiles = 0;
+
     constructor(private readonly log: Logger) {
     }
 
-    zipDirectory(srcDir: string, targetPath: string, foldersToExclude: string[], filter: FilenameFilter): Promise<any> {
+    zipDirectory(srcDir: string, targetPath: string, foldersToExclude: string[], filter: FilenameFilter): Promise<ZipResult> {
         this.srcDir = srcDir;
         this.filenameFilter = filter;
+        this.totalAddedFiles = 0;
 
-        return new Promise<any>((resolve, reject) => {
-            // Prepare the archiver.
-            this.archive = archiver('zip', {zlib: {level: 9}});
-
-            this.archive.on('warning', (err: any) => {
-                this.log.warning(`Archiver: ${err}`);
-            });
-
-            this.archive.on('error', (err: any, reject: any) => {
-                this.log.error(`Archiver: ${err}`);
-                reject(err);
-            });
-
-            // Prepare output stream for the archive.
-            const zipOutput = fs.createWriteStream(targetPath);
-            zipOutput.on('close', () => this.onArchiveCreated(targetPath, reject, resolve));
-            this.archive.pipe(zipOutput);
+        return new Promise<ZipResult>((resolve, reject) => {
+            this.archiver = this.createArchiver(reject);
+            const zipOutput = this.createOutputStream(targetPath, resolve);
+            this.archiver.pipe(zipOutput);
 
             this.log.debug('Discovering files in source directory.');
             // followLinks is set to true to conform to Common Client behavior.
@@ -56,9 +47,41 @@ export default class Zipper {
 
             walker.on('end', () => {
                 this.log.debug('Finished discovering files in source directory.');
-                (this.archive as archiver.Archiver).finalize();
+                (this.archiver as Archiver).finalize();
             });
         });
+    }
+
+    private createArchiver(reject: any) {
+        const result = archiver('zip', {zlib: {level: 9}});
+
+        result.on('warning', (err: ArchiverError) => {
+            this.log.warning(`Archiver: ${err.message}`);
+        });
+
+        result.on('error', (err: ArchiverError) => {
+            reject(err);
+        });
+
+        result.on('progress', (data: ProgressData) => {
+            this.totalAddedFiles = data.entries.processed;
+        });
+        return result;
+    }
+
+    private createOutputStream(targetPath: string, resolve: (value: ZipResult) => void) {
+        const result = fs.createWriteStream(targetPath);
+        result.on('close', () => {
+            const zipResult: ZipResult = {
+                fileCount: this.totalAddedFiles
+            };
+
+            const archiver = this.archiver as Archiver;
+
+            this.log.info(`Acrhive creation completed. Total bytes written: ${archiver.pointer()}, files: ${this.totalAddedFiles}.`);
+            resolve(zipResult);
+        });
+        return result;
     }
 
     private addFileToArchive = (parentDir: string, fileStats: any, discoverNextFile: () => void) => {
@@ -67,35 +90,16 @@ export default class Zipper {
             this.log.debug(` Add: ${srcFilePath}`);
             const directoryInArchive = path.relative(this.srcDir, parentDir);
 
-            (this.archive as archiver.Archiver).file(srcFilePath, {
+            (this.archiver as Archiver).file(srcFilePath, {
                 name: fileStats.name,
                 prefix: directoryInArchive
             });
         } else {
             this.log.debug(`Skip: ${srcFilePath}`);
         }
+
         discoverNextFile();
     };
-
-    private onArchiveCreated = (targetPath: string,
-                                reject: (reason: any) => void,
-                                resolve: () => void) => {
-        const archive = this.archive as archiver.Archiver;
-        this.log.info(`Archiver:: INFO ${archive.pointer()} total bytes`);
-        this.log.info('Archiver:: INFO Archiver has been finalized and the output file descriptor has closed.');
-        this.verifyArchiveCreated(targetPath, reject, resolve);
-    };
-
-    private verifyArchiveCreated(targetPath: string, reject: (reason: any) => void, resolve: () => void) {
-        fs.readFile(targetPath, null, err => {
-            if (err) {
-                this.log.info(`Archiver:: ZipFile fs.readFile ERROR ${err}`);
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    }
 
     private passesFilter(filename: string) {
         let result = true;
