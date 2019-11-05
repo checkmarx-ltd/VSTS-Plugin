@@ -125,12 +125,11 @@ export class RestClient {
 
         const excludedFolders = FilePatternParser.getNormalizedPatterns(this.config.folderExclusion);
         const filter = FilePatternParser.parseFilenameFilter(this.config.fileExtension);
-        await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename, excludedFolders, filter);
+        const zipResult = await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename, excludedFolders, filter);
 
-        if (!fs.existsSync(tempFilename)) {
-            const error = new TaskSkippedError('Zip file is empty: no source to scan');
-            this.log.info(error.message);
-            throw error;
+        if (zipResult.fileCount === 0) {
+            this.tryRemoveFile(tempFilename);
+            throw new TaskSkippedError('Zip file is empty: no source to scan');
         }
 
         const urlPath = `projects/${this.projectId}/sourceCode/attachments`;
@@ -139,8 +138,16 @@ export class RestClient {
             {id: this.projectId},
             {zippedSource: tempFilename});
 
-        this.log.info(`Removing ${tempFilename}`);
-        fs.unlinkSync(tempFilename);
+        this.tryRemoveFile(tempFilename);
+    }
+
+    private tryRemoveFile(path: string) {
+        this.log.info(`Removing ${path}`);
+        try {
+            fs.unlinkSync(path);
+        } catch (err) {
+            this.log.warning(`Failed to remove ${path}. ${err}`);
+        }
     }
 
     private async getCurrentProjectId(): Promise<number> {
