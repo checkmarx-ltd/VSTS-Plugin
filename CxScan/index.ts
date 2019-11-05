@@ -35,9 +35,6 @@ class TaskRunner {
         try {
             this.printHeader();
 
-            const tempDir = this.createTempDirectory();
-            const jsonReportPath = path.join(tempDir, TaskRunner.JSON_REPORT_FILENAME);
-
             this.log.info('Entering CxScanner...');
 
             const config = TaskRunner.createConfig();
@@ -51,12 +48,12 @@ class TaskRunner {
 
             if (!config.isSyncMode) {
                 this.log.info('Running in Asynchronous mode. Not waiting for scan to finish');
-                await this.attachJsonReport(restClient.scanResults, jsonReportPath);
+                await this.attachJsonReport(restClient.scanResults);
                 return;
             }
 
             await restClient.getSASTResults();
-            await this.attachJsonReport(restClient.scanResults, jsonReportPath);
+            await this.attachJsonReport(restClient.scanResults);
 
             if (restClient.scanResults.buildFailed) {
                 taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
@@ -73,7 +70,8 @@ class TaskRunner {
     }
 
     private static createConfig(): ScanConfig {
-        const supportedAuthScheme = 'UsernamePassword';
+        const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
+
         const endpointId = taskLib.getInput('CheckmarxService', true) || '';
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
@@ -82,7 +80,7 @@ class TaskRunner {
         }
 
         const authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false);
-        if (authScheme !== supportedAuthScheme) {
+        if (authScheme !== SUPPORTED_AUTH_SCHEME) {
             throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
         }
 
@@ -153,9 +151,12 @@ class TaskRunner {
         return tempDir;
     }
 
-    private async attachJsonReport(scanResults: ScanResults, jsonReportPath: string) {
+    private async attachJsonReport(scanResults: ScanResults) {
+        const tempDir = this.createTempDirectory();
+        const jsonReportPath = path.join(tempDir, TaskRunner.JSON_REPORT_FILENAME);
         const reportJson = JSON.stringify(scanResults);
 
+        this.log.debug(`Writing report to ${jsonReportPath}`);
         await new Promise((resolve, reject) => {
             fs.writeFile(jsonReportPath, reportJson, err => {
                 if (err) {
