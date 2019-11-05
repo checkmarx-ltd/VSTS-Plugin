@@ -38,25 +38,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                             $(".cx-report-message").remove();
                             var recId = taskAttachments[0].recordId;
                             var timelineId = taskAttachments[0].timelineId;
-                            taskClient.getAttachmentContent(vsoContext.project.id, "build", build.orchestrationPlan.planId, timelineId, recId, "cxReport", "cxReport").then(function (attachementContent) {
-
-                                function arrayBufferToString(buffer) {
-                                    var bufView = new Uint16Array(buffer);
-                                    var length = bufView.length;
-                                    var result = '';
-                                    var addition = Math.pow(2, 16) - 1;
-                                    for (var i = 0; i < length; i += addition) {
-                                        if (i + addition > length) {
-                                            addition = length - i;
-                                        }
-                                        result += String.fromCharCode.apply(null, bufView.subarray(i, i + addition));
-                                    }
-                                    return result;
-                                }
-
-
-                                var summaryPageData = arrayBufferToString(attachementContent);
-                                var resultObject = JSON.parse(summaryPageData.replace(/[\u200B-\u200D\uFEFF]/g, ''));
+                            taskClient.getAttachmentContent(vsoContext.project.id, "build", build.orchestrationPlan.planId, timelineId, recId, "cxReport", "cxReport").then(function (attachmentContent) {
+                                // Convert attachment to object.
+                                var attachmentBytes = new Uint8Array(attachmentContent);
+                                var reportAsString = new TextDecoder().decode(attachmentBytes);
+                                var resultObject = JSON.parse(reportAsString);
 
                                 //---------------------------------------------------------- vars ---------------------------------------------------------------
                                 var SEVERITY = {
