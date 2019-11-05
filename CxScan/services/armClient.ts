@@ -28,6 +28,7 @@ export class ArmClient {
 
         const response = await this.httpClient.getRequest('Configurations/Portal');
         this.armUrl = response.cxARMPolicyURL;
+        this.log.debug(`Resolved CxARM URL: ${this.armUrl}`);
     }
 
     async waitForArmToFinish(projectId: number) {

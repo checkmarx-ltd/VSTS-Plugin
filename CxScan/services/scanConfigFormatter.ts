@@ -6,7 +6,7 @@ export class ScanConfigFormatter {
     }
 
     format(config: ScanConfig): void {
-        const formatOptionalString = (input:string) => input || 'none';
+        const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
 
         this.log.info(`
