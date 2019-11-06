@@ -1,5 +1,4 @@
 import taskLib = require('azure-pipelines-task-lib/task');
-import {ScanConfig} from "./dto/scanConfig";
 import {RestClient} from "./services/restClient";
 import {TaskSkippedError} from "./dto/taskSkippedError";
 import * as path from "path";
@@ -8,7 +7,7 @@ import * as fs from "fs";
 import {ScanResults} from "./dto/scanResults";
 import {Logger} from "./services/logger";
 import {ConsoleLogger} from "./services/consoleLogger";
-import {ScanConfigFormatter} from "./services/scanConfigFormatter";
+import {ConfigReader} from "./services/configReader";
 
 const recursiveMkdir = require('mkdirp');
 
@@ -37,10 +36,8 @@ class TaskRunner {
 
             this.log.info('Entering CxScanner...');
 
-            const config = TaskRunner.createConfig();
-
-            const formatter = new ScanConfigFormatter(this.log);
-            formatter.format(config);
+            const reader = new ConfigReader(this.log);
+            const config = reader.readConfig();
 
             const restClient = new RestClient(config, this.log);
             await restClient.init();
@@ -69,70 +66,6 @@ class TaskRunner {
                 taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err}`);
             }
         }
-    }
-
-    private static createConfig(): ScanConfig {
-        const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
-
-        const endpointId = taskLib.getInput('CheckmarxService', true) || '';
-
-        const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
-        if (typeof sourceLocation === 'undefined') {
-            throw Error('Sources directory is not provided.');
-        }
-
-        const authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false);
-        if (authScheme !== SUPPORTED_AUTH_SCHEME) {
-            throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
-        }
-
-        let presetName;
-        const customPreset = taskLib.getInput('customPreset', false);
-        if (customPreset) {
-            presetName = customPreset;
-        } else {
-            presetName = taskLib.getInput('preset', true) || '';
-        }
-
-        let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
-        let scanTimeoutInMinutes = +rawTimeout;
-
-        return {
-            serverUrl: taskLib.getEndpointUrl(endpointId, false),
-            username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
-            password: taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '',
-
-            sourceLocation,
-            projectName: taskLib.getInput('projectName', true) || '',
-            teamName: taskLib.getInput('fullTeamName', true) || '',
-            denyProject: taskLib.getBoolInput('denyProject', false),
-            folderExclusion: taskLib.getInput('folderExclusion', false) || '',
-            fileExtension: taskLib.getInput('fileExtension', false) || '',
-            isIncremental: taskLib.getBoolInput('incScan', true),
-            isSyncMode: taskLib.getBoolInput('syncMode', false),
-            presetName,
-            scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
-            comment: taskLib.getInput('comment', false) || '',
-
-            enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
-            vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false),
-            highThreshold: TaskRunner.getNumericInput('high'),
-            mediumThreshold: TaskRunner.getNumericInput('medium'),
-            lowThreshold: TaskRunner.getNumericInput('low'),
-
-            forceScan: false,
-            isPublic: true,
-            engineConfigurationId: 0
-        };
-    }
-
-    private static getNumericInput(name: string): number | undefined {
-        const rawValue = taskLib.getInput(name, false);
-        let result;
-        if (typeof rawValue !== 'undefined') {
-            result = +rawValue;
-        }
-        return result;
     }
 
     private createTempDirectory(): string {
