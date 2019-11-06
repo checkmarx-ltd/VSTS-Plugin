@@ -12,7 +12,7 @@ import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Logger} from "./logger";
 import {ReportingClient} from "./reportingClient";
 import {ScanResultsEvaluator} from "./scanResultsEvaluator";
-import {FilePatternParser} from "./filePatternParser";
+import {FilePathFilter} from "./filePathFilter";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -23,7 +23,6 @@ export class RestClient {
     private readonly sastClient: SastClient;
     private readonly armClient: ArmClient;
 
-    private readonly zipper: Zipper;
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
@@ -34,7 +33,6 @@ export class RestClient {
 
         this.sastClient = new SastClient(this.config, this.httpClient, log);
         this.armClient = new ArmClient(this.httpClient, log);
-        this.zipper = new Zipper(log);
 
         this.scanResults = new ScanResults(this.config);
     }
@@ -123,9 +121,11 @@ export class RestClient {
 
         this.log.info(`Zipping source code at ${this.config.sourceLocation} into file ${tempFilename}`);
 
-        const excludedFolders = FilePatternParser.getNormalizedPatterns(this.config.folderExclusion);
-        const filter = FilePatternParser.parseFilenameFilter(this.config.fileExtension);
-        const zipResult = await this.zipper.zipDirectory(this.config.sourceLocation, tempFilename, excludedFolders, filter);
+        const excludedFolders = RestClient.normalizeExcludedFolders(this.config.folderExclusion);
+        const filter = new FilePathFilter(this.config.fileExtension);
+
+        const zipper = new Zipper(this.log, excludedFolders, filter);
+        const zipResult = await zipper.zipDirectory(this.config.sourceLocation, tempFilename);
 
         if (zipResult.fileCount === 0) {
             this.tryRemoveFile(tempFilename);
@@ -139,6 +139,14 @@ export class RestClient {
             {zippedSource: tempFilename});
 
         this.tryRemoveFile(tempFilename);
+    }
+
+    private static normalizeExcludedFolders(rawValue: string) {
+        const FOLDER_SEPARATOR = ',';
+
+        return rawValue.split(FOLDER_SEPARATOR)
+            .map(folder => folder.trim())
+            .filter(folder => !!folder);
     }
 
     private tryRemoveFile(path: string) {
