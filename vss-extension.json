@@ -81,23 +81,6 @@
     },
     {
       "path": "Reports",
-      "addressable": true,
-      "packagePath": "Reports/scripts"
-    },
-    {
-      "path": "Reports/cxreport.html",
-      "addressable": true
-    },
-    {
-      "path": "Reports/cxSummary.html",
-      "addressable": true
-    },
-    {
-      "path": "Reports/css/cxreport.css",
-      "addressable": true
-    },
-    {
-      "path": "Reports/vendor",
       "addressable": true
     }
   ],
