@@ -66,7 +66,7 @@ class TaskRunner {
                 taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err.message}`);
             }
             else {
-                this.log.error(err.toString());
+                taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err}`);
             }
         }
     }

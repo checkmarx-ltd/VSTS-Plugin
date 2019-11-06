@@ -3,35 +3,23 @@ import archiver, {Archiver, ArchiverError, ProgressData} from 'archiver';
 import {Logger} from "./logger";
 import {walk} from "walk";
 import * as path from "path";
-import {FilenameFilter} from "../dto/filenameFilter";
-import * as micromatch from "micromatch";
+import {FilePathFilter} from "./filePathFilter";
 import {ZipResult} from "../dto/zipResult";
 
 export default class Zipper {
-    private static readonly fileMatcherOptions = {
-        dot: true,   // Match dotfiles.
-        // Disable extended functionality that we don't expect in a file filter.
-        nobrace: true,
-        nobracket: true,
-        noextglob: true,
-        noglobstar: true,
-        noquantifiers: true
-    };
-
-    private archiver: Archiver | undefined;
+    private archiver!: Archiver;
 
     private srcDir: string = '';
 
-    private filenameFilter: FilenameFilter | undefined;
-
     private totalAddedFiles = 0;
 
-    constructor(private readonly log: Logger) {
+    constructor(private readonly log: Logger,
+                private readonly foldersToExclude: string[],
+                private readonly filenameFilter: FilePathFilter) {
     }
 
-    zipDirectory(srcDir: string, targetPath: string, foldersToExclude: string[], filter: FilenameFilter): Promise<ZipResult> {
+    zipDirectory(srcDir: string, targetPath: string): Promise<ZipResult> {
         this.srcDir = srcDir;
-        this.filenameFilter = filter;
         this.totalAddedFiles = 0;
 
         return new Promise<ZipResult>((resolve, reject) => {
@@ -41,13 +29,13 @@ export default class Zipper {
 
             this.log.debug('Discovering files in source directory.');
             // followLinks is set to true to conform to Common Client behavior.
-            const walker = walk(this.srcDir, {filters: foldersToExclude, followLinks: true});
+            const walker = walk(this.srcDir, {filters: this.foldersToExclude, followLinks: true});
 
             walker.on('file', this.addFileToArchive);
 
             walker.on('end', () => {
                 this.log.debug('Finished discovering files in source directory.');
-                (this.archiver as Archiver).finalize();
+                this.archiver.finalize();
             });
         });
     }
@@ -76,9 +64,7 @@ export default class Zipper {
                 fileCount: this.totalAddedFiles
             };
 
-            const archiver = this.archiver as Archiver;
-
-            this.log.info(`Acrhive creation completed. Total bytes written: ${archiver.pointer()}, files: ${this.totalAddedFiles}.`);
+            this.log.info(`Acrhive creation completed. Total bytes written: ${this.archiver.pointer()}, files: ${this.totalAddedFiles}.`);
             resolve(zipResult);
         });
         return result;
@@ -86,11 +72,11 @@ export default class Zipper {
 
     private addFileToArchive = (parentDir: string, fileStats: any, discoverNextFile: () => void) => {
         const srcFilePath = path.resolve(parentDir, fileStats.name);
-        if (this.passesFilter(fileStats.name)) {
+        if (this.filenameFilter.includes(fileStats.name)) {
             this.log.debug(` Add: ${srcFilePath}`);
             const directoryInArchive = path.relative(this.srcDir, parentDir);
 
-            (this.archiver as Archiver).file(srcFilePath, {
+            this.archiver.file(srcFilePath, {
                 name: fileStats.name,
                 prefix: directoryInArchive
             });
@@ -100,14 +86,4 @@ export default class Zipper {
 
         discoverNextFile();
     };
-
-    private passesFilter(filename: string) {
-        let result = true;
-        if (this.filenameFilter) {
-            const matchesAnyInclusionPattern = micromatch.any(filename, this.filenameFilter.include, Zipper.fileMatcherOptions);
-            const matchesAnyExclusionPattern = micromatch.any(filename, this.filenameFilter.exclude, Zipper.fileMatcherOptions);
-            result = matchesAnyInclusionPattern && !matchesAnyExclusionPattern;
-        }
-        return result;
-    }
 }
