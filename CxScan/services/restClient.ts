@@ -278,15 +278,17 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
 `);
     }
 
-    private static toJsonQueries(queries: any[]) {
-        const separator = ';';
-        return queries.map(query =>
+    private static toJsonQueries(queries: any[] | undefined) {
+        const SEPARATOR = ';';
+
+        // queries can be undefined if no vulnerabilities were found.
+        return (queries || []).map(query =>
             JSON.stringify({
                 name: query.$.name,
                 severity: query.$.Severity,
                 resultLength: query.Result.length
             })
-        ).join(separator);
+        ).join(SEPARATOR);
     }
 
     private async printCxServerVersion() {
