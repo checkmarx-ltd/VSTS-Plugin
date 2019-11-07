@@ -121,10 +121,9 @@ export class RestClient {
 
         this.log.info(`Zipping source code at ${this.config.sourceLocation} into file ${tempFilename}`);
 
-        const excludedFolders = RestClient.normalizeExcludedFolders(this.config.folderExclusion);
-        const filter = new FilePathFilter(this.config.fileExtension);
+        const filter = new FilePathFilter(this.config.fileExtension, this.config.folderExclusion);
 
-        const zipper = new Zipper(this.log, excludedFolders, filter);
+        const zipper = new Zipper(this.log, filter);
         const zipResult = await zipper.zipDirectory(this.config.sourceLocation, tempFilename);
 
         if (zipResult.fileCount === 0) {
@@ -139,14 +138,6 @@ export class RestClient {
             {zippedSource: tempFilename});
 
         this.tryRemoveFile(tempFilename);
-    }
-
-    private static normalizeExcludedFolders(rawValue: string) {
-        const FOLDER_SEPARATOR = ',';
-
-        return rawValue.split(FOLDER_SEPARATOR)
-            .map(folder => folder.trim())
-            .filter(folder => !!folder);
     }
 
     private tryRemoveFile(path: string) {
