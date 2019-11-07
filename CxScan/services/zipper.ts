@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import archiver, {Archiver, ArchiverError, ProgressData} from 'archiver';
 import {Logger} from "./logger";
 import {walk} from "walk";
-import * as path from "path";
 import {FilePathFilter} from "./filePathFilter";
 import {ZipResult} from "../dto/zipResult";
+import * as upath from 'upath';
 
 export default class Zipper {
     private archiver!: Archiver;
@@ -14,7 +14,6 @@ export default class Zipper {
     private totalAddedFiles = 0;
 
     constructor(private readonly log: Logger,
-                private readonly foldersToExclude: string[],
                 private readonly filenameFilter: FilePathFilter) {
     }
 
@@ -29,7 +28,7 @@ export default class Zipper {
 
             this.log.debug('Discovering files in source directory.');
             // followLinks is set to true to conform to Common Client behavior.
-            const walker = walk(this.srcDir, {filters: this.foldersToExclude, followLinks: true});
+            const walker = walk(this.srcDir, {followLinks: true});
 
             walker.on('file', this.addFileToArchive);
 
@@ -71,17 +70,22 @@ export default class Zipper {
     }
 
     private addFileToArchive = (parentDir: string, fileStats: any, discoverNextFile: () => void) => {
-        const srcFilePath = path.resolve(parentDir, fileStats.name);
-        if (this.filenameFilter.includes(fileStats.name)) {
-            this.log.debug(` Add: ${srcFilePath}`);
-            const directoryInArchive = path.relative(this.srcDir, parentDir);
+        const absoluteFilePath = upath.resolve(parentDir, fileStats.name);
+        const relativeFilePath = upath.relative(this.srcDir, absoluteFilePath);
 
-            this.archiver.file(srcFilePath, {
+        // relativeFilePath is normalized to contain forward slashes independent of the current OS. Examples:
+        //      page.cs                             - if page.cs is at the project's root dir
+        //      services/internal/myservice.js      - if myservice.js is in a nested dir
+        if (this.filenameFilter.includes(relativeFilePath)) {
+            this.log.debug(` Add: ${absoluteFilePath}`);
+
+            const relativeDirInArchive = upath.relative(this.srcDir, parentDir);
+            this.archiver.file(absoluteFilePath, {
                 name: fileStats.name,
-                prefix: directoryInArchive
+                prefix: relativeDirInArchive
             });
         } else {
-            this.log.debug(`Skip: ${srcFilePath}`);
+            this.log.debug(`Skip: ${absoluteFilePath}`);
         }
 
         discoverNextFile();
