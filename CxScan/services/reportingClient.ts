@@ -89,6 +89,6 @@ export class ReportingClient {
         if (secondsLeft < 0) {
             secondsLeft = 0;
         }
-        this.log.info(`Waiting for server to generate ${ReportingClient.REPORT_TYPE} report. ${secondsLeft} seconds left to timeout`);
+        this.log.info(`Waiting for server to generate ${ReportingClient.REPORT_TYPE} report. ${secondsLeft} seconds left to timeout.`);
     };
 }

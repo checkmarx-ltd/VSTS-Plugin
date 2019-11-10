@@ -1,18 +1,14 @@
 import taskLib = require('azure-pipelines-task-lib/task');
 import {RestClient} from "./services/restClient";
 import {TaskSkippedError} from "./dto/taskSkippedError";
-import * as path from "path";
-import * as os from "os";
 import * as fs from "fs";
 import {ScanResults} from "./dto/scanResults";
 import {Logger} from "./services/logger";
 import {ConsoleLogger} from "./services/consoleLogger";
 import {ConfigReader} from "./services/configReader";
-
-const recursiveMkdir = require('mkdirp');
+import {FileUtil} from "./services/fileUtil";
 
 class TaskRunner {
-    private static readonly JSON_REPORT_FILENAME = 'cxreport.json';
     private static readonly REPORT_ATTACHMENT_NAME = 'cxReport';
 
     private readonly log: Logger = new ConsoleLogger();
@@ -61,30 +57,14 @@ class TaskRunner {
             } else if (err instanceof Error) {
                 this.log.error(`Scan cannot be completed. ${err.stack}`);
                 taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err.message}`);
-            }
-            else {
+            } else {
                 taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err}`);
             }
         }
     }
 
-    private createTempDirectory(): string {
-        const tempDir = path.join(
-            os.tmpdir(),
-            'cx_temp',
-            taskLib.getVariable('Build.DefinitionName') || '',
-            taskLib.getVariable('Build.BuildNumber') || '');
-
-        if (!fs.existsSync(tempDir)) {
-            recursiveMkdir.sync(tempDir);
-            this.log.info(`Build-specific Checkmarx reports folder created at: ${tempDir}`);
-        }
-        return tempDir;
-    }
-
     private async attachJsonReport(scanResults: ScanResults) {
-        const tempDir = this.createTempDirectory();
-        const jsonReportPath = path.join(tempDir, TaskRunner.JSON_REPORT_FILENAME);
+        const jsonReportPath = FileUtil.generateTempFileName({prefix: 'cxreport-', postfix: '.json'});
         const reportJson = JSON.stringify(scanResults);
 
         this.log.debug(`Writing report to ${jsonReportPath}`);
@@ -99,7 +79,7 @@ class TaskRunner {
         });
 
         taskLib.addAttachment(TaskRunner.REPORT_ATTACHMENT_NAME, TaskRunner.REPORT_ATTACHMENT_NAME, jsonReportPath);
-        this.log.info('Generated Checkmarx summary results');
+        this.log.info('Generated Checkmarx summary results.');
     }
 
     private printHeader() {

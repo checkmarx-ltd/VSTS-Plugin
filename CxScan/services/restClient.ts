@@ -1,8 +1,6 @@
 import {ScanConfig} from "../dto/scanConfig";
 import {HttpClient} from "./httpClient";
 import Zipper from "./zipper";
-import {tmpNameSync} from 'tmp';
-import * as fs from "fs";
 import {TaskSkippedError} from "../dto/taskSkippedError";
 import {ScanResults} from "../dto/scanResults";
 import {SastClient} from "./sastClient";
@@ -13,6 +11,7 @@ import {Logger} from "./logger";
 import {ReportingClient} from "./reportingClient";
 import {ScanResultsEvaluator} from "./scanResultsEvaluator";
 import {FilePathFilter} from "./filePathFilter";
+import {FileUtil} from "./fileUtil";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -117,8 +116,7 @@ export class RestClient {
     }
 
     private async uploadSourceCode(): Promise<void> {
-        const tempFilename = tmpNameSync({postfix: '.zip'});
-
+        const tempFilename = FileUtil.generateTempFileName({prefix: 'cxsrc-', postfix: '.zip'});
         this.log.info(`Zipping source code at ${this.config.sourceLocation} into file ${tempFilename}`);
 
         const filter = new FilePathFilter(this.config.fileExtension, this.config.folderExclusion);
@@ -127,26 +125,14 @@ export class RestClient {
         const zipResult = await zipper.zipDirectory(this.config.sourceLocation, tempFilename);
 
         if (zipResult.fileCount === 0) {
-            this.tryRemoveFile(tempFilename);
             throw new TaskSkippedError('Zip file is empty: no source to scan');
         }
 
+        this.log.info(`Uploading the zipped source code.`);
         const urlPath = `projects/${this.projectId}/sourceCode/attachments`;
-        this.log.info(`Uploading the zipped source code to ${urlPath}.`);
         await this.httpClient.postMultipartRequest(urlPath,
             {id: this.projectId},
             {zippedSource: tempFilename});
-
-        this.tryRemoveFile(tempFilename);
-    }
-
-    private tryRemoveFile(path: string) {
-        this.log.info(`Removing ${path}`);
-        try {
-            fs.unlinkSync(path);
-        } catch (err) {
-            this.log.warning(`Failed to remove ${path}. ${err}`);
-        }
     }
 
     private async getCurrentProjectId(): Promise<number> {
