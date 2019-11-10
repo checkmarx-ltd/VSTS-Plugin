@@ -10,9 +10,9 @@ import {Logger} from "./logger";
 import {PollingSettings} from "../dto/pollingSettings";
 
 export class SastClient {
-    private static readonly pollingIntervalInSeconds = 10;
+    private static readonly POLLING_INTERVAL_IN_SECONDS = 10;
 
-    private static readonly scanCompletedDetails = 'Scan completed';
+    private static readonly SCAN_COMPLETED_MESSAGE = 'Scan completed';
 
     private readonly stopwatch = new Stopwatch();
 
@@ -79,7 +79,7 @@ export class SastClient {
 
         const polling: PollingSettings = {
             masterTimeoutMinutes: this.config.scanTimeoutInMinutes,
-            intervalSeconds: SastClient.pollingIntervalInSeconds
+            intervalSeconds: SastClient.POLLING_INTERVAL_IN_SECONDS
         };
 
         let lastStatus;
@@ -95,9 +95,18 @@ export class SastClient {
 
         if (SastClient.isFinishedSuccessfully(lastStatus)) {
             this.log.info('SAST scan successfully finished.');
-        } else if (lastStatus) {
-            this.log.info(`SAST scan status: ${lastStatus.stage.value}, details: ${lastStatus.stageDetails}`);
+        } else {
+            SastClient.throwScanError(lastStatus);
         }
+    }
+
+    private static throwScanError(status: ScanStatus) {
+        let details = '';
+        if (status) {
+            const stage = status.stage ? status.stage.value : '';
+            details = `Status [${stage}]: ${status.stageDetails}`;
+        }
+        throw Error(`SAST scan cannot be completed. ${details}`);
     }
 
     private checkIfScanFinished = () => {
@@ -120,8 +129,9 @@ export class SastClient {
     };
 
     private static isFinishedSuccessfully(status: ScanStatus) {
-        return status.stage.value === ScanStage.Finished ||
-            status.stageDetails === SastClient.scanCompletedDetails;
+        return status && status.stage &&
+            (status.stage.value === ScanStage.Finished ||
+                status.stageDetails === SastClient.SCAN_COMPLETED_MESSAGE);
     }
 
     private static isInProgress(scanStatus: ScanStatus) {
@@ -133,7 +143,7 @@ export class SastClient {
                 stage !== ScanStage.Failed &&
                 stage !== ScanStage.Canceled &&
                 stage !== ScanStage.Deleted &&
-                scanStatus.stageDetails !== SastClient.scanCompletedDetails;
+                scanStatus.stageDetails !== SastClient.SCAN_COMPLETED_MESSAGE;
         }
         return result;
     }
