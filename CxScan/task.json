@@ -115,13 +115,13 @@
       "label": "Folder Exclusion",
       "required": false,
       "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea, node_modules",
-      "helpMarkDown": "Comma delineated list of the folders to exclude from the scan (for example: dto,target,WEB-INF)",
+      "helpMarkDown": "Comma separated list of folders to exclude from scan. Entries in this list are automatically converted to exclude wildcard patterns and appended to the full pattern list provided in the 'Include/Exclude Wildcard Patterns' setting. Conversion is done as follows: `folder1, folder2 folder3` is converted to: `!**/folder1/**/*, !**/folder2/**/*, !**/folder3/**/*,`",
       "groupName": "scanSettings"
     },
     {
       "name": "fileExtension",
       "type": "string",
-      "label": "Include/Exclude File Extensions",
+      "label": "Include/Exclude Wildcard Patterns",
       "required": false,
       "defaultValue": "!*.DS_Store, !*.ipr, !*.iws, !*.bak, !*.tmp, !*.aac, !*.aif, !*.iff, !*.m3u, !*.mid,   !*.mp3,\n!*.mpa, !*.ra, !*.wav, !*.wma, !*.3g2, !*.3gp, !*.asf, !*.asx, !*.avi,!*.flv, !*.mov, !*.mp4, !*.mpg,  !*.rm, !*.swf, !*.vob, !*.wmv, !*.bmp, !*.gif, !*.jpg, !*.png, !*.psd, !*.tif, !*.swf, !*.jar, !*.zip, !*.rar, !*.exe, !*.dll, !*.pdb, !*.7z, !*.gz, !*.tar.gz, !*.tar, !*.gz, !*.ahtm, !*.ahtml, !*.fhtml, !*.hdm, !*.hdml,   !*.hsql, !*.ht, !*.hta, !*.htc, !*.htd, !*.war, !*.ear, !*.htmls, !*.ihtml, !*.mht, !*.mhtm, !*.mhtml, !*.ssi, !*.stm, !*.stml, !*.ttml, !*.txn, !*.xhtm, !*.xhtml, !*.class, !*.iml",
       "helpMarkDown": "Comma separated list of include or exclude wildcard patterns. Exclude patterns start with exclamation mark \"!\" [Exclusion Example: !*.tmp, !*.html.   Inclusion Example: *.java ]",
