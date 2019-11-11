@@ -12,6 +12,7 @@ import {ReportingClient} from "./reportingClient";
 import {ScanResultsEvaluator} from "./scanResultsEvaluator";
 import {FilePathFilter} from "./filePathFilter";
 import {FileUtil} from "./fileUtil";
+import {TeamApiClient} from "./teamApiClient";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -50,7 +51,9 @@ export class RestClient {
             await this.armClient.init();
         }
 
-        await this.resolveTeam();
+        const teamApiClient = new TeamApiClient(this.httpClient, this.log);
+        this.teamId = await teamApiClient.getTeamIdByName(this.config.teamName);
+
         await this.resolveProject();
     }
 
@@ -81,22 +84,6 @@ export class RestClient {
 
         const evaluator = new ScanResultsEvaluator(this.scanResults, this.config, this.log, this.isPolicyEnforcementSupported);
         evaluator.evaluate();
-    }
-
-    private async resolveTeam() {
-        this.log.info(`Resolving team: ${this.config.teamName}`);
-        const allTeams = await this.httpClient.getRequest('auth/teams') as any[];
-        const currentTeamName = RestClient.normalizeTeamName(this.config.teamName);
-        const foundTeam = allTeams.find(team =>
-            RestClient.normalizeTeamName(team.fullName) === currentTeamName
-        );
-
-        if (foundTeam) {
-            this.teamId = foundTeam.id;
-            this.log.debug(`Resolved team ID: ${this.teamId}`);
-        } else {
-            throw Error(`Could not resolve team ID from team name: ${this.config.teamName}`);
-        }
     }
 
     private async resolveProject() {
@@ -167,16 +154,6 @@ export class RestClient {
         this.log.debug(`Created new project, ID: ${newProject.id}`);
 
         return newProject.id;
-    }
-
-    private static normalizeTeamName(path: string): string {
-        let result = path;
-        while (result.includes('\\') || result.includes('//')) {
-            result = result
-                .replace('\\', '/')
-                .replace('//', '/');
-        }
-        return result;
     }
 
     private async defineScanSettings() {
