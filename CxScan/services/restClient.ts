@@ -25,6 +25,7 @@ export class RestClient {
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
+    private isPolicyEnforcementSupported = false;
 
     constructor(private readonly config: ScanConfig, private readonly log: Logger) {
         const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
@@ -38,7 +39,8 @@ export class RestClient {
 
     async init(): Promise<void> {
         this.log.info('Initializing Cx client');
-        await this.printCxServerVersion();
+
+        await this.detectFeatureSupport();
 
         await this.httpClient.login(this.config.username, this.config.password);
 
@@ -77,7 +79,7 @@ export class RestClient {
 
         await this.addDetailedReportToScanResults();
 
-        const evaluator = new ScanResultsEvaluator(this.scanResults, this.config, this.log);
+        const evaluator = new ScanResultsEvaluator(this.scanResults, this.config, this.log, this.isPolicyEnforcementSupported);
         evaluator.evaluate();
     }
 
@@ -202,6 +204,11 @@ export class RestClient {
             return;
         }
 
+        if (!this.isPolicyEnforcementSupported) {
+            this.log.warning('Policy enforcement is not supported by the current Checkmarx server version.');
+            return;
+        }
+
         await this.armClient.waitForArmToFinish(this.projectId);
 
         const projectViolations = await this.armClient.getProjectViolations(this.projectId, 'SAST');
@@ -277,13 +284,14 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
         ).join(SEPARATOR);
     }
 
-    private async printCxServerVersion() {
+    private async detectFeatureSupport() {
         try {
             const versionInfo = await this.httpClient.getRequest('system/version');
-            this.log.info(`Checkmarx server version [${versionInfo.version}]. Hotfix [${versionInfo.hotFix}].`)
+            this.log.info(`Checkmarx server version [${versionInfo.version}]. Hotfix [${versionInfo.hotFix}].`);
+            this.isPolicyEnforcementSupported = true;
         } catch (e) {
-            // TODO: PowerShell version continues execution in this case. Check if it's correct.
-            throw Error('Checkmarx server version is lower than 9.0');
+            this.log.info('Checkmarx server version is lower than 9.0.');
+            this.isPolicyEnforcementSupported = false;
         }
     }
 }
