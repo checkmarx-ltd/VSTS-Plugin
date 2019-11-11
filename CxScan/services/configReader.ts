@@ -1,7 +1,7 @@
 import {ScanConfig} from "../dto/scanConfig";
 import {Logger} from "./logger";
 import taskLib = require('azure-pipelines-task-lib/task');
-
+import {TeamApiClient} from "./teamApiClient";
 
 export class ConfigReader {
     constructor(private readonly log: Logger) {
@@ -24,6 +24,8 @@ export class ConfigReader {
             throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
         }
 
+        const rawTeamName = taskLib.getInput('fullTeamName', true);
+
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false);
         if (customPreset) {
@@ -42,7 +44,7 @@ export class ConfigReader {
 
             sourceLocation,
             projectName: taskLib.getInput('projectName', true) || '',
-            teamName: taskLib.getInput('fullTeamName', true) || '',
+            teamName: TeamApiClient.normalizeTeamName(rawTeamName),
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
