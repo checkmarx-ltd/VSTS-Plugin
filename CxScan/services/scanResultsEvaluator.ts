@@ -9,7 +9,8 @@ import {ScanConfig} from "../dto/scanConfig";
 export class ScanResultsEvaluator {
     constructor(private readonly scanResults: ScanResults,
                 private readonly config: ScanConfig,
-                private readonly log: Logger) {
+                private readonly log: Logger,
+                private readonly isPolicyEnforcementSupported: boolean) {
     }
 
     evaluate(): void {
@@ -18,7 +19,7 @@ export class ScanResultsEvaluator {
     }
 
     private checkForPolicyViolations() {
-        if (!this.config.enablePolicyViolations) {
+        if (!this.config.enablePolicyViolations || !this.isPolicyEnforcementSupported) {
             return;
         }
 
