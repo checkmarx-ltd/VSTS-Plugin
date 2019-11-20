@@ -130,7 +130,7 @@ export class RestClient {
         const encodedName = encodeURIComponent(this.config.projectName);
         const path = `projects?projectname=${encodedName}&teamid=${this.teamId}`;
         try {
-            const projects = await this.httpClient.getRequest(path);
+            const projects = await this.httpClient.getRequest(path, {suppressWarnings: true});
             if (projects && projects.length) {
                 result = projects[0].id;
             }
@@ -263,7 +263,7 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
 
     private async detectFeatureSupport() {
         try {
-            const versionInfo = await this.httpClient.getRequest('system/version');
+            const versionInfo = await this.httpClient.getRequest('system/version', {suppressWarnings: true});
             this.log.info(`Checkmarx server version [${versionInfo.version}]. Hotfix [${versionInfo.hotFix}].`);
             this.isPolicyEnforcementSupported = true;
         } catch (e) {

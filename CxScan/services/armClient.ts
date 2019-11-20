@@ -54,7 +54,7 @@ export class ArmClient {
 
     getProjectViolations(projectId: number, provider: ScanProvider): Promise<PolicyViolationGroup[]> {
         const path = `/cxarm/policymanager/projects/${projectId}/violations?provider=${provider}`;
-        return this.httpClient.getRequest(path, this.armUrl);
+        return this.httpClient.getRequest(path, {baseUrlOverride: this.armUrl});
     }
 
     private async checkIfPolicyVerificationCompleted(projectId: number) {
