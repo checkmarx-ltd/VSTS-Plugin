@@ -2,17 +2,21 @@ import * as url from 'url';
 import * as request from 'superagent';
 import {Logger} from "./logger";
 
-interface RequestOptions {
-    baseUrlOverride?: string;
+interface InternalRequestOptions extends RequestOptions {
     singlePostData?: object;
     multipartPostData?: {
         fields: { [fieldName: string]: any },
 
         // Key: attachment field name.
-        // Value: paths of the file to attach.
+        // Value: path of the file to attach.
         attachments: { [fieldName: string]: string }
     };
     retry: boolean;
+}
+
+interface RequestOptions {
+    baseUrlOverride?: string;
+    suppressWarnings?: boolean;
 }
 
 /**
@@ -34,8 +38,8 @@ export class HttpClient {
         return this.loginWithStoredCredentials();
     }
 
-    getRequest(relativePath: string, baseUrlOverride?: string): Promise<any> {
-        return this.sendRequest(relativePath, {baseUrlOverride, retry: true});
+    getRequest(relativePath: string, options?: RequestOptions): Promise<any> {
+        return this.sendRequest(relativePath, Object.assign({retry: true}, options));
     }
 
     postRequest(relativePath: string, data: object): Promise<any> {
@@ -54,7 +58,7 @@ export class HttpClient {
         });
     }
 
-    private sendRequest(relativePath: string, options: RequestOptions): Promise<any> {
+    private sendRequest(relativePath: string, options: InternalRequestOptions): Promise<any> {
         const effectiveBaseUrl = options.baseUrlOverride || this.baseUrl;
         const fullUrl = url.resolve(effectiveBaseUrl, relativePath);
 
@@ -83,14 +87,16 @@ export class HttpClient {
                     optionsClone.retry = false;
                     return this.sendRequest(relativePath, optionsClone);
                 } else {
-                    this.log.warning(`${method.toUpperCase()} request failed to ${fullUrl}`);
+                    const message = `${method.toUpperCase()} request failed to ${fullUrl}`;
+                    const logMethod = options.suppressWarnings ? 'debug' : 'warning';
+                    this.log[logMethod](message);
                     return Promise.reject(err);
                 }
             }
         );
     }
 
-    private static includePostData(result: request.SuperAgentRequest, options: RequestOptions) {
+    private static includePostData(result: request.SuperAgentRequest, options: InternalRequestOptions) {
         if (options.singlePostData) {
             result = result.send(options.singlePostData);
         } else if (options.multipartPostData) {
