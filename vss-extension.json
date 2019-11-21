@@ -148,7 +148,10 @@
         "name": "Checkmarx",
         "uri": "Reports/cxreport.html",
         "height": "175%",
-        "width": "100%"
+        "width": "100%",
+        "supportsTasks": [
+          "5262FEE4-B921-4E23-9D22-3BCCAA562688"
+        ]
       }
     },
     {
@@ -162,7 +165,10 @@
         "name": "Checkmarx Scan Results",
         "uri": "Reports/cxSummary.html",
         "height": "700px",
-        "width": "1150px"
+        "width": "1150px",
+        "supportsTasks": [
+          "5262FEE4-B921-4E23-9D22-3BCCAA562688"
+        ]
       }
     }
   ]
