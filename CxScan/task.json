@@ -10,9 +10,9 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 92,
-    "Minor": 0,
-    "Patch": 0
+    "Major": 2019,
+    "Minor": 4,
+    "Patch": 1
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
