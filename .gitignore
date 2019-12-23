@@ -1,1 +1,4 @@
 CxScan/node_modules
+.idea
+*.iml
+*.vsix
