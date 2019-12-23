@@ -15,8 +15,7 @@
     "default": "images/extension-icon.png"
   },
   "categories": [
-    "Build and release"
-  ],
+   "Azure Pipelines"],
   "tags": [
     "Security",
     "SCA",
