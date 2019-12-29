@@ -2,7 +2,7 @@ import taskLib = require('azure-pipelines-task-lib/task');
 import {Logger} from "./logger";
 import {ConsoleLogger} from "./consoleLogger";
 import {ConfigReader} from "./configReader";
-import {RestClient} from "./restClient";
+import {CxClient} from "./cxClient";
 import {TaskSkippedError} from "../dto/taskSkippedError";
 import {ScanResults} from "../dto/scanResults";
 import {FileUtil} from "./fileUtil";
@@ -35,20 +35,11 @@ export class TaskRunner {
             const reader = new ConfigReader(this.log);
             const config = reader.readConfig();
 
-            const restClient = new RestClient(config, this.log);
-            await restClient.init();
-            await restClient.createSASTScan();
+            const cxClient = new CxClient(this.log);
+            const scanResults: ScanResults = await cxClient.scan(config);
+            await this.attachJsonReport(scanResults);
 
-            if (!config.isSyncMode) {
-                this.log.info('Running in Asynchronous mode. Not waiting for scan to finish');
-                await this.attachJsonReport(restClient.scanResults);
-                return;
-            }
-
-            await restClient.getSASTResults();
-            await this.attachJsonReport(restClient.scanResults);
-
-            if (restClient.scanResults.buildFailed) {
+            if (scanResults.buildFailed) {
                 taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
             }
         } catch (err) {

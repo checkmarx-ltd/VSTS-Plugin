@@ -17,80 +17,87 @@ import {TeamApiClient} from "./teamApiClient";
 /**
  * High-level CX API client that uses specialized clients internally.
  */
-export class RestClient {
-    readonly scanResults: ScanResults;
-    private readonly httpClient: HttpClient;
-    private readonly sastClient: SastClient;
-    private readonly armClient: ArmClient;
+export class CxClient {
+    private httpClient: HttpClient | any;
+    private sastClient: SastClient | any;
+    private armClient: ArmClient | any;
 
     private teamId = 0;
     private projectId = 0;
     private presetId = 0;
     private isPolicyEnforcementSupported = false;
 
-    constructor(private readonly config: ScanConfig, private readonly log: Logger) {
-        const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
-        this.httpClient = new HttpClient(baseUrl, log);
+    private config: ScanConfig | any;
 
-        this.sastClient = new SastClient(this.config, this.httpClient, log);
-        this.armClient = new ArmClient(this.httpClient, log);
-
-        this.scanResults = new ScanResults(this.config);
+    constructor(private readonly log: Logger) {
     }
 
-    async init(): Promise<void> {
+    async scan(config: ScanConfig): Promise<ScanResults> {
+        this.config = config;
+
         this.log.info('Initializing Cx client');
+        await this.initClients();
+        await this.initDynamicFields();
+        
+        let result: ScanResults = await this.createSASTScan();
+        if (config.isSyncMode) {
+            result = await this.getSASTResults(result);
+        } else {
+            this.log.info('Running in Asynchronous mode. Not waiting for scan to finish.');
+        }
+        return result;
+    }
 
-        await this.detectFeatureSupport();
-
+    private async initClients() {
+        const baseUrl = url.resolve(this.config.serverUrl, 'CxRestAPI/');
+        this.httpClient = new HttpClient(baseUrl, this.log);
         await this.httpClient.login(this.config.username, this.config.password);
 
-        this.presetId = await this.sastClient.getPresetIdByName(this.config.presetName);
+        this.sastClient = new SastClient(this.config, this.httpClient, this.log);
 
+        this.armClient = new ArmClient(this.httpClient, this.log);
         if (this.config.enablePolicyViolations) {
             await this.armClient.init();
         }
-
-        const teamApiClient = new TeamApiClient(this.httpClient, this.log);
-        this.teamId = await teamApiClient.getTeamIdByName(this.config.teamName);
-
-        await this.resolveProject();
     }
 
-    async createSASTScan(): Promise<void> {
+    private async createSASTScan(): Promise<ScanResults> {
         this.log.info('-----------------------------------Create CxSAST Scan:-----------------------------------');
-        await this.defineScanSettings();
-
+        await this.updateScanSettings();
         await this.uploadSourceCode();
 
-        this.scanResults.scanId = await this.sastClient.createScan(this.projectId);
+        const scanResult = new ScanResults(this.config);
+        scanResult.scanId = await this.sastClient.createScan(this.projectId);
 
         const projectStateUrl = url.resolve(this.config.serverUrl, `CxWebClient/portal#/projectState/${this.projectId}/Summary`);
         this.log.info(`SAST scan created successfully. CxLink to project state: ${projectStateUrl}`);
+
+        return scanResult;
     }
 
-    async getSASTResults() {
+    private async getSASTResults(result: ScanResults): Promise<ScanResults> {
         this.log.info('------------------------------------Get CxSAST Results:----------------------------------');
         this.log.info('Retrieving SAST scan results');
 
         await this.sastClient.waitForScanToFinish();
 
-        await this.addStatisticsToScanResults();
-        await this.addPolicyViolationsToScanResults();
+        await this.addStatisticsToScanResults(result);
+        await this.addPolicyViolationsToScanResults(result);
 
-        this.printStatistics();
+        this.printStatistics(result);
 
-        await this.addDetailedReportToScanResults();
+        await this.addDetailedReportToScanResults(result);
 
-        const evaluator = new ScanResultsEvaluator(this.scanResults, this.config, this.log, this.isPolicyEnforcementSupported);
+        const evaluator = new ScanResultsEvaluator(result, this.config, this.log, this.isPolicyEnforcementSupported);
         evaluator.evaluate();
+        
+        return result;
     }
 
-    private async resolveProject() {
-        this.projectId = await this.getCurrentProjectId();
-
-        if (this.projectId) {
-            this.log.debug(`Resolved project ID: ${this.projectId}`);
+    private async getOrCreateProject(): Promise<number> {
+        let projectId = await this.getCurrentProjectId();
+        if (projectId) {
+            this.log.debug(`Resolved project ID: ${projectId}`);
         } else {
             this.log.info('Project not found, creating a new one.');
 
@@ -100,8 +107,10 @@ export class RestClient {
                     " You can enable the creation of new projects by disabling the Deny new Checkmarx projects creation checkbox in the Checkmarx plugin global settings.");
             }
 
-            this.projectId = await this.createNewProject();
+            projectId = await this.createNewProject();
         }
+
+        return projectId;
     }
 
     private async uploadSourceCode(): Promise<void> {
@@ -156,7 +165,7 @@ export class RestClient {
         return newProject.id;
     }
 
-    private async defineScanSettings() {
+    private async updateScanSettings() {
         const settingsResponse = await this.sastClient.getScanSettings(this.projectId);
 
         const engineConfigurationId = this.config.engineConfigurationId || settingsResponse.engineConfiguration.id;
@@ -176,7 +185,7 @@ export class RestClient {
         await this.sastClient.updateScanSettings(request);
     }
 
-    private async addPolicyViolationsToScanResults() {
+    private async addPolicyViolationsToScanResults(result: ScanResults) {
         if (!this.config.enablePolicyViolations) {
             return;
         }
@@ -190,9 +199,9 @@ export class RestClient {
 
         const projectViolations = await this.armClient.getProjectViolations(this.projectId, 'SAST');
         for (const policy of projectViolations) {
-            this.scanResults.sastPolicies.push(policy.policyName);
+            result.sastPolicies.push(policy.policyName);
             for (const violation of policy.violations) {
-                this.scanResults.sastViolations.push({
+                result.sastViolations.push({
                     libraryName: violation.source,
                     policyName: policy.policyName,
                     ruleName: violation.ruleName,
@@ -201,49 +210,49 @@ export class RestClient {
             }
         }
 
-        if (this.scanResults.sastViolations.length) {
-            this.scanResults.policyViolated = true;
+        if (result.sastViolations.length) {
+            result.policyViolated = true;
         }
     }
 
-    private async addStatisticsToScanResults() {
-        const statistics = await this.sastClient.getScanStatistics(this.scanResults.scanId);
-        this.scanResults.highResults = statistics.highSeverity;
-        this.scanResults.mediumResults = statistics.mediumSeverity;
-        this.scanResults.lowResults = statistics.lowSeverity;
-        this.scanResults.infoResults = statistics.infoSeverity;
+    private async addStatisticsToScanResults(result: ScanResults) {
+        const statistics = await this.sastClient.getScanStatistics(result.scanId);
+        result.highResults = statistics.highSeverity;
+        result.mediumResults = statistics.mediumSeverity;
+        result.lowResults = statistics.lowSeverity;
+        result.infoResults = statistics.infoSeverity;
 
-        const sastScanPath = `CxWebClient/ViewerMain.aspx?scanId=${this.scanResults.scanId}&ProjectID=${this.projectId}`;
-        this.scanResults.sastScanResultsLink = url.resolve(this.config.serverUrl, sastScanPath);
+        const sastScanPath = `CxWebClient/ViewerMain.aspx?scanId=${result.scanId}&ProjectID=${this.projectId}`;
+        result.sastScanResultsLink = url.resolve(this.config.serverUrl, sastScanPath);
 
         const sastProjectLink = `CxWebClient/portal#/projectState/${this.projectId}/Summary`;
-        this.scanResults.sastSummaryResultsLink = url.resolve(this.config.serverUrl, sastProjectLink);
+        result.sastSummaryResultsLink = url.resolve(this.config.serverUrl, sastProjectLink);
 
-        this.scanResults.sastResultsReady = true;
+        result.sastResultsReady = true;
     }
 
-    private async addDetailedReportToScanResults() {
+    private async addDetailedReportToScanResults(result: ScanResults) {
         const client = new ReportingClient(this.httpClient, this.log);
-        const reportXml = await client.generateReport(this.scanResults.scanId);
+        const reportXml = await client.generateReport(result.scanId);
 
         const doc = reportXml.CxXMLResults;
-        this.scanResults.scanStart = doc.$.ScanStart;
-        this.scanResults.scanTime = doc.$.ScanTime;
-        this.scanResults.locScanned = doc.$.LinesOfCodeScanned;
-        this.scanResults.filesScanned = doc.$.FilesScanned;
-        this.scanResults.queryList = RestClient.toJsonQueries(doc.Query);
+        result.scanStart = doc.$.ScanStart;
+        result.scanTime = doc.$.ScanTime;
+        result.locScanned = doc.$.LinesOfCodeScanned;
+        result.filesScanned = doc.$.FilesScanned;
+        result.queryList = CxClient.toJsonQueries(doc.Query);
 
         // TODO: PowerShell code also adds properties such as newHighCount, but they are not used in the UI.
     }
 
-    private printStatistics() {
+    private printStatistics(result: ScanResults) {
         this.log.info(`----------------------------Checkmarx Scan Results(CxSAST):-------------------------------
-High severity results: ${this.scanResults.highResults}
-Medium severity results: ${this.scanResults.mediumResults}
-Low severity results: ${this.scanResults.lowResults}
-Info severity results: ${this.scanResults.infoResults}
+High severity results: ${result.highResults}
+Medium severity results: ${result.mediumResults}
+Low severity results: ${result.lowResults}
+Info severity results: ${result.infoResults}
 
-Scan results location:  ${this.scanResults.sastScanResultsLink}
+Scan results location:  ${result.sastScanResultsLink}
 ------------------------------------------------------------------------------------------
 `);
     }
@@ -261,14 +270,27 @@ Scan results location:  ${this.scanResults.sastScanResultsLink}
         ).join(SEPARATOR);
     }
 
-    private async detectFeatureSupport() {
+    private async getVersionInfo() {
+        let versionInfo = null;
         try {
-            const versionInfo = await this.httpClient.getRequest('system/version', {suppressWarnings: true});
+            versionInfo = await this.httpClient.getRequest('system/version', {suppressWarnings: true});
             this.log.info(`Checkmarx server version [${versionInfo.version}]. Hotfix [${versionInfo.hotFix}].`);
-            this.isPolicyEnforcementSupported = true;
         } catch (e) {
+            versionInfo = null;
             this.log.info('Checkmarx server version is lower than 9.0.');
-            this.isPolicyEnforcementSupported = false;
         }
+        return versionInfo;
+    }
+
+    private async initDynamicFields() {
+        const versionInfo = await this.getVersionInfo();
+        this.isPolicyEnforcementSupported = !!versionInfo;
+
+        this.presetId = await this.sastClient.getPresetIdByName(this.config.presetName);
+
+        const teamApiClient = new TeamApiClient(this.httpClient, this.log);
+        this.teamId = await teamApiClient.getTeamIdByName(this.config.teamName);
+
+        this.projectId = await this.getOrCreateProject();
     }
 }

@@ -59,7 +59,7 @@ Policy Management:
     private isLevelThresholdExceeded(amountToCheck: number, threshold: number | undefined, severity: string): boolean {
         let result = false;
         if (typeof threshold !== 'undefined') {
-            if (threshold <= 0) {
+            if (threshold < 0) {
                 throw Error('Threshold must be 0 or greater');
             }
 
