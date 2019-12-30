@@ -9,10 +9,11 @@ import {ArmClient} from "./armClient";
 import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
 import {Logger} from "./logger";
 import {ReportingClient} from "./reportingClient";
-import {ScanResultsEvaluator} from "./scanResultsEvaluator";
+import {ScanSummaryEvaluator} from "./scanSummaryEvaluator";
 import {FilePathFilter} from "./filePathFilter";
 import {FileUtil} from "./fileUtil";
 import {TeamApiClient} from "./teamApiClient";
+import {ScanSummary, ThresholdError} from "../dto/scanSummary";
 
 /**
  * High-level CX API client that uses specialized clients internally.
@@ -38,7 +39,7 @@ export class CxClient {
         this.log.info('Initializing Cx client');
         await this.initClients();
         await this.initDynamicFields();
-        
+
         let result: ScanResults = await this.createSASTScan();
         if (config.isSyncMode) {
             result = await this.getSASTResults(result);
@@ -88,9 +89,16 @@ export class CxClient {
 
         await this.addDetailedReportToScanResults(result);
 
-        const evaluator = new ScanResultsEvaluator(result, this.config, this.log, this.isPolicyEnforcementSupported);
-        evaluator.evaluate();
-        
+        const evaluator = new ScanSummaryEvaluator(this.config, this.log, this.isPolicyEnforcementSupported);
+        const summary = evaluator.getScanSummary(result);
+
+        this.logPolicyCheckSummary(summary.policyCheck);
+
+        if (summary.hasErrors()) {
+            result.buildFailed = true;
+            this.logBuildFailure(summary);
+        }
+
         return result;
     }
 
@@ -205,10 +213,6 @@ export class CxClient {
                 });
             }
         }
-
-        if (result.sastViolations.length) {
-            result.policyViolated = true;
-        }
     }
 
     private async addStatisticsToScanResults(result: ScanResults) {
@@ -288,5 +292,47 @@ Scan results location:  ${result.sastScanResultsLink}
         this.teamId = await teamApiClient.getTeamIdByName(this.config.teamName);
 
         this.projectId = await this.getOrCreateProject();
+    }
+
+    private logBuildFailure(failure: ScanSummary) {
+        this.log.error(
+            `********************************************
+The Build Failed for the Following Reasons:
+********************************************`);
+        this.logPolicyCheckError(failure.policyCheck);
+        this.logThresholdErrors(failure.thresholdErrors);
+    }
+
+    private logPolicyCheckSummary(policyCheck: { wasPerformed: boolean; violatedPolicyNames: string[] }) {
+        if (policyCheck.wasPerformed) {
+            this.log.info(
+                `-----------------------------------------------------------------------------------------
+Policy Management:
+--------------------`);
+            if (policyCheck.violatedPolicyNames.length) {
+                this.log.info('Project policy status: violated');
+
+                const names = policyCheck.violatedPolicyNames.join(', ');
+                this.log.info(`SAST violated policies names: ${names}`);
+            } else {
+                this.log.info('Project policy status: compliant');
+            }
+            this.log.info('-----------------------------------------------------------------------------------------');
+        }
+    }
+
+    private logThresholdErrors(thresholdErrors: ThresholdError[]) {
+        if (thresholdErrors.length) {
+            this.log.error('Exceeded CxSAST Vulnerability Threshold.');
+            for (const error of thresholdErrors) {
+                this.log.error(`SAST ${error.severity} severity results are above threshold. Results: ${error.actualViolationCount}. Threshold: ${error.threshold}`);
+            }
+        }
+    }
+
+    private logPolicyCheckError(policyCheck: { violatedPolicyNames: string[] }) {
+        if (policyCheck.violatedPolicyNames.length) {
+            this.log.error('Project policy status: violated');
+        }
     }
 }
