@@ -1,6 +1,6 @@
 import * as url from 'url';
 import * as request from 'superagent';
-import {Logger} from "./logger";
+import {Logger} from "../logger";
 
 interface InternalRequestOptions extends RequestOptions {
     method: 'put' | 'post' | 'get';

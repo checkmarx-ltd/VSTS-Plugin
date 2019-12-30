@@ -1,11 +1,11 @@
 import {HttpClient} from "./httpClient";
-import {ArmStatus} from "../dto/armStatus";
-import {Stopwatch} from "./stopwatch";
-import {ScanProvider} from "../dto/scanProvider";
-import {Waiter} from "./waiter";
-import {PolicyViolationGroup} from "../dto/policyViolationGroup";
-import {Logger} from "./logger";
-import {PollingSettings} from "../dto/pollingSettings";
+import {ArmStatus} from "../../dto/api/armStatus";
+import {Stopwatch} from "../stopwatch";
+import {ScanProvider} from "../../dto/api/scanProvider";
+import {Waiter} from "../waiter";
+import {PolicyViolationGroup} from "../../dto/api/policyViolationGroup";
+import {Logger} from "../logger";
+import {PollingSettings} from "../../dto/pollingSettings";
 
 /**
  * Works with policy-related APIs.

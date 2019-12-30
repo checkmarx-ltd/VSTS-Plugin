@@ -1,13 +1,13 @@
-import {ScanRequest} from "../dto/scanRequest";
-import {ScanConfig} from "../dto/scanConfig";
+import {ScanRequest} from "../../dto/api/scanRequest";
+import {ScanConfig} from "../../dto/scanConfig";
 import {HttpClient} from "./httpClient";
-import {ScanStatus} from "../dto/scanStatus";
-import {ScanStage} from "../dto/scanStage";
-import {Stopwatch} from "./stopwatch";
-import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
-import {Waiter} from "./waiter";
-import {Logger} from "./logger";
-import {PollingSettings} from "../dto/pollingSettings";
+import {ScanStatus} from "../../dto/api/scanStatus";
+import {ScanStage} from "../../dto/api/scanStage";
+import {Stopwatch} from "../stopwatch";
+import {UpdateScanSettingsRequest} from "../../dto/api/updateScanSettingsRequest";
+import {Waiter} from "../waiter";
+import {Logger} from "../logger";
+import {PollingSettings} from "../../dto/pollingSettings";
 
 export class SastClient {
     private static readonly POLLING_INTERVAL_IN_SECONDS = 10;
