@@ -38,7 +38,6 @@ export class ScanResults {
     sastPolicies: string[] = [];
     osaViolations = [];
     osaPolicies = [];
-    policyViolated = false;
 
     highResults = 0;
     mediumResults = 0;

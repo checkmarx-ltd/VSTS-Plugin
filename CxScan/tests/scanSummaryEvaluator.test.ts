@@ -1,24 +1,25 @@
-import {ScanResultsEvaluator} from "../services/scanResultsEvaluator";
+import {ScanSummaryEvaluator} from "../services/scanSummaryEvaluator";
 import {ScanResults} from "../dto/scanResults";
 import {ScanConfig} from "../dto/scanConfig";
 import {Logger} from "../services/logger";
 import * as assert from "assert";
 
-describe("ScanResultsEvaluator", function () {
-    it('should mark build as failed if scan resulted in policy violation', function () {
+describe("ScanSummaryEvaluator", function () {
+    it('should return violated policy names in summary', function () {
         const config = getScanConfig();
         config.enablePolicyViolations = true;
 
         const scanResults = new ScanResults(config);
-        scanResults.policyViolated = true;
-        scanResults.buildFailed = false;
+        scanResults.sastPolicies = ['policy1', 'policy2'];
 
         const logger = getDummyLogger();
 
-        const target = new ScanResultsEvaluator(scanResults, config, logger, true);
-        target.evaluate();
-
-        assert.equal(scanResults.buildFailed, true);
+        const target = new ScanSummaryEvaluator(config, logger, true);
+        const summary = target.getScanSummary(scanResults);
+        assert.ok(summary);
+        assert.ok(summary.policyCheck);
+        assert.ok(summary.policyCheck.wasPerformed);
+        assert.deepStrictEqual(summary.policyCheck.violatedPolicyNames, scanResults.sastPolicies);
     });
 });
 
