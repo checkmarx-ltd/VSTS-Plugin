@@ -71,7 +71,7 @@ export class SastClient {
 
     updateScanSettings(request: UpdateScanSettingsRequest) {
         this.log.info('Updating scan settings.');
-        return this.httpClient.postRequest('sast/scanSettings', request);
+        return this.httpClient.putRequest('sast/pluginsScanSettings', request);
     }
 
     async waitForScanToFinish() {
