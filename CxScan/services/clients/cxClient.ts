@@ -1,19 +1,20 @@
-import {ScanConfig} from "../dto/scanConfig";
+import {ScanConfig} from "../../dto/scanConfig";
 import {HttpClient} from "./httpClient";
-import Zipper from "./zipper";
-import {TaskSkippedError} from "../dto/taskSkippedError";
-import {ScanResults} from "../dto/scanResults";
+import Zipper from "../zipper";
+import {TaskSkippedError} from "../../dto/taskSkippedError";
+import {ScanResults} from "../../dto/scanResults";
 import {SastClient} from "./sastClient";
 import * as url from "url";
 import {ArmClient} from "./armClient";
-import {UpdateScanSettingsRequest} from "../dto/updateScanSettingsRequest";
-import {Logger} from "./logger";
+import {UpdateScanSettingsRequest} from "../../dto/api/updateScanSettingsRequest";
+import {Logger} from "../logger";
 import {ReportingClient} from "./reportingClient";
-import {ScanSummaryEvaluator} from "./scanSummaryEvaluator";
-import {FilePathFilter} from "./filePathFilter";
-import {FileUtil} from "./fileUtil";
+import {ScanSummaryEvaluator} from "../scanSummaryEvaluator";
+import {FilePathFilter} from "../filePathFilter";
+import {FileUtil} from "../fileUtil";
 import {TeamApiClient} from "./teamApiClient";
-import {ScanSummary, ThresholdError} from "../dto/scanSummary";
+import {ScanSummary} from "../../dto/scanSummary";
+import {ThresholdError} from "../../dto/thresholdError";
 
 /**
  * High-level CX API client that uses specialized clients internally.

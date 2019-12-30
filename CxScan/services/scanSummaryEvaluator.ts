@@ -1,7 +1,8 @@
 import {Logger} from "./logger";
 import {ScanResults} from "../dto/scanResults";
 import {ScanConfig} from "../dto/scanConfig";
-import {ScanSummary, ThresholdError} from "../dto/scanSummary";
+import {ScanSummary} from "../dto/scanSummary";
+import {ThresholdError} from "../dto/thresholdError";
 
 export class ScanSummaryEvaluator {
     constructor(private readonly config: ScanConfig,

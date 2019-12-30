@@ -2,7 +2,7 @@ import taskLib = require('azure-pipelines-task-lib/task');
 import {Logger} from "./logger";
 import {ConsoleLogger} from "./consoleLogger";
 import {ConfigReader} from "./configReader";
-import {CxClient} from "./cxClient";
+import {CxClient} from "./clients/cxClient";
 import {TaskSkippedError} from "../dto/taskSkippedError";
 import {ScanResults} from "../dto/scanResults";
 import {FileUtil} from "./fileUtil";

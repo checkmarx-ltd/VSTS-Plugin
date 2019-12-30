@@ -1,3 +1,5 @@
+import {ThresholdError} from "./thresholdError";
+
 export class ScanSummary {
     policyCheck: {
         wasPerformed: boolean,
@@ -9,8 +11,3 @@ export class ScanSummary {
     hasErrors = () => !!(this.policyCheck.violatedPolicyNames.length || this.thresholdErrors.length);
 }
 
-export interface ThresholdError {
-    severity: string;
-    actualViolationCount: number;
-    threshold: number;
-}

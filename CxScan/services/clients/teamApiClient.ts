@@ -1,4 +1,4 @@
-import {Logger} from "./logger";
+import {Logger} from "../logger";
 import {HttpClient} from "./httpClient";
 
 export class TeamApiClient {
