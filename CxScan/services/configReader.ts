@@ -61,8 +61,7 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
 
             forceScan: false,
-            isPublic: true,
-            engineConfigurationId: 0
+            isPublic: true
         };
 
         this.format(result);

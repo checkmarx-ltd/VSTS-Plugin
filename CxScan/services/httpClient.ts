@@ -3,6 +3,7 @@ import * as request from 'superagent';
 import {Logger} from "./logger";
 
 interface InternalRequestOptions extends RequestOptions {
+    method: 'put' | 'post' | 'get';
     singlePostData?: object;
     multipartPostData?: {
         fields: { [fieldName: string]: any },
@@ -39,17 +40,23 @@ export class HttpClient {
     }
 
     getRequest(relativePath: string, options?: RequestOptions): Promise<any> {
-        return this.sendRequest(relativePath, Object.assign({retry: true}, options));
+        const internalOptions: InternalRequestOptions = {retry: true, method: 'get'};
+        return this.sendRequest(relativePath, Object.assign(internalOptions, options));
     }
 
     postRequest(relativePath: string, data: object): Promise<any> {
-        return this.sendRequest(relativePath, {singlePostData: data, retry: true});
+        return this.sendRequest(relativePath, {singlePostData: data, retry: true, method: 'post'});
+    }
+
+    putRequest(relativePath: string, data: object): Promise<any> {
+        return this.sendRequest(relativePath, {singlePostData: data, retry: true, method: 'put'});
     }
 
     postMultipartRequest(relativePath: string,
                          fields: { [fieldName: string]: any },
                          attachments: { [fieldName: string]: string }) {
         return this.sendRequest(relativePath, {
+            method: 'post',
             multipartPostData: {
                 fields,
                 attachments
@@ -62,38 +69,36 @@ export class HttpClient {
         const effectiveBaseUrl = options.baseUrlOverride || this.baseUrl;
         const fullUrl = url.resolve(effectiveBaseUrl, relativePath);
 
-        const method = options.singlePostData || options.multipartPostData ? 'post' : 'get';
+        this.log.debug(`Sending ${options.method.toUpperCase()} request to ${fullUrl}`);
 
-        this.log.debug(`Sending ${method.toUpperCase()} request to ${fullUrl}`);
-
-        let result = request[method](fullUrl)
+        let result = request[options.method](fullUrl)
             .auth(this.accessToken, {type: 'bearer'})
             .accept('json');
 
         result = HttpClient.includePostData(result, options);
 
         return result.then(
-            (response: request.Response) => {
-                return response.body;
-            },
-            async (err: any) => {
-                const canRetry = options.retry && err && err.response && err.response.unauthorized;
-                if (canRetry) {
-                    this.log.warning('Access token expired, requesting a new token');
-                    await this.loginWithStoredCredentials();
-
-                    const optionsClone = Object.assign({}, options);
-                    // Avoid infinite recursion.
-                    optionsClone.retry = false;
-                    return this.sendRequest(relativePath, optionsClone);
-                } else {
-                    const message = `${method.toUpperCase()} request failed to ${fullUrl}`;
-                    const logMethod = options.suppressWarnings ? 'debug' : 'warning';
-                    this.log[logMethod](message);
-                    return Promise.reject(err);
-                }
-            }
+            (response: request.Response) => response.body,
+            async (err: any) => this.handleHttpError(options, err, relativePath, fullUrl)
         );
+    }
+
+    private async handleHttpError(options: InternalRequestOptions, err: any, relativePath: string, fullUrl: string) {
+        const canRetry = options.retry && err && err.response && err.response.unauthorized;
+        if (canRetry) {
+            this.log.warning('Access token expired, requesting a new token');
+            await this.loginWithStoredCredentials();
+
+            const optionsClone = Object.assign({}, options);
+            // Avoid infinite recursion.
+            optionsClone.retry = false;
+            return this.sendRequest(relativePath, optionsClone);
+        } else {
+            const message = `${options.method.toUpperCase()} request failed to ${fullUrl}`;
+            const logMethod = options.suppressWarnings ? 'debug' : 'warning';
+            this.log[logMethod](message);
+            return Promise.reject(err);
+        }
     }
 
     private static includePostData(result: request.SuperAgentRequest, options: InternalRequestOptions) {
