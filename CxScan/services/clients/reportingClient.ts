@@ -1,9 +1,9 @@
 import {HttpClient} from "./httpClient";
-import {Logger} from "./logger";
-import {Waiter} from "./waiter";
-import {ReportStatus} from "../dto/reportStatus";
-import {PollingSettings} from "../dto/pollingSettings";
-import {Stopwatch} from "./stopwatch";
+import {Logger} from "../logger";
+import {Waiter} from "../waiter";
+import {ReportStatus} from "../../dto/api/reportStatus";
+import {PollingSettings} from "../../dto/pollingSettings";
+import {Stopwatch} from "../stopwatch";
 import * as xml2js from "xml2js";
 
 /**
