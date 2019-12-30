@@ -38,18 +38,18 @@ export class ScanSummaryEvaluator {
     private getThresholdErrors(scanResult: ScanResults) {
         let result: ThresholdError[];
         if (this.config.vulnerabilityThreshold) {
-            result = ScanSummaryEvaluator.getSastThresholdErrors(scanResult);
+            result = this.getSastThresholdErrors(scanResult);
         } else {
             result = [];
         }
         return result;
     }
 
-    private static getSastThresholdErrors(scanResult: ScanResults) {
+    private getSastThresholdErrors(scanResult: ScanResults) {
         const result: ThresholdError[] = [];
-        ScanSummaryEvaluator.addThresholdErrors(scanResult.highResults, scanResult.highThreshold, 'high', result);
-        ScanSummaryEvaluator.addThresholdErrors(scanResult.mediumResults, scanResult.mediumThreshold, 'medium', result);
-        ScanSummaryEvaluator.addThresholdErrors(scanResult.lowResults, scanResult.lowThreshold, 'low', result);
+        ScanSummaryEvaluator.addThresholdErrors(scanResult.highResults, this.config.highThreshold, 'high', result);
+        ScanSummaryEvaluator.addThresholdErrors(scanResult.mediumResults, this.config.mediumThreshold, 'medium', result);
+        ScanSummaryEvaluator.addThresholdErrors(scanResult.lowResults, this.config.lowThreshold, 'low', result);
         return result;
     }
 
