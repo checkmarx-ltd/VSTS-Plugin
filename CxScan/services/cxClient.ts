@@ -168,19 +168,15 @@ export class CxClient {
     private async updateScanSettings() {
         const settingsResponse = await this.sastClient.getScanSettings(this.projectId);
 
-        const engineConfigurationId = this.config.engineConfigurationId || settingsResponse.engineConfiguration.id;
+        const configurationId = settingsResponse &&
+            settingsResponse.engineConfiguration &&
+            settingsResponse.engineConfiguration.id;
 
         const request: UpdateScanSettingsRequest = {
             projectId: this.projectId,
             presetId: this.presetId,
-            engineConfigurationId,
-            emailNotifications: settingsResponse.emailNotifications
+            engineConfigurationId: configurationId || 0
         };
-
-        // TODO: PowerShell code uses postScanActionId = settingsResponse.postScanAction    - is this correct?
-        if (settingsResponse.postScanAction) {
-            request.postScanActionId = settingsResponse.postScanAction.id;
-        }
 
         await this.sastClient.updateScanSettings(request);
     }
