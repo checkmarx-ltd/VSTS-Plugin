@@ -9,9 +9,7 @@ describe("ScanSummaryEvaluator", function () {
         const config = getScanConfig();
         config.enablePolicyViolations = true;
 
-        const logger = getDummyLogger();
-
-        const target = new ScanSummaryEvaluator(config, logger, true);
+        const target = new ScanSummaryEvaluator(config, getDummyLogger(), true);
 
         const scanResults = new ScanResults(config);
         scanResults.sastPolicies = ['policy1', 'policy2'];
@@ -31,18 +29,35 @@ describe("ScanSummaryEvaluator", function () {
         config.lowThreshold = 10;
         config.vulnerabilityThreshold = true;
 
-        const logger = getDummyLogger();
-        const target = new ScanSummaryEvaluator(config, logger, false);
+        const target = new ScanSummaryEvaluator(config, getDummyLogger(), false);
 
         const scanResults = new ScanResults(config);
         scanResults.highResults = 3;
         scanResults.mediumResults = 8;
         scanResults.lowResults = 4;
         const summary = target.getScanSummary(scanResults);
-        assert.ok(summary);
+
         assert.ok(summary.hasErrors());
-        assert.ok(summary.thresholdErrors);
-        assert.equal(summary.thresholdErrors.length, 2)
+        assert.equal(summary.thresholdErrors.length, 2);
+    });
+
+    it('should not return threshold errors if all values are below thresholds', function(){
+        const config = getScanConfig();
+        config.highThreshold = 10;
+        config.mediumThreshold = 15;
+        config.lowThreshold = 20;
+        config.vulnerabilityThreshold = true;
+
+        const target = new ScanSummaryEvaluator(config, getDummyLogger(), false);
+
+        const scanResults = new ScanResults(config);
+        scanResults.highResults = 2;
+        scanResults.mediumResults = 11;
+        scanResults.lowResults = 18;
+        const summary = target.getScanSummary(scanResults);
+
+        assert.ok(!summary.hasErrors());
+        assert.equal(summary.thresholdErrors.length, 0);
     });
 });
 
