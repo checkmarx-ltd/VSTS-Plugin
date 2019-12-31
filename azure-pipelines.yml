@@ -9,6 +9,9 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  nodejsAppDir: CxScan
+
 steps:
 - task: NodeTool@0
   inputs:
@@ -18,7 +21,11 @@ steps:
 - task: Npm@1
   inputs:
     command: 'install'
-    workingDir: 'CxScan'
+    workingDir: $(nodejsAppDir)
+
+- script: npm test
+  displayName: Run tests
+  workingDirectory: $(nodejsAppDir)
 
 - task: TfxInstaller@2
   inputs:
@@ -38,6 +45,7 @@ steps:
   inputs:
     contents: '*.vsix'
     targetFolder: $(Build.ArtifactStagingDirectory)
+
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: $(Build.ArtifactStagingDirectory)
