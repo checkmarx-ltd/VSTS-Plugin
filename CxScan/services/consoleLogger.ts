@@ -1,5 +1,5 @@
-import {Logger} from "./logger";
 import * as taskLib from "azure-pipelines-task-lib";
+import {Logger} from "@checkmarx/cx-common-js-client";
 
 export class ConsoleLogger implements Logger {
     info(message: string): void {

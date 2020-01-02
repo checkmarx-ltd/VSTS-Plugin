@@ -1,7 +1,7 @@
-import {ScanConfig} from "../dto/scanConfig";
-import {Logger} from "./logger";
 import taskLib = require('azure-pipelines-task-lib/task');
-import {TeamApiClient} from "./clients/teamApiClient";
+import {Logger} from "@checkmarx/cx-common-js-client";
+import {ScanConfig} from "@checkmarx/cx-common-js-client";
+import {TeamApiClient} from "@checkmarx/cx-common-js-client";
 
 export class ConfigReader {
     constructor(private readonly log: Logger) {
