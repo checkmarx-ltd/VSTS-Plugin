@@ -1,12 +1,12 @@
 import taskLib = require('azure-pipelines-task-lib/task');
-import {Logger} from "./logger";
 import {ConsoleLogger} from "./consoleLogger";
 import {ConfigReader} from "./configReader";
-import {CxClient} from "./clients/cxClient";
-import {TaskSkippedError} from "../dto/taskSkippedError";
-import {ScanResults} from "../dto/scanResults";
-import {FileUtil} from "./fileUtil";
 import * as fs from "fs";
+import {tmpNameSync} from "tmp";
+import {CxClient} from "@checkmarx/cx-common-js-client";
+import {ScanResults} from "@checkmarx/cx-common-js-client";
+import {TaskSkippedError} from "@checkmarx/cx-common-js-client";
+import {Logger} from "@checkmarx/cx-common-js-client";
 
 export class TaskRunner {
     private static readonly REPORT_ATTACHMENT_NAME = 'cxReport';
@@ -55,7 +55,7 @@ export class TaskRunner {
     }
 
     private async attachJsonReport(scanResults: ScanResults) {
-        const jsonReportPath = FileUtil.generateTempFileName({prefix: 'cxreport-', postfix: '.json'});
+        const jsonReportPath = TaskRunner.generateJsonReportPath();
         const reportJson = JSON.stringify(scanResults);
 
         this.log.debug(`Writing report to ${jsonReportPath}`);
@@ -71,6 +71,16 @@ export class TaskRunner {
 
         taskLib.addAttachment(TaskRunner.REPORT_ATTACHMENT_NAME, TaskRunner.REPORT_ATTACHMENT_NAME, jsonReportPath);
         this.log.info('Generated Checkmarx summary results.');
+    }
+
+    private static generateJsonReportPath() {
+        // A temporary folder that is cleaned after each pipeline run, so we don't have to remove
+        // temp files manually.
+        const tempDir = taskLib.getVariable('Agent.TempDirectory');
+
+        // If the agent variable above is not specified (e.g. in debug environment), tempDir is undefined and
+        // tmpNameSync function falls back to a default temp directory.
+        return tmpNameSync({dir: tempDir, prefix: 'cxreport-', postfix: '.json'});
     }
 
     private printHeader() {
