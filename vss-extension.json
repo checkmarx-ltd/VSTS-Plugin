@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2019.4.1",
+  "version": "2020.1.1",
   "publisher": "checkmarxdev",
   "targets": [
     {
@@ -15,7 +15,8 @@
     "default": "images/extension-icon.png"
   },
   "categories": [
-   "Azure Pipelines"],
+    "Azure Pipelines"
+  ],
   "tags": [
     "Security",
     "SCA",
