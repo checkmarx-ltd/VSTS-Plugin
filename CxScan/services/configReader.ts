@@ -75,7 +75,7 @@ export class ConfigReader {
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
-
+            cxOrigin:'VSTS',
             forceScan: false,
             isPublic: true,
             enableDependencyScan:taskLib.getBoolInput('enableDependencyScan',false),
