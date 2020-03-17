@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2020.1.1",
-  "publisher": "checkmarxdev",
+  "version": "2020.1.156",
+  "publisher": "MajdPublisher",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -124,6 +124,48 @@
                 "id": "password",
                 "name": "Password",
                 "description": "Checkmarx user password",
+                "inputMode": "passwordbox",
+                "isConfidential": true,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": true
+                }
+              }
+            ]
+          }
+        ],
+        "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a Checkmarx cloud account</span>"
+      }
+    },
+    {
+      "id": "SCA-Endpoint",
+      "description": "Service Endpoint type for all SCA connections",
+      "type": "ms.vss-endpoint.service-endpoint-type",
+      "targets": [
+        "ms.vss-endpoint.endpoint-types"
+      ],
+      "properties": {
+        "name": "SCA-Endpoint",
+        "displayName": "SCA",
+        "authenticationSchemes": [
+          {
+            "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
+            "inputDescriptors": [
+              {
+                "id": "username",
+                "name": "Username",
+                "description": "SCA username",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": true
+                }
+              },
+              {
+                "id": "password",
+                "name": "Password",
+                "description": "SCA user password",
                 "inputMode": "passwordbox",
                 "isConfidential": true,
                 "validation": {
