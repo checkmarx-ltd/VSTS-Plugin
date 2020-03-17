@@ -2,17 +2,18 @@ import taskLib = require('azure-pipelines-task-lib/task');
 import {Logger} from "@checkmarx/cx-common-js-client";
 import {ScanConfig} from "@checkmarx/cx-common-js-client";
 import {TeamApiClient} from "@checkmarx/cx-common-js-client";
+import {ScaConfig} from "@checkmarx/cx-common-js-client"
 
 export class ConfigReader {
     constructor(private readonly log: Logger) {
     }
-
     readConfig(): ScanConfig {
         const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
 
         this.log.debug('Reading configuration.');
 
         const endpointId = taskLib.getInput('CheckmarxService', true) || '';
+        const endpointIdSCA = taskLib.getInput('dependencyServerURL', true) || '';
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -22,6 +23,11 @@ export class ConfigReader {
         const authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false);
         if (authScheme !== SUPPORTED_AUTH_SCHEME) {
             throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
+        }
+
+        const authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false);
+        if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
+            throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
         }
 
         const rawTeamName = taskLib.getInput('fullTeamName', true);
@@ -36,8 +42,18 @@ export class ConfigReader {
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
-
+        const scaResult: ScaConfig = {
+            accessControlUrl: taskLib.getInput('dependencyAccessControlURL',false) || '',
+            apiUrl: taskLib.getEndpointUrl(endpointIdSCA,false) || '',
+            username: taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'username',false) || '',
+            password: taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'password',false) || '',
+            tenant: taskLib.getInput('dependencyTenant',false) || '',
+            webAppUrl: taskLib.getInput('dependencyWebAppURL',false) || '',
+            dependencyFileExtension: taskLib.getInput('dependencyFileExtension',false) || '',
+            dependencyFolderExclusion:taskLib.getInput('dependencyFolderExclusion',false) || ''
+        };
         const result: ScanConfig = {
+            enableSastScan: taskLib.getBoolInput('enableSastScan',true),
             serverUrl: taskLib.getEndpointUrl(endpointId, false),
             username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
             password: taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '',
@@ -61,9 +77,11 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
 
             forceScan: false,
-            isPublic: true
+            isPublic: true,
+            enableDependencyScan:taskLib.getBoolInput('enableDependencyScan',false),
+            scaConfig: scaResult
         };
-
+        this.formatSCA(scaResult);
         this.format(result);
 
         return result;
@@ -88,7 +106,7 @@ export class ConfigReader {
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
 
         this.log.info(`
--------------------------------Configurations:--------------------------------
+-------------------------------CxSAST Configurations:--------------------------------
 URL: ${config.serverUrl}
 Project name: ${config.projectName}
 Source location: ${config.sourceLocation}
@@ -111,6 +129,20 @@ CxSAST thresholds enabled: ${config.vulnerabilityThreshold}`);
         }
 
         this.log.info(`Enable Project Policy Enforcement: ${config.enablePolicyViolations}`);
+        this.log.info('------------------------------------------------------------------------------');
+    }
+
+    private formatSCA(config: ScaConfig): void {
+        const formatOptionalString = (input: string) => input || 'none';
+        const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
+
+        this.log.info(`
+-------------------------------SCA Configurations:--------------------------------
+AccessControl: ${config.accessControlUrl}
+ApiURL: ${config.apiUrl}
+WebAppUrl: ${config.webAppUrl}
+Tenant: ${config.tenant}`);
+
         this.log.info('------------------------------------------------------------------------------');
     }
 }
