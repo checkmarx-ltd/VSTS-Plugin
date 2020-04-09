@@ -3,12 +3,12 @@ pushd %~dp0..\CxScan
 call tsc
 
 set INPUT_CheckmarxService=endpointId
-set ENDPOINT_URL_endpointId=http://10.32.2.164
+set ENDPOINT_URL_endpointId=http://10.32.3.78
 set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=***REMOVED***
 set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=***REMOVED***
 set BUILD_SOURCESDIRECTORY=C:\Checkmarx\Cx-Client-Common
 set INPUT_ENABLESASTSCAN=true
-set INPUT_PROJECTNAME=newOne
+set INPUT_PROJECTNAME=newOne12
 set INPUT_FULLTEAMNAME=\CxServer
 set INPUT_DENYPROJECT=false
 set INPUT_INCSCAN=true
@@ -26,7 +26,7 @@ set INPUT_MEDIUM=1
 set INPUT_LOW=1
 set ENDPOINT
 
-set INPUT_ENABLEDEPENDENCYSCAN=true
+set INPUT_ENABLEDEPENDENCYSCAN=false
 set INPUT_dependencyServerURL=endpointIdSCA
 set ENDPOINT_URL_endpointIdSCA=https://api.scacheckmarx.com
 set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_USERNAME=***REMOVED***
