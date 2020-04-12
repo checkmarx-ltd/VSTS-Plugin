@@ -12,7 +12,7 @@
   "version": {
     "Major": 2020,
     "Minor": 1,
-    "Patch": 1
+    "Patch": 2
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -35,14 +35,6 @@
   ],
   "instanceNameFormat": "Security static source code analysis",
   "inputs": [
-    {
-      "name": "enableSastScan",
-      "type": "boolean",
-      "label": "Enable Checkmarx SAST scan",
-      "required": true,
-      "helpMarkDown": "Select in order to enable the CxSast scan",
-      "groupName": "scanSettings"
-    },
     {
       "name": "CheckmarxService",
       "type": "connectedService:Checkmarx-Endpoint",
@@ -120,8 +112,7 @@
       "required": true,
       "defaultValue": "true",
       "helpMarkDown": "Set true for incremental scan. If no scan was done aeyet, the scan will be a full scan and the following ones will be incremental.",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "folderExclusion",
@@ -130,8 +121,7 @@
       "required": false,
       "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea, node_modules",
       "helpMarkDown": "Comma separated list of folders to exclude from scan. Entries in this list are automatically converted to exclude wildcard patterns and appended to the full pattern list provided in the 'Include/Exclude Wildcard Patterns' setting.\n\nConversion is done as follows: `folder1, folder2, folder3` is converted to: `!**/folder1/**, !**/folder2/**, !**/folder3/**`",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "fileExtension",
@@ -140,8 +130,7 @@
       "required": false,
       "defaultValue": "!**/*.DS_Store, !**/*.ipr, !**/*.iws, !**/*.bak, !**/*.tmp, !**/*.aac, !**/*.aif, !**/*.iff, !**/*.m3u, !**/*.mid, !**/*.mp3,\n!**/*.mpa, !**/*.ra, !**/*.wav, !**/*.wma, !**/*.3g2, !**/*.3gp, !**/*.asf, !**/*.asx, !**/*.avi,!**/*.flv, !**/*.mov, !**/*.mp4, !**/*.mpg,  !**/*.rm, !**/*.swf, !**/*.vob, !**/*.wmv, !**/*.bmp, !**/*.gif, !**/*.jpg, !**/*.png, !**/*.psd, !**/*.tif, !**/*.swf, !**/*.jar, !**/*.zip, !**/*.rar, !**/*.exe, !**/*.dll, !**/*.pdb, !**/*.7z, !**/*.gz, !**/*.tar.gz, !**/*.tar, !**/*.gz, !**/*.ahtm, !**/*.ahtml, !**/*.fhtml, !**/*.hdm, !**/*.hdml,   !**/*.hsql, !**/*.ht, !**/*.hta, !**/*.htc, !**/*.htd, !**/*.war, !**/*.ear, !**/*.htmls, !**/*.ihtml, !**/*.mht, !**/*.mhtm, !**/*.mhtml, !**/*.ssi, !**/*.stm, !**/*.stml, !**/*.ttml, !**/*.txn, !**/*.xhtm, !**/*.xhtml, !**/*.class, !**/*.iml",
       "helpMarkDown": "Comma separated list of include or exclude wildcard patterns. Exclude patterns start with exclamation mark `!`.\nExample: `**/*.java, **/*.html, !**\\test\\**\\XYZ*`\n\n#### Pattern Syntax\nA given directory is recursively scanned for all files and directories. Each file/directory is matched against a set of selectors, including special support for matching against filenames with include and exclude patterns. Only files/directories which match at least one pattern of the include pattern list, and don't match any pattern of the exclude pattern list will be placed in the list of files/directories found.\n\nWhen no list of include patterns is supplied, `**` will be used, which means that everything will be matched. When no list of exclude patterns is supplied, an empty list is used, such that nothing will be excluded.\n\nThe filename pattern matching is done as follows:\nThe name to be matched is split up in path segments. A path segment is the name of a directory or file, which is bounded by a path separator (forward or back slashes can be used).\nFor example, `abc/def/ghi/xyz.java` is split up in the segments `abc`, `def`, `ghi` and `xyz.java`. The same is done for the pattern against which it should be matched.\n\nThe segments of the name and the pattern are then matched against each other. When `**` is used for a path segment in the pattern, it matches zero or more path segments of the name.\n\nWhen a name path segment is matched against a pattern path segment, the following special characters can be used:\n- `*` matches zero or more characters\n- `?` matches one character.\t\n####Examples\n- `**\\*.class` matches all `.class` files/dirs in a directory tree.\n- `test\\a??.java` matches all files/dirs which start with an `a`, then two more characters and then `.java`, in a directory called `test`.\n- `**` matches everything in a directory tree.\n- `**\\test\\**\\XYZ*` matches all files/dirs which start with `XYZ` and where there is a parent directory called `test` (e.g. `abc\\test\\def\\ghi\\XYZ123`).",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "scanTimeout",
@@ -149,8 +138,7 @@
       "label": "Scan Timeout In Minutes",
       "required": false,
       "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "denyProject",
@@ -159,8 +147,7 @@
       "required": false,
       "defaultValue": "false",
       "helpMarkDown": "Enabling this option will prohibit creation of new projects in Checkmarx, or assigning an existing project to a different team. Disabling this option will allow this action. ",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "comment",
@@ -168,8 +155,7 @@
       "label": "Comment",
       "required": false,
       "helpMarkDown": "Free text comment that will appear within CxSAST scan information",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "syncMode",
@@ -178,8 +164,7 @@
       "required": false,
       "defaultValue": "true",
       "helpMarkDown": "Enabling this option will cause the build step to wait for scan results, you can see the scan results inside the Checkmarx plug-in results window. If disabled, the results are only displayed inside the Checkmarx web-application",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "groupName": "scanSettings"
     },
     {
       "name": "vulnerabilityThreshold",
@@ -189,7 +174,7 @@
       "defaultValue": "true",
       "helpMarkDown": "Set the maximum number of CxSAST vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
-      "visibleRule": "syncMode = true && enableSastScan = true"
+      "visibleRule": "syncMode = true"
     },
     {
       "name": "high",
@@ -198,7 +183,7 @@
       "required": false,
       "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
       "groupName": "scanSettings",
-      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
+      "visibleRule": "vulnerabilityThreshold = true"
     },
     {
       "name": "medium",
@@ -207,7 +192,7 @@
       "required": false,
       "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the medium severity vulnerabilities is larger than the threshold. Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "scanSettings",
-      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
+      "visibleRule": "vulnerabilityThreshold = true"
     },
     {
       "name": "low",
@@ -216,7 +201,7 @@
       "required": false,
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold.  Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "scanSettings",
-      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
+      "visibleRule": "vulnerabilityThreshold = true"
     },
     {
       "name": "enablePolicyViolations",
@@ -226,72 +211,7 @@
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST. (Only available if synchronous mode is enabled).",
       "groupName": "scanSettings",
-      "visibleRule": "syncMode = true && enableSastScan = true"
-    },
-    {
-      "name": "enableDependencyScan",
-      "type": "boolean",
-      "label": "Enable Dependency Scan",
-      "required": false,
-      "defaultValue": "false",
-      "helpMarkDown": "Use CxSCA to create a dependency scan",
-      "groupName": "dependencyScan"
-    },
-    {
-      "name": "dependencyFileExtension",
-      "type": "string",
-      "label": "Include/Exclude Wildcard Patterns",
-      "required": false,
-      "defaultValue": "!**/*.DS_Store, !**/*.ipr, !**/*.iws, !**/*.bak, !**/*.tmp, !**/*.aac, !**/*.aif, !**/*.iff, !**/*.m3u, !**/*.mid, !**/*.mp3,\n!**/*.mpa, !**/*.ra, !**/*.wav, !**/*.wma, !**/*.3g2, !**/*.3gp, !**/*.asf, !**/*.asx, !**/*.avi,!**/*.flv, !**/*.mov, !**/*.mp4, !**/*.mpg,  !**/*.rm, !**/*.swf, !**/*.vob, !**/*.wmv, !**/*.bmp, !**/*.gif, !**/*.jpg, !**/*.png, !**/*.psd, !**/*.tif, !**/*.swf, !**/*.zip, !**/*.rar, !**/*.exe, !**/*.dll, !**/*.pdb, !**/*.7z, !**/*.gz, !**/*.tar.gz, !**/*.tar, !**/*.gz, !**/*.ahtm, !**/*.ahtml, !**/*.fhtml, !**/*.hdm, !**/*.hdml,   !**/*.hsql, !**/*.ht, !**/*.hta, !**/*.htc, !**/*.htd, !**/*.war, !**/*.ear, !**/*.htmls, !**/*.ihtml, !**/*.mht, !**/*.mhtm, !**/*.mhtml, !**/*.ssi, !**/*.stm, !**/*.stml, !**/*.ttml, !**/*.txn, !**/*.xhtm, !**/*.xhtml, !**/*.class, !**/*.iml",
-      "helpMarkDown": "Comma separated list of include or exclude wildcard patterns. Exclude patterns start with exclamation mark `!`.\nExample: `**/*.java, **/*.html, !**\\test\\**\\XYZ*`\n\n#### Pattern Syntax\nA given directory is recursively scanned for all files and directories. Each file/directory is matched against a set of selectors, including special support for matching against filenames with include and exclude patterns. Only files/directories which match at least one pattern of the include pattern list, and don't match any pattern of the exclude pattern list will be placed in the list of files/directories found.\n\nWhen no list of include patterns is supplied, `**` will be used, which means that everything will be matched. When no list of exclude patterns is supplied, an empty list is used, such that nothing will be excluded.\n\nThe filename pattern matching is done as follows:\nThe name to be matched is split up in path segments. A path segment is the name of a directory or file, which is bounded by a path separator (forward or back slashes can be used).\nFor example, `abc/def/ghi/xyz.java` is split up in the segments `abc`, `def`, `ghi` and `xyz.java`. The same is done for the pattern against which it should be matched.\n\nThe segments of the name and the pattern are then matched against each other. When `**` is used for a path segment in the pattern, it matches zero or more path segments of the name.\n\nWhen a name path segment is matched against a pattern path segment, the following special characters can be used:\n- `*` matches zero or more characters\n- `?` matches one character.\t\n####Examples\n- `**\\*.class` matches all `.class` files/dirs in a directory tree.\n- `test\\a??.java` matches all files/dirs which start with an `a`, then two more characters and then `.java`, in a directory called `test`.\n- `**` matches everything in a directory tree.\n- `**\\test\\**\\XYZ*` matches all files/dirs which start with `XYZ` and where there is a parent directory called `test` (e.g. `abc\\test\\def\\ghi\\XYZ123`).",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyFolderExclusion",
-      "type": "string",
-      "label": "Folder Exclusion",
-      "required": false,
-      "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea, node_modules",
-      "helpMarkDown": "Comma separated list of folders to exclude from scan. Entries in this list are automatically converted to exclude wildcard patterns and appended to the full pattern list provided in the 'Include/Exclude Wildcard Patterns' setting.\n\nConversion is done as follows: `folder1, folder2, folder3` is converted to: `!**/folder1/**, !**/folder2/**, !**/folder3/**`",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyServerURL",
-      "type": "connectedService:SCA-Endpoint",
-      "label": "CxSCA Server URL",
-      "required": false,
-      "helpMarkDown": "CxSCA Server URL",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyAccessControlURL",
-      "type": "string",
-      "label": "CxSCA Access Control URL",
-      "required": false,
-      "helpMarkDown": "CxSCA Access Control URL",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyWebAppURL",
-      "type": "string",
-      "label": "CxSCA Web App URL",
-      "required": false,
-      "helpMarkDown": "CxSCA Web App URL",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyTenant",
-      "type": "string",
-      "label": "CxSCA tenant",
-      "required": false,
-      "helpMarkDown": "CxSCA tenant",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
+      "visibleRule": "syncMode = true"
     }
   ],
   "execution": {
