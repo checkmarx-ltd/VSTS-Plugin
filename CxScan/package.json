@@ -10,7 +10,7 @@
   "author": "***REMOVED***",
   "license": "SEE LICENSE IN checkmarx-license-terms.md",
   "dependencies": {
-    "@checkmarx/cx-common-js-client": "0.1.12",
+    "@checkmarx/cx-common-js-client": "^0.1.12",
     "azure-pipelines-task-lib": "^2.8.0",
     "tmp": "^0.1.0",
     "superagent": "^5.1.0"
