@@ -10,7 +10,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  nodejsAppDir: CxScan
+  nodejsAppDir19: CxScan/CxScanV19
+  nodejsAppDir20: CxScan/CxScanV20
 
 steps:
 - task: NodeTool@0
@@ -21,11 +22,20 @@ steps:
 - task: Npm@1
   inputs:
     command: 'install'
-    workingDir: $(nodejsAppDir)
+    workingDir: $(nodejsAppDir19)
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: $(nodejsAppDir20)
 
 - script: npm test
   displayName: Run tests
-  workingDirectory: $(nodejsAppDir)
+  workingDirectory: $(nodejsAppDir19)
+
+- script: npm test
+  displayName: Run tests
+  workingDirectory: $(nodejsAppDir120)
 
 - task: TfxInstaller@2
   inputs:
