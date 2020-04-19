@@ -1,6 +1,8 @@
-CxScan/node_modules
+CxScan/CxScanV19/node_modules
+CxScan/CxScanV20/node_modules
 .idea
 *.iml
 *.vsix
 .vscode
-CxScan/target
+CxScan/CxScanV19/target
+CxScan/CxScanV20/target
