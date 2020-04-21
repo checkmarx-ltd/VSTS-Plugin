@@ -21,12 +21,12 @@ steps:
 
 - task: Npm@1
   inputs:
-    command: 'install'
+    command: 'install build'
     workingDir: $(nodejsAppDir19)
 
 - task: Npm@1
   inputs:
-    command: 'install'
+    command: 'install build'
     workingDir: $(nodejsAppDir20)
 
 - script: npm test
