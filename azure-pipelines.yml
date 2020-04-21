@@ -31,13 +31,17 @@ steps:
 
 - task: Npm@1
   inputs:
-    command: 'build'
-    workingDir: $(nodejsAppDir19)
+    command : 'custom'
+    customCommand: 'build'
+    displayName: 'npm build 20'
+    workingDir: $(nodejsAppDir20)
 
 - task: Npm@1
   inputs:
-    command: 'build'
-    workingDir: $(nodejsAppDir20)
+    command : 'custom'
+    customCommand: 'build'
+    displayName: 'npm build 19'
+    workingDir: $(nodejsAppDir19)
 
 - script: npm test
   displayName: Run tests
