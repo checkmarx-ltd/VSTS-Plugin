@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2020.2.7",
+  "version": "2020.2.8",
   "publisher": "MajdPublisher",
   "targets": [
     {
@@ -15,7 +15,8 @@
     "default": "images/extension-icon.png"
   },
   "categories": [
-    "Build and release"
+    "Build and release",
+    "Azure Pipelines"
   ],
   "tags": [
     "Security",
