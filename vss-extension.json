@@ -103,7 +103,7 @@
         "ms.vss-endpoint.endpoint-types"
       ],
       "properties": {
-        "name": "Checkmarx-Endpoint",
+        "name": "Checkmarx-Endpoint1",
         "displayName": "Checkmarx",
         "authenticationSchemes": [
           {
