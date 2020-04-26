@@ -3,7 +3,7 @@ pushd %~dp0..\CxScan\CxScanV20
 call tsc
 
 set INPUT_CheckmarxService=endpointId
-set ENDPOINT_URL_endpointId=http://10.32.5.54
+set ENDPOINT_URL_endpointId=http://10.32.5.181
 set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=***REMOVED***
 set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=***REMOVED***
 set BUILD_SOURCESDIRECTORY=C:\Checkmarx\Cx-Client-Common
