@@ -12,7 +12,7 @@
   "version": {
     "Major": 2019,
     "Minor": 4,
-    "Patch": 13
+    "Patch": 14
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -37,7 +37,7 @@
   "inputs": [
     {
       "name": "CheckmarxService",
-      "type": "connectedService:Checkmarx-Endpoint",
+      "type": "connectedService:Checkmarx-Endpoint1",
       "label": "Checkmarx Endpoint",
       "required": true,
       "helpMarkDown": "The CX server endpoint.",

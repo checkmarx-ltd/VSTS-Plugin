@@ -32,7 +32,7 @@
   "inputs": [
     {
       "name": "CheckmarxService",
-      "type": "connectedService:Checkmarx-Endpoint",
+      "type": "connectedService:Checkmarx-Endpoint1",
       "label": "Checkmarx Endpoint",
       "required": true,
       "helpMarkDown": "The CX server endpoint.",

@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast1",
   "name": "Checkmarx CxSAST1",
-  "version": "2020.2.10",
+  "version": "2020.2.11",
   "publisher": "MajdPublisher",
   "targets": [
     {
@@ -103,7 +103,7 @@
         "ms.vss-endpoint.endpoint-types"
       ],
       "properties": {
-        "name": "Checkmarx-Endpoint",
+        "name": "Checkmarx-Endpoint1",
         "displayName": "Checkmarx",
         "authenticationSchemes": [
           {
