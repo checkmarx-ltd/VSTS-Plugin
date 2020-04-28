@@ -1,5 +1,5 @@
 {
-"id": "5262FEE4-B921-EE23-9D22-3BCCAA562688",
+"id": "5262FEE4-B921-4E23-9D22-3BCCAA562688",
   "name": "Security static source code analysis",
   "friendlyName": "Checkmarx CxSAST",
   "description": "Security static source code analysis",
@@ -12,7 +12,7 @@
   "version": {
     "Major": 2019,
     "Minor": 4,
-    "Patch": 14
+    "Patch": 15
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -37,7 +37,7 @@
   "inputs": [
     {
       "name": "CheckmarxService",
-      "type": "connectedService:Checkmarx-Endpoint1",
+      "type": "connectedService:Checkmarx-Endpoint",
       "label": "Checkmarx Endpoint",
       "required": true,
       "helpMarkDown": "The CX server endpoint.",
