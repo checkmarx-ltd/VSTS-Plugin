@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2020.2.14",
+  "version": "2020.2.15",
   "publisher": "checkmarx",
   "targets": [
     {
@@ -145,7 +145,7 @@
         "ms.vss-endpoint.endpoint-types"
       ],
       "properties": {
-        "name": "SCA-Endpoint",
+        "name": "SCA-Endpoint1",
         "displayName": "SCA",
         "authenticationSchemes": [
           {
