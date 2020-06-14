@@ -101,6 +101,22 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var osaMedCount = resultObject.osaMediumResults;
                                 var osaLowCount = resultObject.osaLowResults;
 
+                                //-------------------------- sca vars --------------------------------------
+                                var scaResults = resultObject.scaResults;
+                                var scaResultReady = scaResults.resultReady;
+                                var scaHighVulnerability = scaResults.highVulnerability;
+                                var scaMediumVulnerability = scaResults.mediumVulnerability;
+                                var scaLowVulnerability = scaResults.lowVulnerability;
+                                var scaSummaryLink = scaResults.summaryLink;
+                                var scaVulnerableAndOutdated = scaResults.vulnerableAndOutdated;
+                                var scaNonVulnerableLibraries = scaResults.nonVulnerableLibraries;
+                                var scaScanStartTime = scaResults.scanStartTime;
+                                var scaScanEndTime = scaResults.scanEndTime;
+                                var scaDependencyHighCVEReportTable =scaResults.dependencyHighCVEReportTable;
+                                var scaDependencyMediumCVEReportTable = scaResults.dependencyMediumCVEReportTable;
+                                var scaDependencyLowCVEReportTable = scaResults.dependencyLowCVEReportTable;
+                                var scaTotalLibraries = scaResults.totalLibraries;
+
 
                                 //-------------------------- html vars --------------------------------------
                                 var thresholdExceededHtml =
@@ -190,7 +206,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
                                     }
 
-                                    //---------------------------------------------------------- osa ---------------------------------------------------------------
+                                    //---------------------------------------------------------- osa & sca  ---------------------------------------------------------------
                                     if (osaEnabled == true && osaFailed != true) {
                                         try {
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");
