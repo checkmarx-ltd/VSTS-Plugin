@@ -14,7 +14,7 @@ export class ConfigReader {
 
         const endpointId = taskLib.getInput('CheckmarxService', true) || '';
         //TODO: remove SCA stuff from comment once its decided to use SCA in VSTS.
-        //const endpointIdSCA = taskLib.getInput('dependencyServerURL', true) || '';
+        const endpointIdSCA = taskLib.getInput('dependencyServerURL', true) || '';
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -26,10 +26,10 @@ export class ConfigReader {
             throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
         }
 
-       /* const authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false);
+        const authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false);
         if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
             throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
-        }*/
+        }
 
         const rawTeamName = taskLib.getInput('fullTeamName', true);
 
@@ -43,7 +43,7 @@ export class ConfigReader {
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
-        /*const scaResult: ScaConfig = {
+        const scaResult: ScaConfig = {
             accessControlUrl: taskLib.getInput('dependencyAccessControlURL',false) || '',
             apiUrl: taskLib.getEndpointUrl(endpointIdSCA,false) || '',
             username: taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'username',false) || '',
@@ -52,9 +52,9 @@ export class ConfigReader {
             webAppUrl: taskLib.getInput('dependencyWebAppURL',false) || '',
             dependencyFileExtension: taskLib.getInput('dependencyFileExtension',false) || '',
             dependencyFolderExclusion:taskLib.getInput('dependencyFolderExclusion',false) || ''
-        };*/
+        };
         const result: ScanConfig = {
-            enableSastScan: true,
+            enableSastScan: taskLib.getBoolInput('enableSastScan',false),
             serverUrl: taskLib.getEndpointUrl(endpointId, false),
             username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
             password: taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '',
@@ -79,10 +79,10 @@ export class ConfigReader {
             cxOrigin:'VSTS',
             forceScan: false,
             isPublic: true,
-            enableDependencyScan:false,
-            scaConfig: undefined
+            enableDependencyScan:taskLib.getBoolInput('enableDependencyScan',false),
+            scaConfig: scaResult
         };
-        //this.formatSCA(scaResult);
+        this.formatSCA(scaResult);
         this.format(result);
 
         return result;
