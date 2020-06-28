@@ -3,89 +3,10 @@ import {Logger} from "@checkmarx/cx-common-js-client";
 import {ScanConfig} from "@checkmarx/cx-common-js-client";
 import {TeamApiClient} from "@checkmarx/cx-common-js-client";
 import {ScaConfig} from "@checkmarx/cx-common-js-client"
-
+import {SourceLocationType} from "@checkmarx/cx-common-js-client"
+import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
 export class ConfigReader {
     constructor(private readonly log: Logger) {
-    }
-    readConfig(): ScanConfig {
-        const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
-
-        this.log.debug('Reading configuration.');
-
-        const endpointId = taskLib.getInput('CheckmarxService', true) || '';
-        //TODO: remove SCA stuff from comment once its decided to use SCA in VSTS.
-        const endpointIdSCA = taskLib.getInput('dependencyServerURL', true) || '';
-
-        const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
-        if (typeof sourceLocation === 'undefined') {
-            throw Error('Sources directory is not provided.');
-        }
-
-        const authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false);
-        if (authScheme !== SUPPORTED_AUTH_SCHEME) {
-            throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
-        }
-
-        const authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false);
-        if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
-            throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
-        }
-
-        const rawTeamName = taskLib.getInput('fullTeamName', true);
-
-        let presetName;
-        const customPreset = taskLib.getInput('customPreset', false);
-        if (customPreset) {
-            presetName = customPreset;
-        } else {
-            presetName = taskLib.getInput('preset', true) || '';
-        }
-
-        let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
-        let scanTimeoutInMinutes = +rawTimeout;
-        const scaResult: ScaConfig = {
-            accessControlUrl: taskLib.getInput('dependencyAccessControlURL',false) || '',
-            apiUrl: taskLib.getEndpointUrl(endpointIdSCA,false) || '',
-            username: taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'username',false) || '',
-            password: taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'password',false) || '',
-            tenant: taskLib.getInput('dependencyTenant',false) || '',
-            webAppUrl: taskLib.getInput('dependencyWebAppURL',false) || '',
-            dependencyFileExtension: taskLib.getInput('dependencyFileExtension',false) || '',
-            dependencyFolderExclusion:taskLib.getInput('dependencyFolderExclusion',false) || ''
-        };
-        const result: ScanConfig = {
-            enableSastScan: taskLib.getBoolInput('enableSastScan',false),
-            serverUrl: taskLib.getEndpointUrl(endpointId, false),
-            username: taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '',
-            password: taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '',
-
-            sourceLocation,
-            projectName: taskLib.getInput('projectName', true) || '',
-            teamName: TeamApiClient.normalizeTeamName(rawTeamName),
-            denyProject: taskLib.getBoolInput('denyProject', false),
-            folderExclusion: taskLib.getInput('folderExclusion', false) || '',
-            fileExtension: taskLib.getInput('fileExtension', false) || '',
-            isIncremental: taskLib.getBoolInput('incScan', true),
-            isSyncMode: taskLib.getBoolInput('syncMode', false),
-            presetName,
-            scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
-            comment: taskLib.getInput('comment', false) || '',
-
-            enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
-            vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false),
-            highThreshold: ConfigReader.getNumericInput('high'),
-            mediumThreshold: ConfigReader.getNumericInput('medium'),
-            lowThreshold: ConfigReader.getNumericInput('low'),
-            cxOrigin:'VSTS',
-            forceScan: false,
-            isPublic: true,
-            enableDependencyScan:taskLib.getBoolInput('enableDependencyScan',false),
-            scaConfig: scaResult
-        };
-        this.formatSCA(scaResult);
-        this.format(result);
-
-        return result;
     }
 
     private static getNumericInput(name: string): number | undefined {
@@ -102,48 +23,178 @@ export class ConfigReader {
         return result;
     }
 
+    readConfig(): ScanConfig {
+        const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
+
+        this.log.debug('Reading configuration.');
+
+        const sastEnabled = taskLib.getBoolInput('enableSastScan',false);
+        const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan',false);
+
+        let endpointId;
+        let authScheme;
+        let sastServerUrl;
+        let sastUsername;
+        let sastPassword;
+
+        if(sastEnabled){
+            endpointId = taskLib.getInput('CheckmarxService', false) || '';
+            authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false) || undefined;
+            if (authScheme !== SUPPORTED_AUTH_SCHEME) {
+                throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
+            }
+            sastServerUrl= taskLib.getEndpointUrl(endpointId, false) || '';
+            sastUsername= taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
+            sastPassword= taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
+        }
+
+
+        let endpointIdSCA;
+        let authSchemeSCA;
+        let scaServerUrl;
+        let scaUsername;
+        let scaPassword;
+
+        if(dependencyScanEnabled){
+            endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
+            authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false) || undefined;
+            if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
+                throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
+            }
+            scaServerUrl= taskLib.getEndpointUrl(endpointIdSCA,false) || '';
+            scaUsername=  taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'username',false) || '';
+            scaPassword=  taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'password',false) || '';
+        }
+
+        //TODO: remove SCA stuff from comment once its decided to use SCA in VSTS.
+
+
+        const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
+        if (typeof sourceLocation === 'undefined') {
+            throw Error('Sources directory is not provided.');
+        }
+
+
+
+
+
+        const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+
+        let presetName;
+        const customPreset = taskLib.getInput('customPreset', false) || '';
+        if (customPreset) {
+            presetName = customPreset;
+        } else {
+            presetName = taskLib.getInput('preset', false) || '';
+        }
+
+        let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
+        let scanTimeoutInMinutes = +rawTimeout;
+        const scaResult: ScaConfig = {
+            accessControlUrl: taskLib.getInput('dependencyAccessControlURL',false) || '',
+            apiUrl: scaServerUrl || '',
+            username: scaUsername || '',
+            password: scaPassword || '',
+            tenant: taskLib.getInput('dependencyTenant',false) || '',
+            webAppUrl: taskLib.getInput('dependencyWebAppURL',false) || '',
+            dependencyFileExtension: taskLib.getInput('dependencyFileExtension',false) || '',
+            dependencyFolderExclusion:taskLib.getInput('dependencyFolderExclusion',false) || '',
+            sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
+            vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold',false) || false,
+            highThreshold: ConfigReader.getNumericInput('scaHigh') || undefined,
+            mediumThreshold: ConfigReader.getNumericInput('scaMedium') || undefined,
+            lowThreshold: ConfigReader.getNumericInput('scaLow') || undefined
+
+        };
+        const sastResult: SastConfig = {
+            serverUrl: sastServerUrl || '',
+            username: sastUsername || '',
+            password: sastPassword || '',
+            teamName: TeamApiClient.normalizeTeamName(rawTeamName) || '',
+            denyProject: taskLib.getBoolInput('denyProject', false),
+            folderExclusion: taskLib.getInput('folderExclusion', false) || '',
+            fileExtension: taskLib.getInput('fileExtension', false) || '',
+            isIncremental: taskLib.getBoolInput('incScan', false) || false,
+            presetName,
+            scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
+            comment: taskLib.getInput('comment', false) || '',
+            enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
+            vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false) || false,
+            highThreshold: ConfigReader.getNumericInput('high') || undefined,
+            mediumThreshold: ConfigReader.getNumericInput('medium') || undefined,
+            lowThreshold: ConfigReader.getNumericInput('low') || undefined,
+            forceScan: false,
+            isPublic: true
+        };
+
+        const result: ScanConfig = {
+            enableSastScan: taskLib.getBoolInput('enableSastScan',false),
+            enableDependencyScan:taskLib.getBoolInput('enableDependencyScan',false),
+            scaConfig: scaResult,
+            sastConfig: sastResult,
+            isSyncMode: taskLib.getBoolInput('syncMode', false),
+            sourceLocation,
+            cxOrigin:'VSTS',
+            projectName: taskLib.getInput('projectName', false) || '',
+        };
+        this.format(result);
+        this.formatSCA(result);
+
+        return result;
+    }
+
     private format(config: ScanConfig): void {
         const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
-
-        this.log.info(`
+        if(config.enableSastScan && config.sastConfig!=null){
+            this.log.info(`
 -------------------------------CxSAST Configurations:--------------------------------
-URL: ${config.serverUrl}
+URL: ${config.sastConfig.serverUrl}
 Project name: ${config.projectName}
 Source location: ${config.sourceLocation}
-Full team path: ${config.teamName}
-Preset name: ${config.presetName}
-Scan timeout in minutes: ${config.scanTimeoutInMinutes}
-Deny project creation: ${config.denyProject}
+Full team path: ${config.sastConfig.teamName}
+Preset name: ${config.sastConfig.presetName}
+Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
+Deny project creation: ${config.sastConfig.denyProject}
 
-Is incremental scan: ${config.isIncremental}
-Folder exclusions: ${formatOptionalString(config.folderExclusion)}
-File exclusions: ${formatOptionalString(config.fileExtension)}
+Is incremental scan: ${config.sastConfig.isIncremental}
+Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
+Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 
-CxSAST thresholds enabled: ${config.vulnerabilityThreshold}`);
+CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
+            if (config.sastConfig.vulnerabilityThreshold) {
+                this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
+                this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
+                this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
+            }
 
-        if (config.vulnerabilityThreshold) {
-            this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.highThreshold)}`);
-            this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.mediumThreshold)}`);
-            this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.lowThreshold)}`);
+            this.log.info(`Enable Project Policy Enforcement: ${config.sastConfig.enablePolicyViolations}`);
+            this.log.info('------------------------------------------------------------------------------');
         }
-
-        this.log.info(`Enable Project Policy Enforcement: ${config.enablePolicyViolations}`);
-        this.log.info('------------------------------------------------------------------------------');
     }
 
-    private formatSCA(config: ScaConfig): void {
+    private formatSCA(config: ScanConfig): void {
         const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
-
-        this.log.info(`
+        if(config.enableDependencyScan && config.scaConfig!=null ){
+            this.log.info(`
 -------------------------------SCA Configurations:--------------------------------
-AccessControl: ${config.accessControlUrl}
-ApiURL: ${config.apiUrl}
-WebAppUrl: ${config.webAppUrl}
-Tenant: ${config.tenant}`);
+AccessControl: ${config.scaConfig.accessControlUrl}
+ApiURL: ${config.scaConfig.apiUrl}
+WebAppUrl: ${config.scaConfig.webAppUrl}
+Account: ${config.scaConfig.tenant}
+Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
+Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
+Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
+`);
+            if(config.scaConfig.vulnerabilityThreshold){
+                this.log.info(`High Threshold: ${config.scaConfig.highThreshold}
+Medium Threshold: ${config.scaConfig.mediumThreshold}
+Low Threshold: ${config.scaConfig.lowThreshold}`)
+            }
+            this.log.info('------------------------------------------------------------------------------');
+        }
 
-        this.log.info('------------------------------------------------------------------------------');
     }
 }
