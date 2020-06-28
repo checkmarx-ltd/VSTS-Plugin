@@ -46,7 +46,7 @@
         <div id="onAsyncMode" class="error-msg">
             <div id="asyncMessage" class="aui-message error">
                 <span class="aui-icon icon-warning"></span>
-                <strong id="dd">Scan was run in Asynchronous mode </strong>
+                <strong id="dd">The scan is running in asynchronous mode. Once completed, the link to the results can be found in the log.</strong>
             </div>
         </div>
 
@@ -215,7 +215,7 @@
 
                 <div class="osa-summary" id="osa-summary">
                     <div class="summary-report-title osa">
-                        <div class="summary-title-text osa">CxOSA Vulnerabilities & Libraries</div>
+                        <div id="dependencyScanHeader" class="summary-title-text osa"></div>
                         <div class="summary-title-links">
                             <a class="html-report" id="osa-summary-html-link">
                                 <div class="results-link summary-link">
@@ -697,7 +697,7 @@
                 <div class="summary-table-row cxosa-full" id="osa-full">
                     <div class="title-column">
                         <div class="summary-title">
-                            <div class="sum1">CxOSA</div>
+                            <div id="dependencyLibrariesTables"class="sum1"></div>
                             <div class="sum1">Full Report</div>
                         </div>
                         <div class="detailed-report">

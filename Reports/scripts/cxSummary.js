@@ -201,10 +201,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             }
                                         }
                                     }
-                                    else {
-                                        document.getElementById("onSastError").setAttribute("style", "display:block");
-                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
-                                    }
+
 
                                     //---------------------------------------------------------- osa & sca  ---------------------------------------------------------------
                                     if (osaEnabled == true && osaFailed != true) {
@@ -282,7 +279,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("onSastError").setAttribute("style", "display:block");
                                         document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
                                     } else {
-                                        var asyncModeMessage = "Scan was run in Asynchronous mode";
+                                        var asyncModeMessage = "The scan is running in asynchronous mode. Once completed, the link to the results can be found in the log.";
                                         var asyncDiv = document.getElementById("asyncMessage");
                                         asyncDiv.innerHTML = asyncModeMessage;
                                         asyncDiv.setAttribute("style", "display:block");
