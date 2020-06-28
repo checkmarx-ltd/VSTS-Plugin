@@ -1,8 +1,8 @@
 {
   "id": "5262FEE4-B921-4E23-9D22-3BCCAA562688",
-  "name": "Application security testing and dependency scan",
+  "name": "Application security testing",
   "friendlyName": "Checkmarx Scans",
-  "description": "Application security testing and dependency scan",
+  "description": "static application security testing",
   "helpMarkDown": "[Information] https://checkmarx.atlassian.net/wiki/display/KC/CxSAST+MS-VSTS+Plugin",
   "category": "Build",
   "visibility": [
@@ -12,52 +12,59 @@
   "version": {
     "Major": 2020,
     "Minor": 2,
-    "Patch": 19
+    "Patch": 76
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
   "groups": [
     {
-      "name": "serverSettings",
-      "displayName": "Checkmarx Server",
+      "name": "projectName",
+      "displayName": "Project Name",
       "isExpanded": true
     },
     {
       "name": "scanSettings",
       "displayName": "Checkmarx SAST Scan",
-      "isExpanded": true
+      "isExpanded": "true"
     },
     {
       "name": "dependencyScan",
-      "displayName": "Checkmarx Dependency Scan",
-      "isExpanded": true
+      "displayName": "Checkmarx SCA Scan",
+      "isExpanded": "false"
     }
   ],
-  "instanceNameFormat": "Application security testing and dependency scan",
+  "instanceNameFormat": "Application security testing",
   "inputs": [
+    {
+      "name": "projectName",
+       "type": "string",
+      "label": "Project Name",
+      "required": true,
+      "helpMarkDown": "Either select an existing project name or type a name to create a new scan project"
+    },
+    {
+      "name": "syncMode",
+      "type": "boolean",
+      "label": "Synchronous Mode",
+      "required": false,
+      "defaultValue": true,
+      "helpMarkDown": "Enabling this option causes the build step to wait for scan results. You can follow the scan results in the Checkmarx plug-in results window. If disabled, the results are displayed inside the Checkmarx web application and available as a link in the logs once the scan is complete. The Sync/Async mode is configured globally for both SAST and SCA scans."
+    },
     {
       "name": "enableSastScan",
       "type": "boolean",
       "label": "Enable SAST scan",
       "required": true,
       "helpMarkDown": "Select in order to enable the CxSast scan",
-      "groupName": "scanSettings"
+      "groupName": "scanSettings",
+      "defaultValue": true
     },
     {
       "name": "CheckmarxService",
       "type": "connectedService:Checkmarx-Endpoint",
       "label": "Checkmarx SAST Endpoint",
-      "required": true,
+      "required": false,
       "helpMarkDown": "The CX server endpoint.",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
-    },
-    {
-      "name": "projectName",
-      "type": "string",
-      "label": "Project Name",
-      "required": true,
-      "helpMarkDown": "Either select an existing project name or type a name to create a new scan project",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -65,7 +72,7 @@
       "name": "preset",
       "type": "pickList",
       "label": "Preset",
-      "required": true,
+      "required": false,
       "groupName": "scanSettings",
       "defaultValue": "Checkmarx Default",
       "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).",
@@ -113,7 +120,7 @@
       "name": "fullTeamName",
       "type": "string",
       "label": "Team",
-      "required": true,
+      "required": false,
       "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users).",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
@@ -122,7 +129,7 @@
       "name": "incScan",
       "type": "boolean",
       "label": "Incremental Scan",
-      "required": true,
+      "required": false,
       "defaultValue": "true",
       "helpMarkDown": "Set true for incremental scan. If no scan was done aeyet, the scan will be a full scan and the following ones will be incremental.",
       "groupName": "scanSettings",
@@ -177,16 +184,6 @@
       "visibleRule": "enableSastScan = true"
     },
     {
-      "name": "syncMode",
-      "type": "boolean",
-      "label": "Synchronous Mode",
-      "required": false,
-      "defaultValue": "true",
-      "helpMarkDown": "Enabling this option will cause the build step to wait for scan results, you can see the scan results inside the Checkmarx plug-in results window. If disabled, the results are only displayed inside the Checkmarx web-application",
-      "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
-    },
-    {
       "name": "vulnerabilityThreshold",
       "type": "boolean",
       "label": "Enable CxSAST Vulnerability Thresholds",
@@ -194,7 +191,7 @@
       "defaultValue": "false",
       "helpMarkDown": "Set the maximum number of CxSAST vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
-      "visibleRule": "syncMode = true && enableSastScan = true"
+      "visibleRule": "enableSastScan = true"
     },
     {
       "name": "high",
@@ -231,15 +228,15 @@
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST. (Only available if synchronous mode is enabled).",
       "groupName": "scanSettings",
-      "visibleRule": "syncMode = true && enableSastScan = true"
+      "visibleRule": "enableSastScan = true"
     },
     {
       "name": "enableDependencyScan",
       "type": "boolean",
       "label": "Enable Dependency Scan",
-      "required": false,
+      "required": true,
       "defaultValue": "false",
-      "helpMarkDown": "Use CxSCA to create a dependency scan",
+      "helpMarkDown": "Use CxSCA to scan for risks in external dependencies",
       "groupName": "dependencyScan"
     },
     {
@@ -247,7 +244,7 @@
       "type": "connectedService:SCA-Endpoint",
       "label": "CxSCA Server URL",
       "required": false,
-      "helpMarkDown": "CxSCA Server URL",
+      "helpMarkDown": "CxSCA API endpoint. The node running the plugin is required to have connectivity to this address. The scanned code will be delivered to this address for analysis as part of the scan flow",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
@@ -257,7 +254,7 @@
       "label": "CxSCA Access Control URL",
       "required": false,
       "defaultValue":"https://platform.checkmarx.net",
-      "helpMarkDown": "CxSCA Access Control URL",
+      "helpMarkDown": "CxSCA Access Control URL, The node running the plugin is required to have connectivity to this address",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
@@ -267,7 +264,7 @@
       "label": "CxSCA Web App URL",
       "required": false,
       "defaultValue":"https://sca.checkmarx.net",
-      "helpMarkDown": "CxSCA Web App URL",
+      "helpMarkDown": "CxSCA Web App URL. The node running the plugin is not required to connect to this address. It is used for report links",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
@@ -276,7 +273,7 @@
       "type": "string",
       "label": "CxSCA Account",
       "required": false,
-      "helpMarkDown": "CxSCA Account",
+      "helpMarkDown": "Account name of your CxSCA credentials",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
@@ -299,6 +296,43 @@
       "helpMarkDown": "Comma separated list of folders to exclude from scan. Entries in this list are automatically converted to exclude wildcard patterns and appended to the full pattern list provided in the 'Include/Exclude Wildcard Patterns' setting.\n\nConversion is done as follows: `folder1, folder2, folder3` is converted to: `!**/folder1/**, !**/folder2/**, !**/folder3/**`",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaVulnerabilityThreshold",
+      "type": "boolean",
+      "label": "Enable CxSCA Vulnerability Thresholds",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Set the maximum number of CxSCA vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaHigh",
+      "type": "string",
+      "label": "CxSCA High",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the high severity vulnerabilities. The build will be marked as failed  if the number of the high severity vulnerabilities is larger than the threshold. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
+    },
+    {
+      "name": "scaMedium",
+      "type": "string",
+      "label": "CxSCA Medium",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the medium severity vulnerabilities. The build will be marked as failed  if the number of the medium severity vulnerabilities is larger than the threshold. Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
+      "groupName": "dependencyScan",
+      "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
+    },
+    {
+      "name": "scaLow",
+      "type": "string",
+      "label": "CxSCA Low",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold.  Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
+      "groupName": "dependencyScan",
+      "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
     }
   ],
   "execution": {
