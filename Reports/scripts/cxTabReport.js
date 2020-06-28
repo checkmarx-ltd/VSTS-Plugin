@@ -72,7 +72,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 //AsyncMode
                                 var syncMode = resultObject.syncMode;
 
-                                if (sastResultsReady == true) {
+                                var scaResults = resultObject.scaResults;
+
+                                if (syncMode && (sastResultsReady || scaResults)) {
                                     //counts
                                     var highCount = resultObject.highResults;
                                     var medCount = resultObject.mediumResults;
@@ -161,6 +163,90 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var osaLowCveList;
 
 
+                                    //-------------------------- sca vars --------------------------------------
+
+                                    if(scaResults || osaEnabled) {
+                                        var scaResultReady = scaResults._resultReady;
+                                        var scaHighVulnerability = scaResults._highVulnerability;
+                                        var scaMediumVulnerability = scaResults._mediumVulnerability;
+                                        var scaLowVulnerability = scaResults._lowVulnerability;
+                                        var scaSummaryLink = scaResults._summaryLink;
+                                        var scaVulnerableAndOutdated = scaResults._vulnerableAndOutdated;
+                                        var scaNonVulnerableLibraries = scaResults._nonVulnerableLibraries;
+                                        var scaScanStartTime = scaResults._scanStartTime;
+                                        var scaScanEndTime = scaResults._scanEndTime;
+                                        var scaDependencyHighCVEReportTable = scaResults._dependencyHighCVEReportTable;
+                                        var scaDependencyMediumCVEReportTable = scaResults._dependencyMediumCVEReportTable;
+                                        var scaDependencyLowCVEReportTable = scaResults._dependencyLowCVEReportTable;
+                                        var scaTotalLibraries = scaResults._totalLibraries;
+                                        var scaThresholdEnabled = scaResults._vulnerabilityThreshold;
+                                        var scaHighThreshold = scaResults._highThreshold;
+                                        var scaMediumThreshold = scaResults._mediumThreshold;
+                                        var scaLowThreshold = scaResults._lowThreshold;
+
+
+                                        //---------------------------- Dependency Results Variables ---------------
+
+                                        var dependencyHighVulnerability;
+                                        var dependencyMediumVulnerability;
+                                        var dependencyLowVulnerability;
+                                        var dependencySummaryLink;
+                                        var dependencyVulnerableAndOutdated;
+                                        var dependencyNonVulnerableLibraries;
+                                        var dependencyScanStartTime;
+                                        var dependencyScanEndTime;
+                                        var dependencyHighCVEReportTable;
+                                        var dependencyMediumCVEReportTable;
+                                        var dependencyLowCVEReportTable;
+                                        var dependencyTotalLibraries;
+                                        var dependencyLibraries;
+                                        var dependencyThresholdEnabled;
+                                        var dependencyHighThreshold;
+                                        var dependencyMediumThreshold;
+                                        var dependencyLowThreshold;
+
+                                        var isDependencyResultReady = isOsaFullReady || (scaResults != null && scaResultReady);
+
+                                        if (scaResults != null && scaResultReady) {
+                                            dependencyHighVulnerability = scaHighVulnerability;
+                                            dependencyMediumVulnerability = scaMediumVulnerability;
+                                            dependencyLowVulnerability = scaLowVulnerability;
+                                            dependencySummaryLink = scaSummaryLink;
+                                            dependencyVulnerableAndOutdated = scaVulnerableAndOutdated;
+                                            dependencyNonVulnerableLibraries = scaNonVulnerableLibraries;
+                                            dependencyScanStartTime = scaScanStartTime;
+                                            dependencyScanEndTime = "";
+                                            dependencyHighCVEReportTable = scaDependencyHighCVEReportTable;
+                                            dependencyMediumCVEReportTable = scaDependencyMediumCVEReportTable;
+                                            dependencyLowCVEReportTable = scaDependencyLowCVEReportTable;
+                                            dependencyTotalLibraries = scaTotalLibraries;
+                                            dependencyLibraries = dependencyLowCVEReportTable.concat(dependencyMediumCVEReportTable, dependencyLowCVEReportTable);
+                                            dependencyThresholdEnabled = scaThresholdEnabled;
+                                            dependencyHighThreshold = scaHighThreshold;
+                                            dependencyMediumThreshold = scaMediumThreshold;
+                                            dependencyLowThreshold =scaLowThreshold;
+
+                                        } else if (osaEnabled && !osaFailed) {
+                                            dependencyHighVulnerability = osaHighCount;
+                                            dependencyMediumVulnerability = osaMedCount;
+                                            dependencyLowVulnerability = osaLowCount;
+                                            dependencySummaryLink = osaSummaryResultsLink;
+                                            dependencyVulnerableAndOutdated = osaVulnerableAndOutdatedLibs;
+                                            dependencyNonVulnerableLibraries = okLibraries;
+                                            dependencyScanStartTime = osaStartDate;
+                                            dependencyScanEndTime = osaEndDate;
+                                            dependencyHighCVEReportTable = osaHighCveList;
+                                            dependencyMediumCVEReportTable = osaMedCveList;
+                                            dependencyLowCVEReportTable = osaLowCveList;
+                                            dependencyTotalLibraries = osaLibraries.length;
+                                            dependencyLibraries = osaLibraries;
+                                            dependencyThresholdEnabled = osaThresholdsEnabled;
+                                            dependencyHighThreshold = osaHighThreshold;
+                                            dependencyMediumThreshold = osaMedThreshold;
+                                            dependencyLowThreshold =osaLowThreshold;
+                                        }
+                                    }
+
                                     //-------------------------- html vars --------------------------------------
                                     var thresholdExceededHtml =
                                         '<div class="threshold-exceeded">' +
@@ -187,9 +273,13 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 if (syncMode != false) { //Synchronous Mode
                                     document.getElementById("asyncMessage").setAttribute("style", "display:none");
                                     document.getElementById("onAsyncMode").setAttribute("style", "display:none");
+                                    document.getElementById("results-report").setAttribute("style", "display:block");
+                                    if(sastResultsReady != true){
+                                        document.getElementById("sast-summary").setAttribute("style", "display:none");
+                                    }
+
                                     if (sastResultsReady == true) {
                                         try {
-                                            document.getElementById("results-report").setAttribute("style", "display:block");
                                             document.getElementById("report-title").setAttribute("style", "display:block");
 
                                             //link
@@ -246,64 +336,72 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             }
                                         }
                                     }
-                                    else {
-                                        document.getElementById("onSastError").setAttribute("style", "display:block");
-                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
-                                    }
+
 
                                     //---------------------------------------------------------- osa ---------------------------------------------------------------
-                                    if (osaEnabled == true && osaFailed != true) {
+                                    if(osaEnabled == true && osaFailed != true){
+                                        document.getElementById("dependencyScanHeader").innerHTML = "CxOSA Vulnerabilities & Libraries";
+                                        document.getElementById("dependencyLibrariesTables").innerHTML = "CxOSA";
+                                    }else if(scaResultReady){
+                                        document.getElementById("dependencyScanHeader").innerHTML = "CxSCA Vulnerabilities & Libraries";
+                                        document.getElementById("dependencyLibrariesTables").innerHTML = "CxSCA";
+                                    }else{
+                                        document.getElementById("dependencyScanHeader").innerHTML = "Dependencies Vulnerabilities & Libraries";
+                                        document.getElementById("dependencyLibrariesTables").innerHTML = "Cx Dependency Scan";
+                                }
+
+                                    if ((osaEnabled == true && osaFailed != true) || (scaResults !=null && scaResultReady)) {
                                         try {
                                             document.getElementById("report-title").setAttribute("style", "display:block");
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");
                                             //link
-                                            document.getElementById("osa-summary-html-link").setAttribute("href", osaSummaryResultsLink);
+                                            document.getElementById("osa-summary-html-link").setAttribute("href", dependencySummaryLink);
 
                                             //set bars height and count
-                                            document.getElementById("osa-bar-count-high").innerHTML = osaHighCount;
-                                            document.getElementById("osa-bar-count-med").innerHTML = osaMedCount;
-                                            document.getElementById("osa-bar-count-low").innerHTML = osaLowCount;
+                                            document.getElementById("osa-bar-count-high").innerHTML = dependencyHighVulnerability;
+                                            document.getElementById("osa-bar-count-med").innerHTML = dependencyMediumVulnerability;
+                                            document.getElementById("osa-bar-count-low").innerHTML = dependencyLowVulnerability;
 
 
-                                            var osaMaxCount = Math.max(osaHighCount, osaMedCount, osaLowCount);
-                                            var osaMaxHeight = osaMaxCount * 100 / 90;
+                                            var dependencyMaxCount = Math.max(dependencyHighVulnerability, dependencyMediumVulnerability, dependencyLowVulnerability);
+                                            var dependencyMaxHeight = dependencyMaxCount * 100 / 90;
 
-                                            document.getElementById("osa-bar-high").setAttribute("style", "height:" + osaHighCount * 100 / osaMaxHeight + "%");
-                                            document.getElementById("osa-bar-med").setAttribute("style", "height:" + osaMedCount * 100 / osaMaxHeight + "%");
-                                            document.getElementById("osa-bar-low").setAttribute("style", "height:" + osaLowCount * 100 / osaMaxHeight + "%");
+                                            document.getElementById("osa-bar-high").setAttribute("style", "height:" + dependencyHighVulnerability * 100 / dependencyMaxHeight + "%");
+                                            document.getElementById("osa-bar-med").setAttribute("style", "height:" + dependencyMediumVulnerability * 100 / dependencyMaxHeight + "%");
+                                            document.getElementById("osa-bar-low").setAttribute("style", "height:" + dependencyLowVulnerability * 100 / dependencyMaxHeight + "%");
 
-                                            document.getElementById("vulnerable-libraries").innerHTML = numberWithCommas(osaVulnerableAndOutdatedLibs);
-                                            document.getElementById("ok-libraries").innerHTML = numberWithCommas(okLibraries);
+                                            document.getElementById("vulnerable-libraries").innerHTML = numberWithCommas(dependencyVulnerableAndOutdated);
+                                            document.getElementById("ok-libraries").innerHTML = dependencyNonVulnerableLibraries;
                                         }
                                         catch (e) {
                                             console.error("Element missing in OSA summary section " + e.message);
                                         }
 
                                         //if threshold is enabled
-                                        if (osaThresholdsEnabled == true) {
+                                        if (dependencyThresholdEnabled == true) {
                                             try {
-                                                var isOsaThresholdExceeded = false;
+                                                var isDependencyThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
 
 
-                                                if (osaHighThreshold != null && osaHighThreshold != "" && osaHighCount > osaHighThreshold) {
+                                                if (dependencyHighThreshold != null && dependencyHighThreshold != "" && dependencyHighVulnerability > dependencyHighThreshold) {
                                                     document.getElementById("osa-tooltip-high").innerHTML = tooltipGenerator(SEVERITY.OSA_HIGH);
-                                                    isOsaThresholdExceeded = true;
+                                                    isDependencyThresholdExceeded = true;
                                                 }
 
-                                                if (osaMedThreshold != null && osaMedThreshold != "" && osaMedCount > osaMedThreshold) {
+                                                if (dependencyMediumThreshold != null && dependencyMediumThreshold != "" && dependencyMediumVulnerability > dependencyMediumThreshold) {
                                                     document.getElementById("osa-tooltip-med").innerHTML = tooltipGenerator(SEVERITY.OSA_MED);
-                                                    isOsaThresholdExceeded = true;
+                                                    isDependencyThresholdExceeded = true;
                                                 }
 
-                                                if (osaLowThreshold != null && osaMedThreshold != "" && osaLowCount > osaLowThreshold) {
+                                                if (dependencyLowThreshold != null && dependencyLowThreshold != "" && dependencyLowVulnerability > dependencyLowThreshold) {
                                                     document.getElementById("osa-tooltip-low").innerHTML = tooltipGenerator(SEVERITY.OSA_LOW);
-                                                    isOsaThresholdExceeded = true;
+                                                    isDependencyThresholdExceeded = true;
                                                 }
 
 
                                                 //if threshold exceeded
-                                                if (isOsaThresholdExceeded == true) {
+                                                if (isDependencyThresholdExceeded == true) {
                                                     osaThresholdExceededComplianceElement.innerHTML = thresholdExceededHtml;
                                                 }
 
@@ -366,42 +464,48 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         }
                                     }
 
-                                    if (isOsaFullReady == true) {
+                                    if (isDependencyResultReady) {
                                         document.getElementById("osa-full").setAttribute("style", "display: block");
-                                        //cve lists
-                                        osaHighCveList = generateOsaCveList(SEVERITY.OSA_HIGH);
-                                        osaMedCveList = generateOsaCveList(SEVERITY.OSA_MED);
-                                        osaLowCveList = generateOsaCveList(SEVERITY.OSA_LOW);
+                                        if(osaEnabled){
+                                            //cve lists
+                                            dependencyHighCVEReportTable = generateOsaCveList(SEVERITY.OSA_HIGH);
+                                            dependencyMediumCVEReportTable = generateOsaCveList(SEVERITY.OSA_MED);
+                                            dependencyLowCVEReportTable = generateOsaCveList(SEVERITY.OSA_LOW);
+                                        }
 
-                                        osaNumFiles = osaLibraries.length;
+                                        /*osaNumFiles = dependencyTotalLibraries;*/
 
                                         try {
 
 
                                             //osa links
-                                            document.getElementById("osa-html-link").setAttribute("href", osaSummaryResultsLink);
+                                            document.getElementById("osa-html-link").setAttribute("href", dependencySummaryLink);
 
 
                                             //osa info
-                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(osaStartDate, "dd/mm/yy hh:mm");
-                                            document.getElementById("osa-full-end-date").innerHTML = formatDate(osaEndDate, "dd/mm/yy hh:mm");
-                                            document.getElementById("osa-full-files").innerHTML = numberWithCommas(osaNumFiles);
+                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(dependencyScanStartTime, "dd/mm/yy hh:mm");
+                                            if(osaEnabled){
+                                                document.getElementById("osa-full-end-date").innerHTML = formatDate(dependencyScanEndTime, "dd/mm/yy hh:mm");
+                                            }else if (scaResults!=null && scaResultReady){
+                                                document.getElementById("osa-full-end-date").innerHTML = dependencyScanEndTime;
+                                            }
+                                            document.getElementById("osa-full-files").innerHTML = numberWithCommas(dependencyTotalLibraries);
                                         } catch (e) {
                                             console.error("Element missing in full report info section " + e.message);
                                         }
 
                                         try {
                                             //generate full reports
-                                            if (osaHighCveList.length == 0 && osaMedCveList.length == 0 && osaLowCveList.length == 0) {
+                                            if (dependencyLowCVEReportTable.length == 0 && dependencyMediumCVEReportTable.length == 0 && dependencyLowCVEReportTable.length == 0) {
                                                 document.getElementById("osa-full").setAttribute("style", "display: none");
                                             } else {
-                                                if (osaHighCveList.length > 0) {
+                                                if (dependencyHighCVEReportTable.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_HIGH);
                                                 }
-                                                if (osaMedCveList.length > 0) {
+                                                if (dependencyMediumCVEReportTable.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_MED);
                                                 }
-                                                if (osaLowCveList.length > 0) {
+                                                if (dependencyLowCVEReportTable.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_LOW);
                                                 }
                                             }
@@ -415,7 +519,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("onSastError").setAttribute("style", "display:block");
                                         document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
                                     } else {
-                                        var asyncModeMessage = "Scan was run in Asynchronous mode";
+                                        var asyncModeMessage = "The scan is running in asynchronous mode. Once completed, the link to the results can be found in the log.";
                                         var asyncDiv = document.getElementById("asyncMessage");
                                         asyncDiv.innerHTML = asyncModeMessage;
                                         asyncDiv.setAttribute("style", "display:block");
@@ -451,16 +555,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             break;
 
                                         case SEVERITY.OSA_HIGH:
-                                            threshold = osaHighThreshold;
-                                            count = osaHighCount;
+                                            threshold = dependencyHighThreshold;
+                                            count = dependencyHighVulnerability;
                                             break;
                                         case SEVERITY.OSA_MED:
-                                            threshold = osaMedThreshold;
-                                            count = osaMedCount;
+                                            threshold = dependencyMediumThreshold;
+                                            count = dependencyMediumVulnerability;
                                             break;
                                         case SEVERITY.OSA_LOW:
-                                            threshold = osaLowThreshold;
-                                            count = osaLowCount;
+                                            threshold = dependencyLowThreshold;
+                                            count = dependencyLowVulnerability;
                                             break;
                                     }
 
@@ -501,7 +605,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         case SEVERITY.OSA_HIGH:
                                             svgIcon = svgHighIcon;
                                             severityNameTtl = "High";
-                                            severityCountTtl = osaHighCount;
+                                            severityCountTtl = dependencyHighVulnerability;
                                             break;
 
                                         case SEVERITY.MED:
@@ -513,7 +617,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         case SEVERITY.OSA_MED:
                                             svgIcon = svgMedIcon;
                                             severityNameTtl = "Medium";
-                                            severityCountTtl = osaMedCount;
+                                            severityCountTtl = dependencyMediumVulnerability;
                                             break;
 
                                         case SEVERITY.LOW:
@@ -525,7 +629,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         case SEVERITY.OSA_LOW:
                                             svgIcon = svgLowIcon;
                                             severityNameTtl = "Low";
-                                            severityCountTtl = osaLowCount;
+                                            severityCountTtl = dependencyLowVulnerability;
                                             break;
                                     }
 
@@ -626,31 +730,37 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                     switch (severity) {
                                         case SEVERITY.OSA_HIGH:
-                                            severityCount = osaHighCount;
-                                            severityCveList = osaHighCveList;
+                                            severityCount = dependencyHighVulnerability;
+                                            severityCveList = dependencyHighCVEReportTable;
                                             tableElementId = "osa-cve-table-high";
                                             break;
 
                                         case SEVERITY.OSA_MED:
-                                            severityCount = osaMedCount;
-                                            severityCveList = osaMedCveList;
+                                            severityCount = dependencyMediumVulnerability;
+                                            severityCveList = dependencyMediumCVEReportTable;
                                             tableElementId = "osa-cve-table-med";
                                             break;
 
                                         case SEVERITY.OSA_LOW:
-                                            severityCount = osaLowCount;
-                                            severityCveList = osaLowCveList;
+                                            severityCount = dependencyLowVulnerability;
+                                            severityCveList = dependencyLowCVEReportTable;
                                             tableElementId = "osa-cve-table-low";
                                             break;
                                     }
 
 
-                                    var libraryIdToName = libraryDictionary(osaLibraries);
+                                    var libraryIdToName = libraryDictionary(dependencyLibraries);
 
                                     //create uniquness by key: cve + libraryId
                                     var osaCveMap = {};
-                                    for (var i = 0; i < severityCveList.length; i++) {
-                                        osaCveMap[severityCveList[i].cveName + "," + severityCveList[i].libraryId] = severityCveList[i];
+                                    if(osaEnabled && osaFailed != true ){
+                                       for (var i = 0; i < severityCveList.length; i++) {
+                                           osaCveMap[severityCveList[i].cveName + "," + severityCveList[i].libraryId] = severityCveList[i];
+                                       }
+                                    }else if(scaResults !=null && scaResultReady){
+                                        for (var i = 0; i < severityCveList.length; i++) {
+                                            osaCveMap[severityCveList[i]._name + "," + severityCveList[i]._libraryName] = severityCveList[i];
+                                        }
                                     }
 
                                     //generate table title
@@ -678,15 +788,28 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var row;
 
                                     var i = 1;
-                                    for (var key in osaCveMap) {
-                                        row = table.insertRow(i);
-                                        row.insertCell(0).innerHTML = osaCveMap[key].cveName;
-                                        row.insertCell(1).innerHTML = formatDate(osaCveMap[key].publishDate, "dd-mm-yyyy");
-                                        row.insertCell(2).innerHTML = libraryIdToName[osaCveMap[key].libraryId];
-                                        if (osaCveMap[key].state != null && 'NOT_EXPLOITABLE' === osaCveMap[key].state.name) {
-                                            row.classList.add('osa-cve-strike');
+                                    if(osaEnabled && osaFailed != true) {
+                                        for (var key in osaCveMap) {
+                                            row = table.insertRow(i);
+                                            row.insertCell(0).innerHTML = osaCveMap[key].cveName;
+                                            row.insertCell(1).innerHTML = formatDate(osaCveMap[key].publishDate, "dd-mm-yyyy");
+                                            row.insertCell(2).innerHTML = libraryIdToName[osaCveMap[key].libraryId];
+                                            if (osaCveMap[key].state != null && 'NOT_EXPLOITABLE' === osaCveMap[key].state.name) {
+                                                row.classList.add('osa-cve-strike');
+                                            }
+                                            i++;
                                         }
-                                        i++;
+                                    }else if(scaResults !=null && scaResultReady){
+                                        for (var key in osaCveMap) {
+                                            row = table.insertRow(i);
+                                            row.insertCell(0).innerHTML = osaCveMap[key]._name;
+                                            row.insertCell(1).innerHTML = formatDate(osaCveMap[key]._publishDate, "dd-mm-yyyy");
+                                            row.insertCell(2).innerHTML = osaCveMap[key]._libraryName;
+                                            if (osaCveMap[key]._state != null && 'NOT_EXPLOITABLE' === osaCveMap[key]._state) {
+                                                row.classList.add('osa-cve-strike');
+                                            }
+                                            i++;
+                                        }
                                     }
                                 }
 
