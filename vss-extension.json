@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2020.2.15",
-  "publisher": "checkmarx",
+  "version": "2020.2.84",
+  "publisher": "Checkmarx",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -138,14 +138,14 @@
       }
     },
     {
-      "id": "SCA-Endpoint1",
+      "id": "SCA-Endpoint",
       "description": "Service Endpoint type for all SCA connections",
       "type": "ms.vss-endpoint.service-endpoint-type",
       "targets": [
         "ms.vss-endpoint.endpoint-types"
       ],
       "properties": {
-        "name": "SCA-Endpoint1",
+        "name": "SCA-Endpoint",
         "displayName": "SCA",
         "authenticationSchemes": [
           {
