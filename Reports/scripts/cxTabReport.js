@@ -753,7 +753,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                     //create uniquness by key: cve + libraryId
                                     var osaCveMap = {};
-                                    if(osaEnabled && osaFailed != true ){
+                                    if(osaEnabled && osaFailed != true && severityCveList ){
                                        for (var i = 0; i < severityCveList.length; i++) {
                                            osaCveMap[severityCveList[i].cveName + "," + severityCveList[i].libraryId] = severityCveList[i];
                                        }
