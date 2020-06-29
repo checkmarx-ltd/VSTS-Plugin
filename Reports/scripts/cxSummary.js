@@ -101,6 +101,22 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var osaMedCount = resultObject.osaMediumResults;
                                 var osaLowCount = resultObject.osaLowResults;
 
+                                //-------------------------- sca vars --------------------------------------
+                                var scaResults = resultObject.scaResults;
+                                var scaResultReady = scaResults.resultReady;
+                                var scaHighVulnerability = scaResults.highVulnerability;
+                                var scaMediumVulnerability = scaResults.mediumVulnerability;
+                                var scaLowVulnerability = scaResults.lowVulnerability;
+                                var scaSummaryLink = scaResults.summaryLink;
+                                var scaVulnerableAndOutdated = scaResults.vulnerableAndOutdated;
+                                var scaNonVulnerableLibraries = scaResults.nonVulnerableLibraries;
+                                var scaScanStartTime = scaResults.scanStartTime;
+                                var scaScanEndTime = scaResults.scanEndTime;
+                                var scaDependencyHighCVEReportTable =scaResults.dependencyHighCVEReportTable;
+                                var scaDependencyMediumCVEReportTable = scaResults.dependencyMediumCVEReportTable;
+                                var scaDependencyLowCVEReportTable = scaResults.dependencyLowCVEReportTable;
+                                var scaTotalLibraries = scaResults.totalLibraries;
+
 
                                 //-------------------------- html vars --------------------------------------
                                 var thresholdExceededHtml =
@@ -185,12 +201,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             }
                                         }
                                     }
-                                    else {
-                                        document.getElementById("onSastError").setAttribute("style", "display:block");
-                                        document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
-                                    }
 
-                                    //---------------------------------------------------------- osa ---------------------------------------------------------------
+
+                                    //---------------------------------------------------------- osa & sca  ---------------------------------------------------------------
                                     if (osaEnabled == true && osaFailed != true) {
                                         try {
                                             document.getElementById("osa-summary").setAttribute("style", "display:block");
@@ -266,7 +279,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("onSastError").setAttribute("style", "display:block");
                                         document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
                                     } else {
-                                        var asyncModeMessage = "Scan was run in Asynchronous mode";
+                                        var asyncModeMessage = "The scan is running in asynchronous mode. Once completed, the link to the results can be found in the log.";
                                         var asyncDiv = document.getElementById("asyncMessage");
                                         asyncDiv.innerHTML = asyncModeMessage;
                                         asyncDiv.setAttribute("style", "display:block");
