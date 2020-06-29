@@ -6,7 +6,7 @@ set INPUT_CheckmarxService=endpointId
 set ENDPOINT_URL_endpointId=http://10.32.4.137
 set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=***REMOVED***
 set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=***REMOVED***
-set BUILD_SOURCESDIRECTORY=C:\Checkmarx\Cx-Client-Common
+set BUILD_SOURCESDIRECTORY=C:\Checkmarx\powershellPlugin
 set INPUT_ENABLESASTSCAN=false
 set INPUT_PROJECTNAME=newOne12
 set INPUT_FULLTEAMNAME=\CxServer
@@ -32,7 +32,7 @@ set ENDPOINT_URL_endpointIdSCA=https://api.scacheckmarx.com
 set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_USERNAME=***REMOVED***
 set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_PASSWORD=***REMOVED***
 set ENDPOINT_AUTH_SCHEME_endpointIdSCA=UsernamePassword
-set INPUT_DEPENDENCYACCESSCONTROLURL=https://v2.ac-checkmarx.com/
+set INPUT_DEPENDENCYACCESSCONTROLURL=https://platform.checkmarx.net
 set INPUT_DEPENDENCYWEBAPPURL=https://sca.scacheckmarx.com
 set INPUT_DEPENDENCYTENANT=plugins
 set Endpoint
