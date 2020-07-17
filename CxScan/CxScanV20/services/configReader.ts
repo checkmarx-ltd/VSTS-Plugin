@@ -1,10 +1,7 @@
 import taskLib = require('azure-pipelines-task-lib/task');
-import {Logger} from "@checkmarx/cx-common-js-client";
-import {ScanConfig} from "@checkmarx/cx-common-js-client";
-import {TeamApiClient} from "@checkmarx/cx-common-js-client";
-import {ScaConfig} from "@checkmarx/cx-common-js-client"
-import {SourceLocationType} from "@checkmarx/cx-common-js-client"
+import {Logger, ScaConfig, ScanConfig, SourceLocationType, TeamApiClient} from "@checkmarx/cx-common-js-client";
 import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
+
 export class ConfigReader {
     constructor(private readonly log: Logger) {
     }
@@ -15,8 +12,7 @@ export class ConfigReader {
         if (typeof rawValue !== 'undefined') {
             if (rawValue == null) {
                 result = NaN;
-            }
-            else {
+            } else {
                 result = +rawValue;
             }
         }
@@ -28,8 +24,8 @@ export class ConfigReader {
 
         this.log.debug('Reading configuration.');
 
-        const sastEnabled = taskLib.getBoolInput('enableSastScan',false);
-        const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan',false);
+        const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
+        const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
 
         let endpointId;
         let authScheme;
@@ -37,17 +33,16 @@ export class ConfigReader {
         let sastUsername;
         let sastPassword;
 
-        if(sastEnabled){
+        if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
             authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false) || undefined;
             if (authScheme !== SUPPORTED_AUTH_SCHEME) {
                 throw Error(`The authorization scheme ${authScheme} is not supported for a CX server.`);
             }
-            sastServerUrl= taskLib.getEndpointUrl(endpointId, false) || '';
-            sastUsername= taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
-            sastPassword= taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
+            sastServerUrl = taskLib.getEndpointUrl(endpointId, false) || '';
+            sastUsername = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
+            sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
         }
-
 
         let endpointIdSCA;
         let authSchemeSCA;
@@ -55,28 +50,23 @@ export class ConfigReader {
         let scaUsername;
         let scaPassword;
 
-        if(dependencyScanEnabled){
+        if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false) || undefined;
             if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
             }
-            scaServerUrl= taskLib.getEndpointUrl(endpointIdSCA,false) || '';
-            scaUsername=  taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'username',false) || '';
-            scaPassword=  taskLib.getEndpointAuthorizationParameter(endpointIdSCA,'password',false) || '';
+            scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
+            scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
+            scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
         }
 
         //TODO: remove SCA stuff from comment once its decided to use SCA in VSTS.
-
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
             throw Error('Sources directory is not provided.');
         }
-
-
-
-
 
         const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
 
@@ -91,19 +81,19 @@ export class ConfigReader {
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
         const scaResult: ScaConfig = {
-            accessControlUrl: taskLib.getInput('dependencyAccessControlURL',false) || '',
+            accessControlUrl: taskLib.getInput('dependencyAccessControlURL', false) || '',
             apiUrl: scaServerUrl || '',
             username: scaUsername || '',
             password: scaPassword || '',
-            tenant: taskLib.getInput('dependencyTenant',false) || '',
-            webAppUrl: taskLib.getInput('dependencyWebAppURL',false) || '',
-            dependencyFileExtension: taskLib.getInput('dependencyFileExtension',false) || '',
-            dependencyFolderExclusion:taskLib.getInput('dependencyFolderExclusion',false) || '',
+            tenant: taskLib.getInput('dependencyTenant', false) || '',
+            webAppUrl: taskLib.getInput('dependencyWebAppURL', false) || '',
+            dependencyFileExtension: taskLib.getInput('dependencyFileExtension', false) || '',
+            dependencyFolderExclusion: taskLib.getInput('dependencyFolderExclusion', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
-            vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold',false) || false,
-            highThreshold: ConfigReader.getNumericInput('scaHigh') || undefined,
-            mediumThreshold: ConfigReader.getNumericInput('scaMedium') || undefined,
-            lowThreshold: ConfigReader.getNumericInput('scaLow') || undefined
+            vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold', false) || false,
+            highThreshold: ConfigReader.getNumericInput('scaHigh'),
+            mediumThreshold: ConfigReader.getNumericInput('scaMedium'),
+            lowThreshold: ConfigReader.getNumericInput('scaLow')
 
         };
         const sastResult: SastConfig = {
@@ -120,21 +110,21 @@ export class ConfigReader {
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
             vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false) || false,
-            highThreshold: ConfigReader.getNumericInput('high') || undefined,
-            mediumThreshold: ConfigReader.getNumericInput('medium') || undefined,
-            lowThreshold: ConfigReader.getNumericInput('low') || undefined,
+            highThreshold: ConfigReader.getNumericInput('high'),
+            mediumThreshold: ConfigReader.getNumericInput('medium'),
+            lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: false,
             isPublic: true
         };
 
         const result: ScanConfig = {
-            enableSastScan: taskLib.getBoolInput('enableSastScan',false),
-            enableDependencyScan:taskLib.getBoolInput('enableDependencyScan',false),
+            enableSastScan: taskLib.getBoolInput('enableSastScan', false),
+            enableDependencyScan: taskLib.getBoolInput('enableDependencyScan', false),
             scaConfig: scaResult,
             sastConfig: sastResult,
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             sourceLocation,
-            cxOrigin:'VSTS',
+            cxOrigin: 'VSTS',
             projectName: taskLib.getInput('projectName', false) || '',
         };
         this.format(result);
@@ -146,7 +136,7 @@ export class ConfigReader {
     private format(config: ScanConfig): void {
         const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
-        if(config.enableSastScan && config.sastConfig!=null){
+        if (config.enableSastScan && config.sastConfig != null) {
             this.log.info(`
 -------------------------------CxSAST Configurations:--------------------------------
 URL: ${config.sastConfig.serverUrl}
@@ -177,7 +167,7 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
     private formatSCA(config: ScanConfig): void {
         const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
-        if(config.enableDependencyScan && config.scaConfig!=null ){
+        if (config.enableDependencyScan && config.scaConfig != null) {
             this.log.info(`
 -------------------------------SCA Configurations:--------------------------------
 AccessControl: ${config.scaConfig.accessControlUrl}
@@ -188,13 +178,13 @@ Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 `);
-            if(config.scaConfig.vulnerabilityThreshold){
+            if (config.scaConfig.vulnerabilityThreshold) {
                 this.log.info(`High Threshold: ${config.scaConfig.highThreshold}
 Medium Threshold: ${config.scaConfig.mediumThreshold}
 Low Threshold: ${config.scaConfig.lowThreshold}`)
             }
             this.log.info('------------------------------------------------------------------------------');
         }
-
     }
+
 }
