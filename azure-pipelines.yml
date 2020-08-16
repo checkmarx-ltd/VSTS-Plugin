@@ -21,14 +21,14 @@ steps:
 
 - task: Npm@1
   inputs:
-    command: 'install'
-    customCommand: '--no-optional'
+    command: 'custom'
+    customCommand: 'install --no-optional'
     workingDir: $(nodejsAppDir19)
 
 - task: Npm@1
   inputs:
-    command: 'install'
-    customCommand: '--no-optional'
+    command: 'custom'
+    customCommand: 'install --no-optional'
     workingDir: $(nodejsAppDir20)
 
 - task: Npm@1
