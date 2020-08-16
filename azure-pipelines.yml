@@ -58,7 +58,14 @@ steps:
 - task: CmdLine@2
   inputs:
     script: 'npm install --no-optional'
-  displayName: 'npm install'
+  displayName: 'npm install (plugin version 19)'
+  workingDirectory: $(nodejsAppDir19)
+
+- task: CmdLine@2
+  inputs:
+    script: 'npm install --no-optional'
+  displayName: 'npm install (plugin version 20)'
+  workingDirectory: $(nodejsAppDir20)
 
 - task: CmdLine@2
   inputs:
