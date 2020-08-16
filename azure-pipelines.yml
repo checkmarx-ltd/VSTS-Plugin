@@ -57,7 +57,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'npm install'
+    script: 'npm install --no-optional'
   displayName: 'npm install'
 
 - task: CmdLine@2
