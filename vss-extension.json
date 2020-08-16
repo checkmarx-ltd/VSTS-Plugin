@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2020.3.3",
+  "version": "2020.3.5",
   "publisher": "MajdPublisher",
   "targets": [
     {
