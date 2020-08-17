@@ -21,12 +21,14 @@ steps:
 
 - task: Npm@1
   inputs:
-    command: 'install'
+    command: 'custom'
+    customCommand: 'install --no-optional'
     workingDir: $(nodejsAppDir19)
 
 - task: Npm@1
   inputs:
-    command: 'install'
+    command: 'custom'
+    customCommand: 'install --no-optional'
     workingDir: $(nodejsAppDir20)
 
 - task: Npm@1
@@ -54,11 +56,6 @@ steps:
 - task: TfxInstaller@2
   inputs:
     version: 'v0.6.x'
-
-- task: CmdLine@2
-  inputs:
-    script: 'npm install'
-  displayName: 'npm install'
 
 - task: CmdLine@2
   inputs:
