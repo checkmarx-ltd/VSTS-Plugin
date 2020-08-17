@@ -2306,7 +2306,6 @@
     this.handler = function(stream, bite) {
       // switching on iso-2022-jp decoder state:
       switch (iso2022jp_decoder_state) {
-      default:
       case states.ASCII:
         // ASCII
         // Based on byte:
@@ -2575,6 +2574,7 @@
         iso2022jp_output_flag = false;
         iso2022jp_decoder_state = iso2022jp_decoder_output_state;
         return decoderError(fatal);
+        default:
       }
     };
   }
