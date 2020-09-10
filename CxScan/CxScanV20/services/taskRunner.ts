@@ -7,7 +7,6 @@ import {CxClient} from "@checkmarx/cx-common-js-client";
 import {ScanResults} from "@checkmarx/cx-common-js-client";
 import {TaskSkippedError} from "@checkmarx/cx-common-js-client";
 import {Logger} from "@checkmarx/cx-common-js-client";
-import {ScaClient} from "@checkmarx/cx-common-js-client/dist/services/clients/scaClient";
 import * as path from "path";
 
 export class TaskRunner {
