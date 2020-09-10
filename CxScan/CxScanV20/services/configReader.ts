@@ -165,8 +165,6 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
     }
 
     private formatSCA(config: ScanConfig): void {
-        const formatOptionalString = (input: string) => input || 'none';
-        const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
         if (config.enableDependencyScan && config.scaConfig != null) {
             this.log.info(`
 -------------------------------SCA Configurations:--------------------------------
