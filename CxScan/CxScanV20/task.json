@@ -51,6 +51,14 @@
       "helpMarkDown": "Enabling this option causes the build step to wait for scan results. You can follow the scan results in the Checkmarx plug-in results window. If disabled, the results are displayed inside the Checkmarx web application and available as a link in the logs once the scan is complete. The Sync/Async mode is configured globally for both SAST and SCA scans."
     },
     {
+      "name": "enableProxy",
+      "type": "boolean",
+      "label": "Enable proxy",
+      "required": true,
+      "helpMarkDown": "Check in order to activate proxy use",
+      "defaultValue": true
+    },
+    {
       "name": "enableSastScan",
       "type": "boolean",
       "label": "Enable SAST scan",
