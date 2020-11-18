@@ -86,13 +86,14 @@ export class ConfigReader {
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
 /*        const jobName = taskLib.getVariable('System.TeamProject');
         const buildId = taskLib.getVariable('Build.BuildId');
-        const buildVeriosn = taskLib.getVariable('Build.DefinitionVersion');*/
-        let jobOrigin;
-
-        if(collectionURI && collectionURI.includes(this.devAzure)){
-            jobOrigin = this.devAzure;
-        }else{
-            jobOrigin = 'TFS';
+        const build Version = taskLib.getVariable('Build.DefinitionVersion');*/
+        let jobOrigin='';
+        if(collectionURI){
+            if(collectionURI.includes(this.devAzure)){
+                jobOrigin = this.devAzure;
+            }else{
+                jobOrigin = this.getHostNameFromURL(collectionURI);
+            }
         }
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
@@ -172,6 +173,8 @@ export class ConfigReader {
         this.formatSCA(result);
         this.formatProxy(result);
 
+        this.log.info(this.getHostNameFromURL('http://tfs2019plugin:81/CxAutomationTests/MajdTests/_build/results?buildId=4868&_a=summary'));
+
         return result;
     }
 
@@ -237,5 +240,15 @@ Proxy username: ${config.proxyConfig.proxyUser}
 Proxy Pass: ******`);
         }
         this.log.info('------------------------------------------------------------------------------');
+    }
+
+    private getHostNameFromURL(path:string):string{
+        let URL = require('url').URL;
+        let host = new URL(path).host;
+        //remove : for port if found
+        if(host.includes(':')){
+            host = host.substring(0,host.indexOf(':'));
+        }
+        return host;
     }
 }
