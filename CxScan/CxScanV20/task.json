@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 2020,
-    "Minor": 3,
-    "Patch": 11
+    "Minor": 4,
+    "Patch": 5
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -131,7 +131,7 @@
       "label": "Incremental Scan",
       "required": false,
       "defaultValue": "true",
-      "helpMarkDown": "Set true for incremental scan. If no scan was done aeyet, the scan will be a full scan and the following ones will be incremental.",
+      "helpMarkDown": "Set true for incremental scan. If no scan was done yet, the scan will be a full scan and the following ones will be incremental.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
