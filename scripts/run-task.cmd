@@ -2,8 +2,10 @@ pushd %~dp0..\CxScan\CxScanV20
 
 call tsc
 
+set INPUT_ENABLEPROXY=false
+
 set INPUT_CheckmarxService=endpointId
-set ENDPOINT_URL_endpointId=http://10.32.4.137
+set ENDPOINT_URL_endpointId=http://10.32.11.96
 set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=admin@cx
 set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=Cx123456!
 set BUILD_SOURCESDIRECTORY=C:\Checkmarx\powershellPlugin
