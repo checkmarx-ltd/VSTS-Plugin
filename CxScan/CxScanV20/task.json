@@ -12,7 +12,7 @@
   "version": {
     "Major": 2020,
     "Minor": 4,
-    "Patch": 2
+    "Patch": 5
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -49,6 +49,14 @@
       "required": false,
       "defaultValue": true,
       "helpMarkDown": "Enabling this option causes the build step to wait for scan results. You can follow the scan results in the Checkmarx plug-in results window. If disabled, the results are displayed inside the Checkmarx web application and available as a link in the logs once the scan is complete. The Sync/Async mode is configured globally for both SAST and SCA scans."
+    },
+    {
+      "name": "enableProxy",
+      "type": "boolean",
+      "label": "Enable proxy",
+      "required": true,
+      "helpMarkDown": "Check in order to activate proxy use",
+      "defaultValue": true
     },
     {
       "name": "enableSastScan",
@@ -131,7 +139,7 @@
       "label": "Incremental Scan",
       "required": false,
       "defaultValue": "true",
-      "helpMarkDown": "Set true for incremental scan. If no scan was done aeyet, the scan will be a full scan and the following ones will be incremental.",
+      "helpMarkDown": "Set true for incremental scan. If no scan was done yet, the scan will be a full scan and the following ones will be incremental.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
