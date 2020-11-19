@@ -84,9 +84,7 @@ export class ConfigReader {
         }
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
-/*        const jobName = taskLib.getVariable('System.TeamProject');
-        const buildId = taskLib.getVariable('Build.BuildId');
-        const build Version = taskLib.getVariable('Build.DefinitionVersion');*/
+
         let jobOrigin='';
         if(collectionURI){
             if(collectionURI.includes(this.devAzure)){
@@ -173,8 +171,6 @@ export class ConfigReader {
         this.formatSCA(result);
         this.formatProxy(result);
 
-        this.log.info(this.getHostNameFromURL('http://tfs2019plugin:81/CxAutomationTests/MajdTests/_build/results?buildId=4868&_a=summary'));
-
         return result;
     }
 
@@ -243,12 +239,13 @@ Proxy Pass: ******`);
     }
 
     private getHostNameFromURL(path:string):string{
-        let URL = require('url').URL;
-        let host = new URL(path).host;
+/*        let URL = require('url').URL;
+        let host = (new URL(path)).host;*/
         //remove : for port if found
-        if(host.includes(':')){
-            host = host.substring(0,host.indexOf(':'));
+        path = path.split("//").slice(-1)[0].split(":")[0].split('.').slice(-2).join('.');
+        if(path.includes(':')){
+            path = path.substring(0,path.indexOf(':'));
         }
-        return host;
+        return path;
     }
 }
