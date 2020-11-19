@@ -144,6 +144,16 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "forceScan",
+      "type": "boolean",
+      "label": "Force Scan",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Enabling 'force scan' will force the engine to trigger new full scan.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true && incScan != true"
+    },
+    {
       "name": "folderExclusion",
       "type": "string",
       "label": "Folder Exclusion",
