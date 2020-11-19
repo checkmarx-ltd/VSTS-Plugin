@@ -144,7 +144,7 @@ export class ConfigReader {
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
-            forceScan: false,
+            forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false) )|| false,
             isPublic: true
         };
 
@@ -187,7 +187,7 @@ Full team path: ${config.sastConfig.teamName}
 Preset name: ${config.sastConfig.presetName}
 Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
-
+Force scan : ${config.sastConfig.forceScan}
 Is incremental scan: ${config.sastConfig.isIncremental}
 Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}

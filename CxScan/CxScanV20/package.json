@@ -12,8 +12,8 @@
   "dependencies": {
     "@checkmarx/cx-common-js-client": "^0.1.46",
     "azure-pipelines-task-lib": "^2.8.0",
-    "tmp": "^0.1.0",
-    "superagent": "^5.1.0"
+    "superagent": "^5.1.0",
+    "tmp": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^6.14.7",
