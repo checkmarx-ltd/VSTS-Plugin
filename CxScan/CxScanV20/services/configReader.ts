@@ -1,8 +1,16 @@
 import taskLib = require('azure-pipelines-task-lib/task');
-import {Logger, ScaConfig, ScanConfig, SourceLocationType, TeamApiClient} from "@checkmarx/cx-common-js-client";
+import {
+    Logger,
+    ProxyConfig,
+    ScaConfig,
+    ScanConfig,
+    SourceLocationType,
+    TeamApiClient
+} from "@checkmarx/cx-common-js-client";
 import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
 
 export class ConfigReader {
+    private readonly devAzure= 'dev.azure.com';
     constructor(private readonly log: Logger) {
     }
 
@@ -26,6 +34,7 @@ export class ConfigReader {
 
         const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
         const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
+        const proxyEnabled = taskLib.getBoolInput('enableproxy',false);
 
         let endpointId;
         let authScheme;
@@ -61,7 +70,29 @@ export class ConfigReader {
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
         }
 
-        //TODO: remove SCA stuff from comment once its decided to use SCA in VSTS.
+        let proxy;
+
+        if(proxyEnabled){
+            proxy = taskLib.getHttpProxyConfiguration();
+            if(proxy){
+                if(!proxy.proxyUrl || proxy.proxyUrl ==''){
+                    this.log.warning('proxy mode is enabled but no proxy settings are defined');
+                }
+            }else{
+                this.log.warning('proxy mode is enabled but no proxy settings are defined');
+            }
+        }
+        //Create Job Link
+        const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
+
+        let jobOrigin='';
+        if(collectionURI){
+            if(collectionURI.includes(this.devAzure)){
+                jobOrigin = this.devAzure;
+            }else{
+                jobOrigin = this.getHostNameFromURL(collectionURI);
+            }
+        }
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -117,18 +148,28 @@ export class ConfigReader {
             isPublic: true
         };
 
+        const proxyResult: ProxyConfig ={
+            proxyHost: proxy?proxy.proxyUrl:'',
+            proxyPass: proxy?proxy.proxyPassword:'',
+            proxyPort: '',
+            proxyUser: proxy?proxy.proxyUsername:''
+        };
+
         const result: ScanConfig = {
             enableSastScan: taskLib.getBoolInput('enableSastScan', false),
             enableDependencyScan: taskLib.getBoolInput('enableDependencyScan', false),
+            enableProxy: taskLib.getBoolInput('enableproxy',false),
             scaConfig: scaResult,
             sastConfig: sastResult,
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             sourceLocation,
-            cxOrigin: 'VSTS',
+            cxOrigin: jobOrigin,
             projectName: taskLib.getInput('projectName', false) || '',
+            proxyConfig: proxyResult
         };
         this.format(result);
         this.formatSCA(result);
+        this.formatProxy(result);
 
         return result;
     }
@@ -185,4 +226,26 @@ Low Threshold: ${config.scaConfig.lowThreshold}`)
         }
     }
 
+    private formatProxy(config: ScanConfig): void {
+        this.log.info(`
+-------------------------------Proxy Configurations:--------------------------------
+Proxy Enabled: ${config.enableProxy}`);
+        if(config.enableProxy && config.proxyConfig != null){
+        this.log.info(`Proxy URL: ${config.proxyConfig.proxyHost}
+Proxy username: ${config.proxyConfig.proxyUser}
+Proxy Pass: ******`);
+        }
+        this.log.info('------------------------------------------------------------------------------');
+    }
+
+    private getHostNameFromURL(path:string):string{
+/*        let URL = require('url').URL;
+        let host = (new URL(path)).host;*/
+        //remove : for port if found
+        path = path.split("//").slice(-1)[0].split(":")[0].split('.').slice(-2).join('.');
+        if(path.includes(':')){
+            path = path.substring(0,path.indexOf(':'));
+        }
+        return path;
+    }
 }
