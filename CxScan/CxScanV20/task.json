@@ -12,7 +12,7 @@
   "version": {
     "Major": 2020,
     "Minor": 4,
-    "Patch": 1
+    "Patch": 2
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -134,6 +134,16 @@
       "helpMarkDown": "Set true for incremental scan. If no scan was done aeyet, the scan will be a full scan and the following ones will be incremental.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "forceScan",
+      "type": "boolean",
+      "label": "Force Scan",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Enabling 'force scan' will force the engine to trigger new full scan.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true && incScan != true"
     },
     {
       "name": "folderExclusion",
