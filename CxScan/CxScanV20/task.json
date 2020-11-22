@@ -12,7 +12,7 @@
   "version": {
     "Major": 2020,
     "Minor": 4,
-    "Patch": 7
+    "Patch": 8
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -55,8 +55,8 @@
       "type": "boolean",
       "label": "Enable proxy",
       "required": true,
-      "helpMarkDown": "Check in order to activate proxy use",
-      "defaultValue": true
+      "helpMarkDown": "Check box for adding the ability to enable/disable proxy use. (Proxy Settings are configured on the agent level).",
+      "defaultValue": false
     },
     {
       "name": "enableSastScan",
