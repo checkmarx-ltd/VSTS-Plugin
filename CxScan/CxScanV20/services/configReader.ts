@@ -235,7 +235,7 @@ Proxy Enabled: ${config.enableProxy}`);
             this.log.info(`Proxy URL: ${config.proxyConfig.proxyHost}`);
             if(config.proxyConfig.proxyUser!='' && config.proxyConfig.proxyUser!=null){
                 this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
-                    Proxy Pass: ******`);
+Proxy Pass: ******`);
             }
         }
         this.log.info('------------------------------------------------------------------------------');
