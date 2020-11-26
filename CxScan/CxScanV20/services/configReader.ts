@@ -231,17 +231,17 @@ Low Threshold: ${config.scaConfig.lowThreshold}`)
         this.log.info(`
 -------------------------------Proxy Configurations:--------------------------------
 Proxy Enabled: ${config.enableProxy}`);
-        if (config.enableProxy && config.proxyConfig != null) {
-            this.log.info(`Proxy URL: ${config.proxyConfig.proxyHost}
-Proxy username: ${config.proxyConfig.proxyUser}
+        if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyHost!= '' && config.proxyConfig.proxyHost!=null) {
+            this.log.info(`Proxy URL: ${config.proxyConfig.proxyHost}`);
+            if(config.proxyConfig.proxyUser!='' && config.proxyConfig.proxyUser!=null){
+                this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
 Proxy Pass: ******`);
+            }
         }
         this.log.info('------------------------------------------------------------------------------');
     }
 
     private getHostNameFromURL(path: string): string {
-        /*        let URL = require('url').URL;
-                let host = (new URL(path)).host;*/
         //remove : for port if found
         path = path.split("//").slice(-1)[0].split(":")[0].split('.').slice(-2).join('.');
         if (path.includes(':')) {
