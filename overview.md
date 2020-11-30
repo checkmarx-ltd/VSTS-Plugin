@@ -29,7 +29,7 @@ Enhancing your code portfolio risk assessment coverage is merely a few mouse cli
 No time is wasted on trying to understand the required actions items to mitigate the detected security or compliance risk.
 
 
-![image](images/summaryTab.PNG)
+![image](images/resultsTab.PNG)
 
 
 
@@ -70,33 +70,40 @@ The following steps are required to get started.
 
 #Configure Checkmarx Build Step
 
-![image](images/config.PNG)
+![image](images/configNew.PNG)
 
 **To complete this step:**
 
-1.	CxServer
-    a.	Select a Checkmarx Endpoint from the drop-down list or click Manage to associate a new Endpoint (described in the next section).
-    b.	Enter a Project Name: Either select an existing project from the list, or type in any name to create a new scan project
-    c.	Preset - predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets.
-    d.	Team – which group the project is associated
-    e.	Enable the Incremental Scan checkbox if you want to reduce time between scans
-    f.	Enter how often a full scan is executed between incremental scans
-    g.	Folder Exclusions – comma delimited list of the folders to exclude from the scan
-    h.	File Exclusions – comma delimited list of the file extensions to exclude from the scan
-    i.	Synchronous Mode – enabling this option will cause the build step to wait for scan results, you can see the scan results inside the Checkmarx plug-in results window. If disabled, the results are only displayed inside the Checkmarx web-application.
-    j.	Vulnerability Threshold – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
-2.	Control options
-    a.	Enabled - Clear this check box if you want to disable a step. This is a handy option if a step is not working correctly or if you need to focus on other parts of the process.
-    b.	Continue on error - If an error occurs in this step, and this check box is:
-      1.	Cleared: The build fails and no subsequent steps are run.
-      2.	Selected: The build will be partially successful at best, and the next step is run
-      3.	Always run – control option is enabled for the rollback task, so that the script can get executed when any of the tasks in the job fail.
-    c.	Scan Timeout (minutes) – enter the number of minutes to allow the scan to run before timing out.
+1. Checkmarx Scans
+	a.	Enter a Project Name: Either select an existing project from the list, or type in any name to create a new scan project
+	b.	Synchronous Mode – enabling this option will cause the build step to wait for scan results, you can see the scan results inside the Checkmarx plug-in results window. If disabled, the results are only displayed inside the Checkmarx web-application.
+	c.	enable proxy - enabling this option will cause the build to use the proxy settings in the build. Proxy Settings are configured on the agent level.
 
-3.  CxOSA Scan
-    a.  CxOSA Folder Exclusions - comma delimited list of the folders to exclude from the scan
-    b.  CxOSA Include/Exclude wildcard patterns - Comma separated list of include or exclude wildcard patterns
-    c.  CxOSA Archive Extract Extensions - Comma separated list of archive wildcard patterns to include their extracted content for the scan.
+2.  Checkmarx SAST Scan
+	a.	enable SAST scan - enabling this option will config a CxSAST scan in the build.
+	b.	Select a Checkmarx Endpoint from the drop-down list or click Manage to associate a new Endpoint (described in the next section).
+	c.	Preset - predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can custom your own. You can also import and export presets.
+	d.	Team – which group the project is associated
+	e.	Enable the Incremental Scan checkbox if you want to reduce time between scans
+	f.	Folder Exclusions – comma delimited list of the folders to exclude from the scan
+	g.	File Exclusions – comma delimited list of the file extensions to exclude from the scan
+	h.	Enter how often a full scan is executed between incremental scans
+	i.	Deny new projects creation- Enabling this option will prohibit creation of new projects in Checkmarx or assigning an existing project to a different team. 
+	j.	Vulnerability Threshold – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
+
+3. Checkmarx SCA Scan: 
+
+![image](images/scaConfig.PNG)
+
+	a.	Enable Dependency Scan- Check to initiate the Dependency scan for this project/job.
+	b.	CxSCA Server URL - the CxSCA API endpoint. This address must be accessible to the node that runs the plugin. The scanned code is delivered to this address for analysis as part of the scan workflow.
+	c.	CxSCA Access Control URL - this address must be accessible to the node that runs the plugin.
+	d.	CxSCA Web App URL - this address must not be accessible to the node that runs the plugin. It is used for report links.
+	e.	CxSCA Account of your CxSCA credentials
+	f.	Includes/Exclude wildcard patterns- Comma separated list of include or exclude wildcard patterns.
+	g.	Folder Exclusion - Comma separated list of folders to be excluded from the scan.
+	h.	Enable CxSCA Vulnerability Thresholds – Available only if Synchronous mode is enabled. Set the maximum number of vulnerabilities allowable before the scan fails
+
 
 
 #Setup New Checkmarx End-Point
@@ -109,3 +116,16 @@ The following steps are required to get started.
 3.	Enter Username – is provided by Checkmarx following registration
 4.	Enter Password – is provided by Checkmarx following registration
 5.	Click OK to continue
+
+
+#Setup New SCA service connection End-Point
+
+![image](images/scaService.PNG)
+
+**To complete this step:**
+1.	Enter Server URL – URL is provided by Checkmarx following registration
+2.	Enter Username – is provided by Checkmarx following registration
+3.	Enter Password – is provided by Checkmarx following registration
+4.	Enter service connection Name – Free text, for example: Checkmarx SCA
+5.	Enter Description - optional.
+6.	Click Save to continue
