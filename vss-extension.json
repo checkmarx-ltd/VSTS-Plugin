@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "2020.4.11",
-  "publisher": "majdmahajenah",
+  "publisher": "majdpublisher",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
