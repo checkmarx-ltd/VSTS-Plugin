@@ -3,13 +3,13 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "2020.4.10",
-  "publisher": "checkmarxdev",
+  "publisher": "Checkmarx",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "public": false,
+  "public": true,
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
     "default": "images/extension-icon.png"
@@ -77,6 +77,22 @@
     },
     {
       "path": "images/summaryTab.PNG",
+      "addressable": true
+    },
+    {
+      "path": "images/resultsTab.png",
+      "addressable": true
+    },
+    {
+      "path": "images/configNew.png",
+      "addressable": true
+    },
+    {
+      "path": "images/scaConfig.png",
+      "addressable": true
+    },
+    {
+      "path": "images/scaService.png",
       "addressable": true
     },
     {
