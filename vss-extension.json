@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2020.4.10",
-  "publisher": "checkmarxdev",
+  "version": "2020.4.11",
+  "publisher": "majdmahajenah",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -77,6 +77,22 @@
     },
     {
       "path": "images/summaryTab.PNG",
+      "addressable": true
+    },
+    {
+      "path": "images/resultsTab.png",
+      "addressable": true
+    },
+    {
+      "path": "images/configNew.png",
+      "addressable": true
+    },
+    {
+      "path": "images/scaConfig.png",
+      "addressable": true
+    },
+    {
+      "path": "images/scaService.png",
       "addressable": true
     },
     {
