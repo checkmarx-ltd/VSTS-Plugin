@@ -5,9 +5,9 @@ call tsc
 set INPUT_ENABLEPROXY=false
 
 set INPUT_CheckmarxService=endpointId
-set ENDPOINT_URL_endpointId=***REMOVED***
-set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=***REMOVED***
-set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=***REMOVED***
+set ENDPOINT_URL_endpointId=URL
+set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=user
+set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=pass
 set BUILD_SOURCESDIRECTORY=C:\Checkmarx\powershellPlugin
 set INPUT_ENABLESASTSCAN=false
 set INPUT_PROJECTNAME=newOne12
@@ -30,13 +30,13 @@ set ENDPOINT
 
 set INPUT_ENABLEDEPENDENCYSCAN=true
 set INPUT_dependencyServerURL=endpointIdSCA
-set ENDPOINT_URL_endpointIdSCA=https://api.scacheckmarx.com
-set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_USERNAME=***REMOVED***
-set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_PASSWORD=***REMOVED***
+set ENDPOINT_URL_endpointIdSCA=scaapi
+set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_USERNAME=user
+set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_PASSWORD=pass
 set ENDPOINT_AUTH_SCHEME_endpointIdSCA=UsernamePassword
-set INPUT_DEPENDENCYACCESSCONTROLURL=https://platform.checkmarx.net
-set INPUT_DEPENDENCYWEBAPPURL=https://sca.scacheckmarx.com/
-set INPUT_DEPENDENCYTENANT=plugins
+set INPUT_DEPENDENCYACCESSCONTROLURL=scaurl
+set INPUT_DEPENDENCYWEBAPPURL=scaurl
+set INPUT_DEPENDENCYTENANT=tenant
 set Endpoint
 node target\index.js
 

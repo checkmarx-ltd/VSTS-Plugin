@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc"
   },
-  "author": "***REMOVED***",
+  "author": "MajdM",
   "license": "SEE LICENSE IN checkmarx-license-terms.md",
   "dependencies": {
     "@checkmarx/cx-common-js-client": "^0.1.48",
