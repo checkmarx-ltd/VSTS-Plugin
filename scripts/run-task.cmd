@@ -1,0 +1,43 @@
+pushd %~dp0..\CxScan\CxScanV20
+
+call tsc
+
+set INPUT_ENABLEPROXY=false
+
+set INPUT_CheckmarxService=endpointId
+set ENDPOINT_URL_endpointId=URL
+set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=user
+set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=pass
+set BUILD_SOURCESDIRECTORY=C:\Checkmarx\powershellPlugin
+set INPUT_ENABLESASTSCAN=false
+set INPUT_PROJECTNAME=newOne12
+set INPUT_FULLTEAMNAME=\CxServer
+set INPUT_DENYPROJECT=false
+set INPUT_INCSCAN=true
+set INPUT_COMMENT=Greetings from TypeScript
+set ENDPOINT_AUTH_SCHEME_endpointId=UsernamePassword
+set BUILD_DEFINITIONNAME=builddef
+set BUILD_BUILDNUMBER=23
+set INPUT_SYNCMODE=true
+set INPUT_ENABLEPOLICYVIOLATIONS=true
+set INPUT_PRESET=Checkmarx Default
+
+set INPUT_VULNERABILITYTHRESHOLD=false
+set INPUT_HIGH=1
+set INPUT_MEDIUM=1
+set INPUT_LOW=1
+set ENDPOINT
+
+set INPUT_ENABLEDEPENDENCYSCAN=true
+set INPUT_dependencyServerURL=endpointIdSCA
+set ENDPOINT_URL_endpointIdSCA=scaapi
+set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_USERNAME=user
+set ENDPOINT_AUTH_PARAMETER_endpointIdSCA_PASSWORD=pass
+set ENDPOINT_AUTH_SCHEME_endpointIdSCA=UsernamePassword
+set INPUT_DEPENDENCYACCESSCONTROLURL=scaurl
+set INPUT_DEPENDENCYWEBAPPURL=scaurl
+set INPUT_DEPENDENCYTENANT=tenant
+set Endpoint
+node target\index.js
+
+popd
