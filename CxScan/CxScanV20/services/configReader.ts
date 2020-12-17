@@ -89,9 +89,9 @@ export class ConfigReader {
         let jobOrigin = '';
         if (collectionURI) {
             if (collectionURI.includes(this.devAzure)) {
-                jobOrigin = 'ADO - ' + this.devAzure;
+                jobOrigin = 'ADO';
             } else {
-                jobOrigin = 'TFS - ' + this.getHostNameFromURL(collectionURI);
+                jobOrigin = 'TFS';
             }
         }
 
@@ -231,9 +231,9 @@ Low Threshold: ${config.scaConfig.lowThreshold}`)
         this.log.info(`
 -------------------------------Proxy Configurations:--------------------------------
 Proxy Enabled: ${config.enableProxy}`);
-        if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyHost!= '' && config.proxyConfig.proxyHost!=null) {
+        if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyHost != '' && config.proxyConfig.proxyHost != null) {
             this.log.info(`Proxy URL: ${config.proxyConfig.proxyHost}`);
-            if(config.proxyConfig.proxyUser!='' && config.proxyConfig.proxyUser!=null){
+            if (config.proxyConfig.proxyUser != '' && config.proxyConfig.proxyUser != null) {
                 this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
 Proxy Pass: ******`);
             }
