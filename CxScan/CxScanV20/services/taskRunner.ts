@@ -107,7 +107,7 @@ export class TaskRunner {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve();
+                    resolve(jsonReportPath);
                 }
             });
         });
