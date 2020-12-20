@@ -91,7 +91,7 @@ export class ConfigReader {
             if (collectionURI.includes(this.devAzure)) {
                 jobOrigin = 'ADO - ' + this.devAzure;
             } else {
-                jobOrigin = 'TFS - ' + this.getHostNameFromURL(collectionURI);
+                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI);
             }
         }
 
@@ -241,12 +241,12 @@ Proxy Pass: ******`);
         this.log.info('------------------------------------------------------------------------------');
     }
 
-    private getHostNameFromURL(path: string): string {
-        //remove : for port if found
-        path = path.split("//").slice(-1)[0].split(":")[0].split('.').slice(-2).join('.');
-        if (path.includes(':')) {
-            path = path.substring(0, path.indexOf(':'));
+    private static getHostNameFromURL(path: string): string {
+        let url = new URL(path);
+        let host =  url.hostname;
+        if(host.length>43){
+            host = host.substring(0,43);
         }
-        return path;
+        return host;
     }
 }
