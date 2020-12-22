@@ -8,6 +8,7 @@ import {
     TeamApiClient
 } from "@checkmarx/cx-common-js-client";
 import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
+import { URL } from "url";
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
