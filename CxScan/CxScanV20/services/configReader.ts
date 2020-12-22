@@ -8,7 +8,7 @@ import {
     TeamApiClient
 } from "@checkmarx/cx-common-js-client";
 import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
-import { URL } from "url";
+import * as url from "url";
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
@@ -243,8 +243,10 @@ Proxy Pass: ******`);
     }
 
     private static getHostNameFromURL(path: string): string {
-        let url = new URL(path);
-        let host =  url.hostname;
+        let host = url.parse(path).hostname;
+        if(!host){
+            return '';
+        }
         if(host.length>43){
             host = host.substring(0,43);
         }
