@@ -8,6 +8,7 @@ import {
     TeamApiClient
 } from "@checkmarx/cx-common-js-client";
 import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
+import * as url from "url";
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
@@ -89,9 +90,9 @@ export class ConfigReader {
         let jobOrigin = '';
         if (collectionURI) {
             if (collectionURI.includes(this.devAzure)) {
-                jobOrigin = 'ADO';
+                jobOrigin = 'ADO - ' + this.devAzure;
             } else {
-                jobOrigin = 'TFS';
+                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI);
             }
         }
 
@@ -241,12 +242,14 @@ Proxy Pass: ******`);
         this.log.info('------------------------------------------------------------------------------');
     }
 
-    private getHostNameFromURL(path: string): string {
-        //remove : for port if found
-        path = path.split("//").slice(-1)[0].split(":")[0].split('.').slice(-2).join('.');
-        if (path.includes(':')) {
-            path = path.substring(0, path.indexOf(':'));
+    private static getHostNameFromURL(path: string): string {
+        let host = url.parse(path).hostname;
+        if(!host){
+            return '';
         }
-        return path;
+        if(host.length>43){
+            host = host.substring(0,43);
+        }
+        return host;
     }
 }

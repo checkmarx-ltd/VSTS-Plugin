@@ -107,7 +107,7 @@ export class TaskRunner {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve();
+                    resolve(jsonReportPath);
                 }
             });
         });
@@ -125,23 +125,25 @@ export class TaskRunner {
         }
         // If the agent variable above is not specified (e.g. in debug environment), tempDir is undefined and
         // tmpNameSync function falls back to a default temp directory.
+        let result;
         switch (reportType) {
             case TaskRunner.REPORT_ATTACHMENT_NAME:
-                return tmpNameSync({dir: buildDir, prefix: 'cxreport-', postfix: '.json'});
+                result = tmpNameSync({dir: buildDir, prefix: 'cxreport-', postfix: '.json'});
                 break;
             case TaskRunner.REPORT_SCA_PACKAGES:
-                return tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_PACKAGES, postfix: '.json'});
+                result = tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_PACKAGES, postfix: '.json'});
                 break;
             case TaskRunner.REPORT_SCA_FINDINGS:
-                return tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_FINDINGS, postfix: '.json'});
+                result = tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_FINDINGS, postfix: '.json'});
                 break;
             case TaskRunner.REPORT_SCA_SUMMARY:
-                return tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_SUMMARY, postfix: '.json'});
+                result = tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_SUMMARY, postfix: '.json'});
+                break;
             default:
-                return tmpNameSync({dir: buildDir, prefix: 'cxreport-', postfix: '.json'});
+                result =  tmpNameSync({dir: buildDir, prefix: 'cxreport-', postfix: '.json'});
                 break;
         }
-
+        return result;
     }
 
     private printHeader() {
