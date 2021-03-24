@@ -73,13 +73,28 @@ export class ConfigReader {
         }
 
         let proxy;
-
+        let proxyUrl;
+        let proxyResult: ProxyConfig ={
+                    proxyHost : '',
+                    proxyPass :  '',
+                    proxyPort : '',
+                    proxyUser :  '',
+                    proxyUrl :  ''
+        };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
+            proxyUrl=taskLib.getInput('proxyURL');
             if (proxy) {
                 if (!proxy.proxyUrl || proxy.proxyUrl == '') {
                     this.log.warning('proxy mode is enabled but no proxy settings are defined');
+                }else{
+                    proxyResult.proxyHost = proxy ? proxy.proxyUrl : '';
+                    proxyResult.proxyPass = proxy ? proxy.proxyPassword : '';
+                    proxyResult.proxyPort = '';
+                    proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
+            }else if(proxyUrl){
+                proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
             } else {
                 this.log.warning('proxy mode is enabled but no proxy settings are defined');
             }
@@ -148,13 +163,6 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true
-        };
-
-        const proxyResult: ProxyConfig = {
-            proxyHost: proxy ? proxy.proxyUrl : '',
-            proxyPass: proxy ? proxy.proxyPassword : '',
-            proxyPort: '',
-            proxyUser: proxy ? proxy.proxyUsername : ''
         };
 
         const result: ScanConfig = {
@@ -238,6 +246,8 @@ Proxy Enabled: ${config.enableProxy}`);
                 this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
 Proxy Pass: ******`);
             }
+        }else  if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl!=null && config.proxyConfig.proxyUrl!=''){
+            this.log.info('Entered Proxy Url '+config.proxyConfig.proxyUrl);
         }
         this.log.info('------------------------------------------------------------------------------');
     }
