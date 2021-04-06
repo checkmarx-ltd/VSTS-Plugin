@@ -74,6 +74,12 @@ export class ConfigReader {
 
         let proxy;
         let proxyUrl;
+       let endpointIdProxy;
+       let authSchemeProxy;
+       let proxyServerUrl;
+       let proxyUsername;
+       let proxyPassword;
+       let proxyPort;
         let proxyResult: ProxyConfig ={
                     proxyHost : '',
                     proxyPass :  '',
@@ -93,12 +99,40 @@ export class ConfigReader {
                     proxyResult.proxyPort = '';
                     proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
-            }else if(proxyUrl){
+
+            }
+            else if(proxyUrl){
                 proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
-            } else {
+            }else {
                 this.log.warning('proxy mode is enabled but no proxy settings are defined');
             }
+            if(proxyResult.proxyUrl){
+
+            if(proxyResult.proxyUrl.startsWith("https://") || proxyResult.proxyUrl.startsWith("http://")){
+                }else{
+                 this.log.warning("Protocol scehma is not specified in proxy url Assuimng HTTP. ");
+                  proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
+                }
+                 //Check entered url is pac proxy or normal proxy
+                     let urlSplit = proxyResult.proxyUrl.split("/");
+                     if (urlSplit.length >= 3 && urlSplit[3] != null) {
+                     }else{
+                     let proxyUsernameVar=taskLib.getVariable('proxy-username');
+                     let proxyPasswordVar=taskLib.getVariable('proxy-password');
+                     if(proxyPasswordVar&&proxyUsernameVar){
+                     let splitUrl = proxyResult.proxyUrl.split("//");
+                     proxyResult.proxyUrl=splitUrl[0]+'//'+proxyUsernameVar+':'+proxyPasswordVar+'@'+splitUrl[1];
+                       }
+                     }
+            }
+//check for proxyurl defined
+//check if for pac or normal proxy
+//if normal proxy then retrive the username and password
+//if username is defined and not blank then form http proxy url
+//
         }
+
+
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
 
