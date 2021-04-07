@@ -101,10 +101,11 @@ export class ConfigReader {
                 }
 
             }
-            else if(proxyUrl){
+            else if(proxyUrl&&proxyUrl!=''){
                 proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
             }else {
                 this.log.warning('proxy mode is enabled but no proxy settings are defined');
+                
             }
             if(proxyResult.proxyUrl){
 
@@ -115,7 +116,7 @@ export class ConfigReader {
                 }
                  //Check entered url is pac proxy or normal proxy
                      let urlSplit = proxyResult.proxyUrl.split("/");
-                     if (urlSplit.length >= 3 && urlSplit[3] != null) {
+                     if (urlSplit[3] != undefined && urlSplit.length >= 3 ) {
                      }else{
                      let proxyUsernameVar=taskLib.getVariable('proxy-username');
                      let proxyPasswordVar=taskLib.getVariable('proxy-password');
@@ -125,11 +126,6 @@ export class ConfigReader {
                        }
                      }
             }
-//check for proxyurl defined
-//check if for pac or normal proxy
-//if normal proxy then retrive the username and password
-//if username is defined and not blank then form http proxy url
-//
         }
 
 
