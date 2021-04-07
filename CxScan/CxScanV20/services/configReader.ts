@@ -101,11 +101,10 @@ export class ConfigReader {
                 }
 
             }
-            else if(proxyUrl&&proxyUrl!=''){
+            else if(proxyUrl && proxyUrl!=''){
                 proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
             }else {
                 this.log.warning('proxy mode is enabled but no proxy settings are defined');
-                
             }
             if(proxyResult.proxyUrl){
 
