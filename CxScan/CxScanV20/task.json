@@ -10,9 +10,9 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 2020,
-    "Minor": 4,
-    "Patch": 14
+    "Major": 2021,
+    "Minor": 2,
+    "Patch": 10
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -57,6 +57,14 @@
       "required": true,
       "helpMarkDown": "Check box for adding the ability to enable/disable proxy use. (Proxy Settings are configured on the agent level).",
       "defaultValue": false
+    },
+    {
+      "name": "proxyUrl",
+      "type": "string",
+      "label": "Proxy URL",
+      "required": false,
+      "helpMarkDown": "Provide URL of the proxy server. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport.For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline.Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
+      "visibleRule": "enableProxy = true"
     },
     {
       "name": "enableSastScan",
