@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "2021.2.10",
-  "publisher": "PersistentTestingPac",
+  "publisher": "Checkmarx-Prerelease",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
