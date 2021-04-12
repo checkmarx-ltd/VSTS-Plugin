@@ -74,12 +74,9 @@ export class ConfigReader {
 
         let proxy;
         let proxyUrl;
-       let endpointIdProxy;
-       let authSchemeProxy;
-       let proxyServerUrl;
-       let proxyUsername;
-       let proxyPassword;
-       let proxyPort;
+        let proxyUsername;
+        let proxyPassword;
+        let proxyPort;
         let proxyResult: ProxyConfig ={
                     proxyHost : '',
                     proxyPass :  '',
@@ -101,29 +98,29 @@ export class ConfigReader {
                 }
 
             }
-            else if(proxyUrl&&proxyUrl!=''){
+            else if(proxyUrl && proxyUrl != ''){
                 proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
             }else {
-                this.log.warning('proxy mode is enabled but no proxy settings are defined');
+                this.log.warning('Proxy is enabled but no proxy settings are defined.');
             }
+
             if(proxyResult.proxyUrl){
 
-            if(proxyResult.proxyUrl.startsWith("https://") || proxyResult.proxyUrl.startsWith("http://")){
-                }else{
-                 this.log.warning("Protocol scehma is not specified in proxy url Assuimng HTTP. ");
-                  proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
+                if(!proxyResult.proxyUrl.startsWith("https://") && !proxyResult.proxyUrl.startsWith("http://")){
+                    this.log.warning("Protocol scehme is not specified in the proxy url. Assuimng HTTP.");
+                    proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
                 }
-                 //Check entered url is pac proxy or normal proxy
-                     let urlSplit = proxyResult.proxyUrl.split("/");
-                     if (urlSplit[3] != undefined && urlSplit.length >= 3 ) {
-                     }else{
-                     let proxyUsernameVar=taskLib.getVariable('proxy-username');
-                     let proxyPasswordVar=taskLib.getVariable('proxy-password');
-                     if(proxyPasswordVar&&proxyUsernameVar){
-                     let splitUrl = proxyResult.proxyUrl.split("//");
-                     proxyResult.proxyUrl=splitUrl[0]+'//'+proxyUsernameVar+':'+proxyPasswordVar+'@'+splitUrl[1];
-                       }
-                     }
+                
+                let urlParts = url.parse(proxyResult.proxyUrl);
+                //if path in the url is / or empty, it is http proxy url. Add creds if needed.
+                if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") {
+                    let proxyUsernameVar=taskLib.getVariable('proxy-username');
+                    let proxyPasswordVar=taskLib.getVariable('proxy-password');
+                    if(proxyPasswordVar && proxyUsernameVar){
+                        let splitUrl = proxyResult.proxyUrl.split("//");
+                        proxyResult.proxyUrl=splitUrl[0]+'//'+proxyUsernameVar+':'+proxyPasswordVar+'@'+splitUrl[1];
+                    }
+                }
             }
         }
 
