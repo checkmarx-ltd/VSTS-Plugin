@@ -82,14 +82,15 @@ export class ConfigReader {
                     proxyPass :  '',
                     proxyPort : '',
                     proxyUser :  '',
-                    proxyUrl :  ''
+                    proxyUrl :  '',
+                    resolvedProxyUrl :  ''
         };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
             proxyUrl=taskLib.getInput('proxyURL');
             if (proxy) {
                 if (!proxy.proxyUrl || proxy.proxyUrl == '') {
-                    this.log.warning('proxy mode is enabled but no proxy settings are defined');
+                    this.log.warning('Proxy is enabled but no proxy settings are defined.');
                 }else{
                     proxyResult.proxyHost = proxy ? proxy.proxyUrl : '';
                     proxyResult.proxyPass = proxy ? proxy.proxyPassword : '';
@@ -107,7 +108,7 @@ export class ConfigReader {
             if(proxyResult.proxyUrl){
 
                 if(!proxyResult.proxyUrl.startsWith("https://") && !proxyResult.proxyUrl.startsWith("http://")){
-                    this.log.warning("Protocol scehme is not specified in the proxy url. Assuimng HTTP.");
+                    this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
                     proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
                 }
                 
