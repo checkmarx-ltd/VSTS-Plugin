@@ -59,7 +59,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'tfx extension create --manifest-globs vss-extension.json'
+    script: 'tfx extension create --manifest-globs $(ext-manifest-file)'
   displayName: 'tfx extension create'
 
 - task: CopyFiles@2

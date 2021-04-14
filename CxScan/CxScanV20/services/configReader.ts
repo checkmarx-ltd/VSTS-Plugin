@@ -73,17 +73,59 @@ export class ConfigReader {
         }
 
         let proxy;
-
+        let proxyUrl;
+        let proxyUsername;
+        let proxyPassword;
+        let proxyPort;
+        let proxyResult: ProxyConfig ={
+                    proxyHost : '',
+                    proxyPass :  '',
+                    proxyPort : '',
+                    proxyUser :  '',
+                    proxyUrl :  '',
+                    resolvedProxyUrl :  ''
+        };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
+            proxyUrl=taskLib.getInput('proxyURL');
             if (proxy) {
                 if (!proxy.proxyUrl || proxy.proxyUrl == '') {
-                    this.log.warning('proxy mode is enabled but no proxy settings are defined');
+                    this.log.warning('Proxy is enabled but no proxy settings are defined.');
+                }else{
+                    proxyResult.proxyHost = proxy ? proxy.proxyUrl : '';
+                    proxyResult.proxyPass = proxy ? proxy.proxyPassword : '';
+                    proxyResult.proxyPort = '';
+                    proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
-            } else {
-                this.log.warning('proxy mode is enabled but no proxy settings are defined');
+
+            }
+            else if(proxyUrl && proxyUrl != ''){
+                proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
+            }else {
+                this.log.warning('Proxy is enabled but no proxy settings are defined.');
+            }
+
+            if(proxyResult.proxyUrl){
+
+                if(!proxyResult.proxyUrl.startsWith("https://") && !proxyResult.proxyUrl.startsWith("http://")){
+                    this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
+                    proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
+                }
+                
+                let urlParts = url.parse(proxyResult.proxyUrl);
+                //if path in the url is / or empty, it is http proxy url. Add creds if needed.
+                if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") {
+                    let proxyUsernameVar=taskLib.getVariable('proxy-username');
+                    let proxyPasswordVar=taskLib.getVariable('proxy-password');
+                    if(proxyPasswordVar && proxyUsernameVar){
+                        let splitUrl = proxyResult.proxyUrl.split("//");
+                        proxyResult.proxyUrl=splitUrl[0]+'//'+proxyUsernameVar+':'+proxyPasswordVar+'@'+splitUrl[1];
+                    }
+                }
             }
         }
+
+
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
 
@@ -148,13 +190,6 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true
-        };
-
-        const proxyResult: ProxyConfig = {
-            proxyHost: proxy ? proxy.proxyUrl : '',
-            proxyPass: proxy ? proxy.proxyPassword : '',
-            proxyPort: '',
-            proxyUser: proxy ? proxy.proxyUsername : ''
         };
 
         const result: ScanConfig = {
@@ -238,6 +273,8 @@ Proxy Enabled: ${config.enableProxy}`);
                 this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
 Proxy Pass: ******`);
             }
+        }else  if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl!=null && config.proxyConfig.proxyUrl!=''){
+            this.log.info('Entered Proxy Url '+config.proxyConfig.proxyUrl);
         }
         this.log.info('------------------------------------------------------------------------------');
     }

@@ -8,5 +8,5 @@ popd
 
 pushd %~dp0..
 del %~dp0..\*.vsix
-call tfx extension create --manifest-globs vss-extension.json
+call tfx extension create --manifest-globs vss-extension-dev.json
 popd

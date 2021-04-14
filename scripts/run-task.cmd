@@ -5,6 +5,7 @@ call tsc
 set INPUT_ENABLEPROXY=false
 
 set INPUT_CheckmarxService=endpointId
+set INPUT_PROXYURL=localhost:8080
 set ENDPOINT_URL_endpointId=URL
 set ENDPOINT_AUTH_PARAMETER_endpointId_USERNAME=user
 set ENDPOINT_AUTH_PARAMETER_endpointId_PASSWORD=pass
