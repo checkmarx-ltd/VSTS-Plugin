@@ -33,6 +33,7 @@ export class ConfigReader {
         const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
 
         this.log.debug('Reading configuration.');
+        
 
         const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
         const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
@@ -60,9 +61,25 @@ export class ConfigReader {
         let scaServerUrl;
         let scaUsername;
         let scaPassword;
+        let scaConfigFiles;
+        let scaEnvVars;
+        let scaConfigFilesArray:string[]=[];
+        let envVariables:Map<string, string>=new Map;
 
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
+            scaConfigFiles=taskLib.getInput('scaConfigFilePaths',false) || '';
+            scaEnvVars=taskLib.getInput('scaEnvVariables',false) || '';
+            scaConfigFilesArray = scaConfigFiles.split(',');
+            let keyValuePairs = scaEnvVars.split(',');
+            envVariables = keyValuePairs.reduce((acc, curr) => {
+                const [key, value] = curr.split(':');
+                if (!acc.has(key)) {
+                    acc.set(key, value);
+                }	
+                return acc;
+            }, new Map());
+
             authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false) || undefined;
             if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
@@ -168,7 +185,12 @@ export class ConfigReader {
             vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold', false) || false,
             highThreshold: ConfigReader.getNumericInput('scaHigh'),
             mediumThreshold: ConfigReader.getNumericInput('scaMedium'),
-            lowThreshold: ConfigReader.getNumericInput('scaLow')
+            lowThreshold: ConfigReader.getNumericInput('scaLow'),
+            scaEnablePolicyViolations: taskLib.getBoolInput('scaEnablePolicyViolations', false) || false,
+            includeSource: taskLib.getBoolInput('includeSource', false) || false,
+            configFilePaths:scaConfigFilesArray || '',
+            envVariables:envVariables || ''
+
 
         };
         const sastResult: SastConfig = {
