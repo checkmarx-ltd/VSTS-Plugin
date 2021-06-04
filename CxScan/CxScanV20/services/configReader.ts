@@ -65,9 +65,20 @@ export class ConfigReader {
         let scaEnvVars;
         let scaConfigFilesArray:string[]=[];
         let envVariables:Map<string, string>=new Map;
+        let scaSASTServerUrl;
+        let scaSASTUserName;
+        let scaSASTPassword;
+        let endPointIdScaSast;
+        let scaSastProjectFullPath;
+        let scaSastProjectId;
+        let isExploitable;
 
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
+            isExploitable=taskLib.getInput('scaExploitablePath', false) || '';
+            endPointIdScaSast=taskLib.getInput('CheckmarxServiceForSca', false) || '';
+            scaSastProjectFullPath=taskLib.getInput('scaProjectFullPath', false) || '';
+            scaSastProjectId=taskLib.getInput('scaProjectId', false) || '';
             scaConfigFiles=taskLib.getInput('scaConfigFilePaths',false) || '';
             scaEnvVars=taskLib.getInput('scaEnvVariables',false) || '';
             scaConfigFilesArray = scaConfigFiles.split(',');
@@ -87,6 +98,12 @@ export class ConfigReader {
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
+            //sca section sast credentials 
+            if(isExploitable){
+            scaSASTServerUrl = taskLib.getEndpointUrl(endPointIdScaSast, false) || '';
+            scaSASTUserName = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'username', false) || '';
+            scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
+            }
         }
 
         let proxy;
@@ -189,7 +206,12 @@ export class ConfigReader {
             scaEnablePolicyViolations: taskLib.getBoolInput('scaEnablePolicyViolations', false) || false,
             includeSource: taskLib.getBoolInput('includeSource', false) || false,
             configFilePaths:scaConfigFilesArray || '',
-            envVariables:envVariables || ''
+            envVariables:envVariables || '',
+            sastProjectId:scaSastProjectId || '',
+            sastProjectName:scaSastProjectFullPath || '',
+            sastServerUrl:scaSASTServerUrl || '',
+            sastUsername:scaSASTUserName ||'',
+            sastPassword:scaSASTPassword || ''
 
 
         };

@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "2021.2.13",
-  "publisher": "sanagmeshwar",
+  "publisher": "TestPacProxy",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
