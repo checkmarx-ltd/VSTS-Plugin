@@ -315,6 +315,15 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "scaTeam",
+      "type": "string",
+      "label": "Team",
+      "required": false,
+      "helpMarkDown": "Cx SCA Team name",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
       "name": "dependencyFolderExclusion",
       "type": "string",
       "label": "Folder Exclusion",
@@ -344,7 +353,7 @@
     },
     
     {
-      "name": "scaIncludeSources",
+      "name": "includeSource",
       "type": "boolean",
       "label": "Include Sources",
       "required": false,

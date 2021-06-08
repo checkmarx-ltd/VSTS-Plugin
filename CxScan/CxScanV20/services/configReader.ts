@@ -71,11 +71,12 @@ export class ConfigReader {
         let endPointIdScaSast;
         let scaSastProjectFullPath;
         let scaSastProjectId;
-        let isExploitable;
-
+        let isExploitableSca;
+        let scaTeamName;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
-            isExploitable=taskLib.getInput('scaExploitablePath', false) || '';
+            scaTeamName = taskLib.getInput('scaTeam', false) || '',
+            isExploitableSca=taskLib.getBoolInput('scaExploitablePath', false) || false;
             endPointIdScaSast=taskLib.getInput('CheckmarxServiceForSca', false) || '';
             scaSastProjectFullPath=taskLib.getInput('scaProjectFullPath', false) || '';
             scaSastProjectId=taskLib.getInput('scaProjectId', false) || '';
@@ -99,7 +100,7 @@ export class ConfigReader {
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
             //sca section sast credentials 
-            if(isExploitable){
+            if(isExploitableSca){
             scaSASTServerUrl = taskLib.getEndpointUrl(endPointIdScaSast, false) || '';
             scaSASTUserName = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'username', false) || '';
             scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
@@ -189,8 +190,10 @@ export class ConfigReader {
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
+        
         const scaResult: ScaConfig = {
             accessControlUrl: taskLib.getInput('dependencyAccessControlURL', false) || '',
+            scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '' ,
             apiUrl: scaServerUrl || '',
             username: scaUsername || '',
             password: scaPassword || '',
@@ -211,7 +214,8 @@ export class ConfigReader {
             sastProjectName:scaSastProjectFullPath || '',
             sastServerUrl:scaSASTServerUrl || '',
             sastUsername:scaSASTUserName ||'',
-            sastPassword:scaSASTPassword || ''
+            sastPassword:scaSASTPassword || '',
+            isExploitable:isExploitableSca || false,
 
 
         };
