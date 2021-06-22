@@ -80,9 +80,11 @@ export class ConfigReader {
             endPointIdScaSast=taskLib.getInput('CheckmarxServiceForSca', false) || '';
             scaSastProjectFullPath=taskLib.getInput('scaProjectFullPath', false) || '';
             scaSastProjectId=taskLib.getInput('scaProjectId', false) || '';
-            scaConfigFiles=taskLib.getInput('scaConfigFilePaths',false) || '';
-            scaEnvVars=taskLib.getInput('scaEnvVariables',false) || '';
+            scaConfigFiles=taskLib.getInput('scaConfigFilePaths',false);
+            scaEnvVars=taskLib.getInput('scaEnvVariables',false);
+            if(scaConfigFiles)
             scaConfigFilesArray = scaConfigFiles.split(',');
+            if(scaEnvVars){
             let keyValuePairs = scaEnvVars.split(',');
             envVariables = keyValuePairs.reduce((acc, curr) => {
                 const [key, value] = curr.split(':');
@@ -91,7 +93,7 @@ export class ConfigReader {
                 }	
                 return acc;
             }, new Map());
-
+            }
             authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false) || undefined;
             if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
@@ -159,19 +161,32 @@ export class ConfigReader {
                 }
             }
         }
-
-
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
-
+        const projectName=taskLib.getVariable('System.TeamProject');
+        const pipelineId=taskLib.getVariable('System.DefinitionId');
+        let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
             if (collectionURI.includes(this.devAzure)) {
-                jobOrigin = 'ADO - ' + this.devAzure;
+                jobOrigin = 'ADO - ' + this.devAzure +" "+projectName;
             } else {
                 jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI);
             }
+            
+            if(jobOrigin&&jobOrigin.length>50)
+            jobOrigin=jobOrigin.substr(0,50);
+            else
+            jobOrigin=jobOrigin;
+
+
+            //forming CxOriginUrl  
+            cxOriginUrl=collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
         }
+        this.log.info("CxOrgin:-  "+jobOrigin+"  ----- CxOriginUrl:- "+cxOriginUrl);
+
+       
+        
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -179,7 +194,6 @@ export class ConfigReader {
         }
 
         const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
-
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         if (customPreset) {
@@ -208,8 +222,8 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('scaLow'),
             scaEnablePolicyViolations: taskLib.getBoolInput('scaEnablePolicyViolations', false) || false,
             includeSource: taskLib.getBoolInput('includeSource', false) || false,
-            configFilePaths:scaConfigFilesArray || '',
-            envVariables:envVariables || '',
+            configFilePaths:scaConfigFilesArray || new Array<string>(),
+            envVariables:envVariables || new Map(),
             sastProjectId:scaSastProjectId || '',
             sastProjectName:scaSastProjectFullPath || '',
             sastServerUrl:scaSASTServerUrl || '',
@@ -249,6 +263,7 @@ export class ConfigReader {
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             sourceLocation,
             cxOrigin: jobOrigin,
+            cxOriginUrl:cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
             proxyConfig: proxyResult
         };
