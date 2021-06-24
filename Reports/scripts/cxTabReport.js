@@ -112,6 +112,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var sastStartDate = resultObject.scanStart;
                                     var sastScanTime = resultObject.scanTime;
 
+                                
 
                                     var sastEndDate = calculateEndDate(sastStartDate, sastScanTime);
                                     var sastNumFiles = resultObject.filesScanned;
@@ -306,17 +307,17 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 var isThresholdExceeded = false;
                                                 var thresholdExceededComplianceElement = document.getElementById("threshold-exceeded-compliance");
 
-                                                if (highThreshold != null && highThreshold != "" && highCount > highThreshold) {
+                                                if (highThreshold != null  && highCount > highThreshold) {
                                                     document.getElementById("tooltip-high").innerHTML = tooltipGenerator(SEVERITY.HIGH);
                                                     isThresholdExceeded = true;
                                                 }
 
-                                                if (medThreshold != null && medThreshold != "" && medCount > medThreshold) {
+                                                if (medThreshold != null && medCount > medThreshold) {
                                                     document.getElementById("tooltip-med").innerHTML = tooltipGenerator(SEVERITY.MED);
                                                     isThresholdExceeded = true;
                                                 }
 
-                                                if (lowThreshold != null && lowThreshold != "" && lowCount > lowThreshold) {
+                                                if (lowThreshold != null && lowCount > lowThreshold) {
                                                     document.getElementById("tooltip-low").innerHTML = tooltipGenerator(SEVERITY.LOW);
                                                     isThresholdExceeded = true;
                                                 }
@@ -384,17 +385,17 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
 
 
-                                                if (dependencyHighThreshold != null && dependencyHighThreshold != "" && dependencyHighVulnerability > dependencyHighThreshold) {
+                                                if (dependencyHighThreshold != null  && dependencyHighVulnerability > dependencyHighThreshold) {
                                                     document.getElementById("osa-tooltip-high").innerHTML = tooltipGenerator(SEVERITY.OSA_HIGH);
                                                     isDependencyThresholdExceeded = true;
                                                 }
 
-                                                if (dependencyMediumThreshold != null && dependencyMediumThreshold != "" && dependencyMediumVulnerability > dependencyMediumThreshold) {
+                                                if (dependencyMediumThreshold != null  && dependencyMediumVulnerability > dependencyMediumThreshold) {
                                                     document.getElementById("osa-tooltip-med").innerHTML = tooltipGenerator(SEVERITY.OSA_MED);
                                                     isDependencyThresholdExceeded = true;
                                                 }
 
-                                                if (dependencyLowThreshold != null && dependencyLowThreshold != "" && dependencyLowVulnerability > dependencyLowThreshold) {
+                                                if (dependencyLowThreshold != null  && dependencyLowVulnerability > dependencyLowThreshold) {
                                                     document.getElementById("osa-tooltip-low").innerHTML = tooltipGenerator(SEVERITY.OSA_LOW);
                                                     isDependencyThresholdExceeded = true;
                                                 }
@@ -906,8 +907,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
                                 function calculateEndDate(startDate, scanTime) {
+                                    
                                     var start = new Date(startDate);
-
                                     //"00h:00m:00s"
                                     var scanTimeHours = scanTime.substring(0, 2);
                                     var scanTimeMinutes = scanTime.substring(4, 6);
