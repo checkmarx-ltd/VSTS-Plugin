@@ -12,7 +12,7 @@
   "version": {
     "Major": 2021,
     "Minor": 2,
-    "Patch": 13
+    "Patch": 21
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -314,15 +314,7 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
-    {
-      "name": "scaTeam",
-      "type": "string",
-      "label": "Team",
-      "required": false,
-      "helpMarkDown": "Cx SCA Team name",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
+    
     {
       "name": "dependencyFolderExclusion",
       "type": "string",
@@ -330,6 +322,15 @@
       "required": false,
       "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea, node_modules",
       "helpMarkDown": "Comma separated list of folders to exclude from scan. Entries in this list are automatically converted to exclude wildcard patterns and appended to the full pattern list provided in the 'Include/Exclude Wildcard Patterns' setting.\n\nConversion is done as follows: `folder1, folder2, folder3` is converted to: `!**/folder1/**, !**/folder2/**, !**/folder3/**`",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaTeam",
+      "type": "string",
+      "label": "Team",
+      "required": false,
+      "helpMarkDown": "CxSCA Team name",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },

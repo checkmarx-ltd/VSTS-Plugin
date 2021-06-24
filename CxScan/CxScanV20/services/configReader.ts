@@ -108,7 +108,8 @@ export class ConfigReader {
             scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
             }
         }
-
+        //checking for projectFullPath and ProjectId either is mandatory to fill
+        
         let proxy;
         let proxyUrl;
         let proxyUsername;
@@ -178,12 +179,13 @@ export class ConfigReader {
             jobOrigin=jobOrigin.substr(0,50);
             else
             jobOrigin=jobOrigin;
-
+            jobOrigin = jobOrigin.replace("[^.a-zA-Z0-9\\s]", "");
 
             //forming CxOriginUrl  
             cxOriginUrl=collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
         }
-        this.log.info("CxOrgin:-  "+jobOrigin+"  ----- CxOriginUrl:- "+cxOriginUrl);
+        this.log.info("CxOrgin: "+jobOrigin);
+        this.log.info("CxOriginUrl:"+cxOriginUrl);
 
        
         
@@ -233,6 +235,9 @@ export class ConfigReader {
 
 
         };
+
+        
+        
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -307,6 +312,8 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
 
     private formatSCA(config: ScanConfig): void {
         if (config.enableDependencyScan && config.scaConfig != null) {
+            const ourMap = config.scaConfig.envVariables;
+            const envVar=JSON.stringify(Array.from(ourMap.entries()));
             this.log.info(`
 -------------------------------SCA Configurations:--------------------------------
 AccessControl: ${config.scaConfig.accessControlUrl}
@@ -315,13 +322,31 @@ WebAppUrl: ${config.scaConfig.webAppUrl}
 Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
+CxSCA Full team path: ${config.scaConfig.scaSastTeam}
+Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
+Private Registry Environment Variable:${envVar}
+Include Sources:${config.scaConfig.includeSource}
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 `);
             if (config.scaConfig.vulnerabilityThreshold) {
-                this.log.info(`High Threshold: ${config.scaConfig.highThreshold}
-Medium Threshold: ${config.scaConfig.mediumThreshold}
-Low Threshold: ${config.scaConfig.lowThreshold}`)
+                this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
+CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
+CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`)
             }
+this.log.info('Enable Exploitable Path:'+config.scaConfig.isExploitable);
+if(config.scaConfig.isExploitable){
+   this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}
+Checkmarx SAST Username: ${config.scaConfig.sastUsername}
+Checkmarx SAST Password: *********
+Project Full Path: ${config.scaConfig.sastProjectName}
+Project ID: ${config.scaConfig.sastProjectId}`)
+if(!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName){
+this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
+throw "Must provide value for either 'Project Full Path' or 'Project Id'";
+;
+}
+}
+
             this.log.info('------------------------------------------------------------------------------');
         }
     }
