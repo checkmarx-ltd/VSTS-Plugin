@@ -164,31 +164,26 @@ export class ConfigReader {
         }
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
-        const projectName=taskLib.getVariable('System.TeamProject');
+        let projectName=taskLib.getVariable('System.TeamProject');
         const pipelineId=taskLib.getVariable('System.DefinitionId');
         let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
             if (collectionURI.includes(this.devAzure)) {
-                jobOrigin = 'ADO - ' + this.devAzure +" "+projectName;
+                jobOrigin = 'ADO ' + this.devAzure +" "+projectName;
             } else {
                 jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI);
             }
-            
+            jobOrigin = jobOrigin.replace(/[^.a-zA-Z 0-9]/g,' ');
             if(jobOrigin&&jobOrigin.length>50)
             jobOrigin=jobOrigin.substr(0,50);
             else
             jobOrigin=jobOrigin;
-            jobOrigin = jobOrigin.replace("[^.a-zA-Z0-9\\s]", "");
-
             //forming CxOriginUrl  
             cxOriginUrl=collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
         }
         this.log.info("CxOrgin: "+jobOrigin);
         this.log.info("CxOriginUrl:"+cxOriginUrl);
-
-       
-        
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -326,6 +321,7 @@ CxSCA Full team path: ${config.scaConfig.scaSastTeam}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
 Include Sources:${config.scaConfig.includeSource}
+Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViolations}
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 `);
             if (config.scaConfig.vulnerabilityThreshold) {
