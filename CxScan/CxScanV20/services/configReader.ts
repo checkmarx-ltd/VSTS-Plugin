@@ -12,6 +12,8 @@ import * as url from "url";
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
+    private readonly MAX_SIZE_CXORIGINURL=128;
+    private readonly SIZE_CXORIGIN=50;
 
     constructor(private readonly log: Logger) {
     }
@@ -172,15 +174,26 @@ export class ConfigReader {
             if (collectionURI.includes(this.devAzure)) {
                 jobOrigin = 'ADO ' + this.devAzure +" "+projectName;
             } else {
-                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI);
+                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI)+" "+projectName;
             }
             jobOrigin = jobOrigin.replace(/[^.a-zA-Z 0-9]/g,' ');
-            if(jobOrigin&&jobOrigin.length>50)
-            jobOrigin=jobOrigin.substr(0,50);
-            else
-            jobOrigin=jobOrigin;
-            //forming CxOriginUrl  
-            cxOriginUrl=collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
+
+            if(jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
+            jobOrigin = jobOrigin.substr(0,this.SIZE_CXORIGIN);
+        
+            //In collectionURI
+            cxOriginUrl = collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
+            if(cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)){
+                cxOriginUrl = this.extractBaseURL(cxOriginUrl);
+            }else if(cxOriginUrl.length>this.MAX_SIZE_CXORIGINURL){
+                cxOriginUrl = this.extractBaseURL(cxOriginUrl);
+            }
+        }
+        
+        if(cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)){
+            cxOriginUrl = this.extractBaseURL(cxOriginUrl);
+        }else if(cxOriginUrl.length>this.MAX_SIZE_CXORIGINURL){
+            cxOriginUrl = this.extractBaseURL(cxOriginUrl);
         }
         this.log.info("CxOrgin: "+jobOrigin);
         this.log.info("CxOriginUrl:"+cxOriginUrl);
@@ -372,5 +385,29 @@ Proxy Pass: ******`);
             host = host.substring(0,43);
         }
         return host;
+    }
+
+    private isValidUrl(url:string) :boolean{
+        var matcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/;
+        return matcher.test(url);
+    }
+
+    private extractBaseURL(url :string) : string {
+        // first index of / slash return url as it is or else return first occurance of /
+        let urlToReturn = new URL(url);
+        if(!urlToReturn.origin){
+            return urlToReturn.origin
+        }else{
+            let port =  urlToReturn.port;
+            let host = urlToReturn.host;
+            let protocol= urlToReturn.protocol;
+            let urlReturn='';
+            if(port)
+            urlReturn=protocol+"//"+host+":"+port;
+            else
+            urlReturn=protocol+"//"+host
+            return urlReturn;
+        }
+       
     }
 }
