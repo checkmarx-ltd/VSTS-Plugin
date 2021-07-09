@@ -190,11 +190,6 @@ export class ConfigReader {
             }
         }
         
-        if(cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)){
-            cxOriginUrl = this.extractBaseURL(cxOriginUrl);
-        }else if(cxOriginUrl.length>this.MAX_SIZE_CXORIGINURL){
-            cxOriginUrl = this.extractBaseURL(cxOriginUrl);
-        }
         this.log.info("CxOrgin: "+jobOrigin);
         this.log.info("CxOriginUrl:"+cxOriginUrl);
 
