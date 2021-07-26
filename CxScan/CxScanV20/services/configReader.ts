@@ -12,6 +12,8 @@ import * as url from "url";
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
+    private readonly MAX_SIZE_CXORIGINURL=128;
+    private readonly SIZE_CXORIGIN=50;
 
     constructor(private readonly log: Logger) {
     }
@@ -33,6 +35,7 @@ export class ConfigReader {
         const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
 
         this.log.debug('Reading configuration.');
+        
 
         const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
         const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
@@ -60,9 +63,39 @@ export class ConfigReader {
         let scaServerUrl;
         let scaUsername;
         let scaPassword;
-
+        let scaConfigFiles;
+        let scaEnvVars;
+        let scaConfigFilesArray:string[]=[];
+        let envVariables:Map<string, string>=new Map;
+        let scaSASTServerUrl;
+        let scaSASTUserName;
+        let scaSASTPassword;
+        let endPointIdScaSast;
+        let scaSastProjectFullPath;
+        let scaSastProjectId;
+        let isExploitableSca;
+        let scaTeamName;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
+            scaTeamName = taskLib.getInput('scaTeam', false) || '',
+            isExploitableSca=taskLib.getBoolInput('scaExploitablePath', false) || false;
+            endPointIdScaSast=taskLib.getInput('CheckmarxServiceForSca', false) || '';
+            scaSastProjectFullPath=taskLib.getInput('scaProjectFullPath', false) || '';
+            scaSastProjectId=taskLib.getInput('scaProjectId', false) || '';
+            scaConfigFiles=taskLib.getInput('scaConfigFilePaths',false);
+            scaEnvVars=taskLib.getInput('scaEnvVariables',false);
+            if(scaConfigFiles)
+            scaConfigFilesArray = scaConfigFiles.split(',');
+            if(scaEnvVars){
+            let keyValuePairs = scaEnvVars.split(',');
+            envVariables = keyValuePairs.reduce((acc, curr) => {
+                const [key, value] = curr.split(':');
+                if (!acc.has(key)) {
+                    acc.set(key, value);
+                }	
+                return acc;
+            }, new Map());
+            }
             authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false) || undefined;
             if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
@@ -70,8 +103,15 @@ export class ConfigReader {
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
+            //sca section sast credentials 
+            if(isExploitableSca){
+            scaSASTServerUrl = taskLib.getEndpointUrl(endPointIdScaSast, false) || '';
+            scaSASTUserName = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'username', false) || '';
+            scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
+            }
         }
-
+        //checking for projectFullPath and ProjectId either is mandatory to fill
+        
         let proxy;
         let proxyUrl;
         let proxyUsername;
@@ -124,19 +164,34 @@ export class ConfigReader {
                 }
             }
         }
-
-
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
-
+        let projectName=taskLib.getVariable('System.TeamProject');
+        const pipelineId=taskLib.getVariable('System.DefinitionId');
+        let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
             if (collectionURI.includes(this.devAzure)) {
-                jobOrigin = 'ADO - ' + this.devAzure;
+                jobOrigin = 'ADO ' + this.devAzure +" "+projectName;
             } else {
-                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI);
+                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI)+" "+projectName;
+            }
+            jobOrigin = jobOrigin.replace(/[^.a-zA-Z 0-9]/g,' ');
+
+            if(jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
+            jobOrigin = jobOrigin.substr(0,this.SIZE_CXORIGIN);
+        
+            //In collectionURI
+            cxOriginUrl = collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
+            if(cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)){
+                cxOriginUrl = this.extractBaseURL(cxOriginUrl);
+            }else if(cxOriginUrl.length>this.MAX_SIZE_CXORIGINURL){
+                cxOriginUrl = this.extractBaseURL(cxOriginUrl);
             }
         }
+        
+        this.log.info("CxOrgin: "+jobOrigin);
+        this.log.info("CxOriginUrl:"+cxOriginUrl);
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -144,7 +199,6 @@ export class ConfigReader {
         }
 
         const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
-
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         if (customPreset) {
@@ -155,8 +209,10 @@ export class ConfigReader {
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
+        
         const scaResult: ScaConfig = {
             accessControlUrl: taskLib.getInput('dependencyAccessControlURL', false) || '',
+            scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '' ,
             apiUrl: scaServerUrl || '',
             username: scaUsername || '',
             password: scaPassword || '',
@@ -168,9 +224,23 @@ export class ConfigReader {
             vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold', false) || false,
             highThreshold: ConfigReader.getNumericInput('scaHigh'),
             mediumThreshold: ConfigReader.getNumericInput('scaMedium'),
-            lowThreshold: ConfigReader.getNumericInput('scaLow')
+            lowThreshold: ConfigReader.getNumericInput('scaLow'),
+            scaEnablePolicyViolations: taskLib.getBoolInput('scaEnablePolicyViolations', false) || false,
+            includeSource: taskLib.getBoolInput('includeSource', false) || false,
+            configFilePaths:scaConfigFilesArray || new Array<string>(),
+            envVariables:envVariables || new Map(),
+            sastProjectId:scaSastProjectId || '',
+            sastProjectName:scaSastProjectFullPath || '',
+            sastServerUrl:scaSASTServerUrl || '',
+            sastUsername:scaSASTUserName ||'',
+            sastPassword:scaSASTPassword || '',
+            isExploitable:isExploitableSca || false,
+
 
         };
+
+        
+        
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -201,6 +271,7 @@ export class ConfigReader {
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             sourceLocation,
             cxOrigin: jobOrigin,
+            cxOriginUrl:cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
             proxyConfig: proxyResult
         };
@@ -229,6 +300,7 @@ Is incremental scan: ${config.sastConfig.isIncremental}
 Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
+SAST Comment: ${config.sastConfig.comment}
 
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
@@ -244,6 +316,8 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
 
     private formatSCA(config: ScanConfig): void {
         if (config.enableDependencyScan && config.scaConfig != null) {
+            const ourMap = config.scaConfig.envVariables;
+            const envVar=JSON.stringify(Array.from(ourMap.entries()));
             this.log.info(`
 -------------------------------SCA Configurations:--------------------------------
 AccessControl: ${config.scaConfig.accessControlUrl}
@@ -252,13 +326,32 @@ WebAppUrl: ${config.scaConfig.webAppUrl}
 Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
+CxSCA Full team path: ${config.scaConfig.scaSastTeam}
+Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
+Private Registry Environment Variable:${envVar}
+Include Sources:${config.scaConfig.includeSource}
+Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViolations}
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 `);
             if (config.scaConfig.vulnerabilityThreshold) {
-                this.log.info(`High Threshold: ${config.scaConfig.highThreshold}
-Medium Threshold: ${config.scaConfig.mediumThreshold}
-Low Threshold: ${config.scaConfig.lowThreshold}`)
+                this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
+CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
+CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`)
             }
+this.log.info('Enable Exploitable Path:'+config.scaConfig.isExploitable);
+if(config.scaConfig.isExploitable){
+   this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}
+Checkmarx SAST Username: ${config.scaConfig.sastUsername}
+Checkmarx SAST Password: *********
+Project Full Path: ${config.scaConfig.sastProjectName}
+Project ID: ${config.scaConfig.sastProjectId}`)
+if(!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName){
+this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
+throw "Must provide value for either 'Project Full Path' or 'Project Id'";
+;
+}
+}
+
             this.log.info('------------------------------------------------------------------------------');
         }
     }
@@ -288,5 +381,29 @@ Proxy Pass: ******`);
             host = host.substring(0,43);
         }
         return host;
+    }
+
+    private isValidUrl(url:string) :boolean{
+        var matcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/;
+        return matcher.test(url);
+    }
+
+    private extractBaseURL(url :string) : string {
+        // first index of / slash return url as it is or else return first occurance of /
+        let urlToReturn = new URL(url);
+        if(!urlToReturn.origin){
+            return urlToReturn.origin
+        }else{
+            let port =  urlToReturn.port;
+            let host = urlToReturn.host;
+            let protocol= urlToReturn.protocol;
+            let urlReturn='';
+            if(port)
+            urlReturn=protocol+"//"+host+":"+port;
+            else
+            urlReturn=protocol+"//"+host
+            return urlReturn;
+        }
+       
     }
 }

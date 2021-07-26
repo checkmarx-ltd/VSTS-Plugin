@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 2021,
-    "Minor": 2,
-    "Patch": 13
+    "Minor": 3,
+    "Patch": 15
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -181,6 +181,7 @@
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
+    
     {
       "name": "scanTimeout",
       "type": "string",
@@ -313,6 +314,7 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
+    
     {
       "name": "dependencyFolderExclusion",
       "type": "string",
@@ -320,6 +322,92 @@
       "required": false,
       "defaultValue": "cvs, .svn, .hg , .git, .bzr, bin , obj,  backup, .idea, node_modules",
       "helpMarkDown": "Comma separated list of folders to exclude from scan. Entries in this list are automatically converted to exclude wildcard patterns and appended to the full pattern list provided in the 'Include/Exclude Wildcard Patterns' setting.\n\nConversion is done as follows: `folder1, folder2, folder3` is converted to: `!**/folder1/**, !**/folder2/**, !**/folder3/**`",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaTeam",
+      "type": "string",
+      "label": "Team",
+      "required": false,
+      "helpMarkDown": "CxSCA Team name",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaConfigFilePaths",
+      "type": "string",
+      "label": "Package Manager's Config File(s) Path",
+      "required": false,
+      "helpMarkDown": "This parameter is to provide configuration files of the package managers used in the project.For ex. Settings.xml for maven,Nuget.config for Nuget,.npmrc for npm etc.This option is relevant for projects that use private artifactory.Use CxSCA agent to perform the scan. CxSCA agent will try to perform dependency resolution using the package manager's configuration files provided. Multiple comma character separated file path can be provided. 'Example:c:/user/.m2/settings.xml,c:/user/npm/.npmrc'",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaEnvVariables",
+      "type": "string",
+      "label": "Private Registry Environment Variable",
+      "required": false,
+      "helpMarkDown": "This option is relevant only if Package Manager's config files are provided. In many cases, package manager's configuration files reference environment variables, often to provide credentials without storing them in a file. Pass all such variables using this option.Example: param1:value1,param2:value2",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    
+    {
+      "name": "includeSource",
+      "type": "boolean",
+      "label": "Include Sources",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "When this flag is enabled, it will include entire source code in the zip file to be scanned.",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    
+    {
+      "name": "scaExploitablePath",
+      "type": "boolean",
+      "label": "Enable Exploitable Path",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Exploitable Path feature will attempt to co-relate CxSCA scan with the available CxSAST scan results. In this section, provide details like CxSAST server url, credentials. At the job level, two more parameters need to be configured. These project full path name and/or project id from CxSAST.Example of Project Full Path: CxServer/team1/projectname",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "CheckmarxServiceForSca",
+      "type": "connectedService:Checkmarx-Endpoint",
+      "label": "Checkmarx SAST Endpoint",
+      "required": false,
+      "helpMarkDown": "The CX server endpoint.",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
+    },
+    {
+      "name": "scaProjectFullPath",
+      "type": "string",
+      "label": "Project Full Path",
+      "required": false,
+      "helpMarkDown": "Project Full Path with team value",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
+    },
+    {
+      "name": "scaProjectId",
+      "type": "string",
+      "label": "Project ID",
+      "required": false,
+      "helpMarkDown": "Project ID",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
+    },
+    {
+      "name": "scaEnablePolicyViolations",
+      "type": "boolean",
+      "label": "Enable CxSCA Project's Policy Enforcement",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Mark the build as failed or unstable if the project's policy is violated.Note: Assigning a policy to a project is done from within CxSAST",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },

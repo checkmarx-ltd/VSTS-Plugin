@@ -9,8 +9,7 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  nodejsAppDir19: CxScan/CxScanV19
+variables:  
   nodejsAppDir20: CxScan/CxScanV20
 
 steps:
@@ -18,12 +17,6 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
-
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'install --no-optional'
-    workingDir: $(nodejsAppDir19)
 
 - task: Npm@1
   inputs:
@@ -37,17 +30,6 @@ steps:
     customCommand: 'run-script build'
     displayName: 'npm build 20'
     workingDir: $(nodejsAppDir20)
-
-- task: Npm@1
-  inputs:
-    command : 'custom'
-    customCommand: 'run-script build'
-    displayName: 'npm build 19'
-    workingDir: $(nodejsAppDir19)
-
-- script: npm test
-  displayName: Run tests
-  workingDirectory: $(nodejsAppDir19)
 
 - script: npm test
   displayName: Run tests
