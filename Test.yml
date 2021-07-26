@@ -1,0 +1,11 @@
+steps:
+- task: Checkmarx-Prerelease.cxsast.cx-scan-task.Application security testing@2021
+  displayName: 'Application security testing'
+  inputs:
+    projectName: TestEven
+    CheckmarxService: SAST
+    fullTeamName: '\CxServer'
+    enableDependencyScan: true
+    dependencyServerURL: SCA
+    dependencyTenant: Plugins
+    scaTeam: '\CxServer'
