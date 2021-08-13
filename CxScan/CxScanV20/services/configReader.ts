@@ -389,21 +389,12 @@ Proxy Pass: ******`);
     }
 
     private extractBaseURL(url :string) : string {
-        // first index of / slash return url as it is or else return first occurance of /
-        let urlToReturn = new URL(url);
-        if(!urlToReturn.origin){
-            return urlToReturn.origin
-        }else{
-            let port =  urlToReturn.port;
-            let host = urlToReturn.host;
-            let protocol= urlToReturn.protocol;
-            let urlReturn='';
-            if(port)
-            urlReturn=protocol+"//"+host+":"+port;
-            else
-            urlReturn=protocol+"//"+host
-            return urlReturn;
+        //look for index of first / that appears after host:port 
+        var index = url.indexOf("/", url.indexOf("://")+3); 
+        if(index > -1){
+            return url.substring(0,index);
         }
-       
+        else
+            return "";       
     }
 }

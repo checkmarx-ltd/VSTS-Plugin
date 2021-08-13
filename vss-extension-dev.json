@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2021.3.15",
+  "version": "2021.3.17",
   "publisher": "Checkmarx-Prerelease",
   "targets": [
     {
