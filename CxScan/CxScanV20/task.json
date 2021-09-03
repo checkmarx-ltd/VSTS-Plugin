@@ -12,7 +12,7 @@
   "version": {
     "Major": 2021,
     "Minor": 3,
-    "Patch": 17
+    "Patch": 18
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -138,6 +138,15 @@
       "label": "Team",
       "required": false,
       "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users).",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "sslFilePath",
+      "type": "string",
+      "label": "SSL Certificate Path",
+      "required": false,
+      "helpMarkDown": "SSL and CA certificate path to validate CxSAST",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },

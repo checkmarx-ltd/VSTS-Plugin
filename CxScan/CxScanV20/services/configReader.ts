@@ -199,6 +199,7 @@ export class ConfigReader {
         }
 
         const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        const sslFilePath=taskLib.getInput('sslFilePath', false) || '';
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         if (customPreset) {
@@ -273,7 +274,8 @@ export class ConfigReader {
             cxOrigin: jobOrigin,
             cxOriginUrl:cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
-            proxyConfig: proxyResult
+            proxyConfig: proxyResult,
+            certFilePath:sslFilePath
         };
         this.format(result);
         this.formatSCA(result);
