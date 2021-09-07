@@ -61,6 +61,9 @@ export class ConfigReader {
         let endpointIdSCA;
         let authSchemeSCA;
         let scaServerUrl;
+        let scaTenant;
+        let scaWebAppUrl;
+        let scaAccessControlUrl;
         let scaUsername;
         let scaPassword;
         let scaConfigFiles;
@@ -101,6 +104,9 @@ export class ConfigReader {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
+            scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
+            scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
+            scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
             //sca section sast credentials 
@@ -211,13 +217,13 @@ export class ConfigReader {
         let scanTimeoutInMinutes = +rawTimeout;
         
         const scaResult: ScaConfig = {
-            accessControlUrl: taskLib.getInput('dependencyAccessControlURL', false) || '',
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '' ,
             apiUrl: scaServerUrl || '',
             username: scaUsername || '',
             password: scaPassword || '',
-            tenant: taskLib.getInput('dependencyTenant', false) || '',
-            webAppUrl: taskLib.getInput('dependencyWebAppURL', false) || '',
+            tenant: scaTenant || '',
+            accessControlUrl: scaAccessControlUrl || '',
+            webAppUrl: scaWebAppUrl || '',
             dependencyFileExtension: taskLib.getInput('dependencyFileExtension', false) || '',
             dependencyFolderExclusion: taskLib.getInput('dependencyFolderExclusion', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
@@ -235,11 +241,7 @@ export class ConfigReader {
             sastUsername:scaSASTUserName ||'',
             sastPassword:scaSASTPassword || '',
             isExploitable:isExploitableSca || false,
-
-
         };
-
-        
         
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
@@ -344,6 +346,8 @@ if(config.scaConfig.isExploitable){
 Checkmarx SAST Username: ${config.scaConfig.sastUsername}
 Checkmarx SAST Password: *********
 Project Full Path: ${config.scaConfig.sastProjectName}
+
+
 Project ID: ${config.scaConfig.sastProjectId}`)
 if(!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName){
 this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
