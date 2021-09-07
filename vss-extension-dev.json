@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2021.3.17",
-  "publisher": "Checkmarx-Prerelease",
+  "version": "2021.3.33",
+  "publisher": "YashhJaggi",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -111,6 +111,7 @@
         "name": "CxScan"
       }
     },
+
     {
       "id": "CxEndpoint-Persistent",
       "description": "Service Endpoint type for all Cx connections",
@@ -121,6 +122,7 @@
       "properties": {
         "name": "Checkmarx-Endpoint",
         "displayName": "Checkmarx",
+      
         "authenticationSchemes": [
           {
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
@@ -153,16 +155,51 @@
         "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a Checkmarx cloud account</span>"
       }
     },
+
     {
       "id": "SCA-Endpoint-Persistent",
       "description": "Service Endpoint type for all SCA connections",
       "type": "ms.vss-endpoint.service-endpoint-type",
-      "targets": [
-        "ms.vss-endpoint.endpoint-types"
-      ],
+      "targets": [ "ms.vss-endpoint.endpoint-types" ],
       "properties": {
         "name": "SCA-Endpoint",
         "displayName": "SCA",
+
+        "inputDescriptors": [
+          {
+            "id": "dependencyAccessControlURL",
+            "name": "Access Control URL",
+            "description": "SCA Access Control URL",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          },{
+            "id": "dependencyWebAppURL",
+            "name": "Web App URL",
+            "description": "SCA Web App URL",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          },
+          {
+            "id": "dependencyTenant",
+            "name": "Account",
+            "description": "SCA account",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          }
+        ],
+
         "authenticationSchemes": [
           {
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
@@ -195,6 +232,7 @@
         "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a Checkmarx cloud account</span>"
       }
     },
+
     {
       "id": "cx-report",
       "type": "ms.vss-build-web.build-results-tab",
