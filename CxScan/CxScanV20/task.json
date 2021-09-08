@@ -144,7 +144,7 @@
     {
       "name": "sslFilePath",
       "type": "string",
-      "label": "SSL Certificate Path",
+      "label": "CA Certificate URL",
       "required": false,
       "helpMarkDown": "SSL and CA certificate path to validate CxSAST",
       "groupName": "scanSettings",
@@ -340,6 +340,15 @@
       "label": "Team",
       "required": false,
       "helpMarkDown": "CxSCA Team name",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "sslFilePath",
+      "type": "string",
+      "label": "CA Certificate URL",
+      "required": false,
+      "helpMarkDown": "SSL and CA certificate path to validate CxSCA",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
