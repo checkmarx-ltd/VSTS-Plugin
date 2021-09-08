@@ -199,7 +199,8 @@ export class ConfigReader {
         }
 
         const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
-        const sslFilePath=taskLib.getInput('sslFilePath', false) || '';
+        const scaCertFilePath=taskLib.getInput('scaCaChainFilePath', false) || '';
+        const sastCertFilePath=taskLib.getInput('sastCaChainFilePath', false) || '';
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         if (customPreset) {
@@ -236,7 +237,7 @@ export class ConfigReader {
             sastUsername:scaSASTUserName ||'',
             sastPassword:scaSASTPassword || '',
             isExploitable:isExploitableSca || false,
-
+            cacert_chainFilePath: scaCertFilePath
 
         };
 
@@ -260,7 +261,8 @@ export class ConfigReader {
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
-            isPublic: true
+            isPublic: true,
+            cacert_chainFilePath: sastCertFilePath
         };
 
         const result: ScanConfig = {
@@ -274,8 +276,7 @@ export class ConfigReader {
             cxOrigin: jobOrigin,
             cxOriginUrl:cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
-            proxyConfig: proxyResult,
-            certFilePath:sslFilePath
+            proxyConfig: proxyResult            
         };
         this.format(result);
         this.formatSCA(result);
