@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "2021.3.35",
-  "publisher": "YashhJaggi",
+  "publisher": "Checkmarx-Prerelease",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
