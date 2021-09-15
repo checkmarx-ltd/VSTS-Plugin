@@ -152,6 +152,24 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "fullScansScheduled",
+      "type": "boolean",
+      "label": "Schedule periodic full scans",
+      "required": false,
+      "helpMarkDown": "Set true for incremental scan. If no scan was done yet, the scan will be a full scan and the following ones will be incremental.",
+      "groupName": "scanSettings",
+      "visibleRule": "incScan = true"
+    },
+    {
+      "name": "fullScanCycle",
+      "type": "string",
+      "label": "Number of incremental scans between full scans (1-99)",
+      "required": false,
+      "helpMarkDown": "Incremental scans are faster, but with time they become less accurate.Therefore, after a number of incremental scans it is recommended to perform a full scan.Here you can schedule periodic full scans to be executed after a certain number of incremental scans.Alternatively, if you want to run full scans on weekends, you can create 2 separate jobs.First job - to run incremental scans on weekdays and second job - to run full scans on weekends.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "forceScan",
       "type": "boolean",
       "label": "Force Scan",
