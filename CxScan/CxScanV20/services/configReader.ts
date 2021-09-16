@@ -207,6 +207,10 @@ export class ConfigReader {
             presetName = taskLib.getInput('preset', false) || '';
         }
 
+        let engineConfigId : number;
+        let engineConfigurationId = taskLib.getInput('engineConfigId',false) || '0';
+        engineConfigId = Number(engineConfigurationId);
+
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
         
@@ -259,7 +263,9 @@ export class ConfigReader {
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
-            isPublic: true
+            isPublic: true,
+            engineConfigurationId : engineConfigId
+            
         };
 
         const result: ScanConfig = {
@@ -301,7 +307,7 @@ Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
-
+Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
