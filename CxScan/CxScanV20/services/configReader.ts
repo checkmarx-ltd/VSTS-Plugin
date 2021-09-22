@@ -211,6 +211,9 @@ export class ConfigReader {
         let engineConfigurationId = taskLib.getInput('engineConfigId',false) || '0';
         engineConfigId = Number(engineConfigurationId);
 
+        const postScanAction = taskLib.getInput('postScanAction', false) || '';
+        const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
+
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
         
@@ -264,7 +267,10 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            engineConfigurationId : engineConfigId
+            customFields: taskLib.getInput('customfields',false) || '',
+            engineConfigurationId : engineConfigId,
+            postScanActionName : postScanAction,
+            avoidDuplicateProjectScans : avoidDuplicateProjectScans
             
         };
 
@@ -307,7 +313,10 @@ Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
+Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+Post Scan Action: ${config.sastConfig.postScanActionName}
+Avoid Duplicate Project Scan: ${config.sastConfig.}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
