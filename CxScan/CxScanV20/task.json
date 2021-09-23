@@ -154,7 +154,7 @@
       "name": "postScanAction",
        "type": "string",
       "label": "Post Scan Action",
-      "required": true,
+      "required": false,
       "helpMarkDown": "Select Post Scan Action Name.",
       "visibleRule": "enableSastScan = true"
     },
