@@ -151,14 +151,6 @@
       "visibleRule": "enableSastScan = true"
     },
     {
-      "name": "postScanAction",
-       "type": "string",
-      "label": "Post Scan Action",
-      "required": false,
-      "helpMarkDown": "Select Post Scan Action Name.",
-      "visibleRule": "enableSastScan = true"
-    },
-    {
       "name": "fullTeamName",
       "type": "string",
       "label": "Team",
@@ -242,6 +234,15 @@
       "required": false,
       "helpMarkDown": "Free text comment that will appear within CxSAST scan information",
       "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "postScanAction",
+       "type": "string",
+      "label": "Post Scan Action",
+      "required": false,
+      "groupName": "scanSettings",
+      "helpMarkDown": "Select Post Scan Action name that is to be performed automatically after a scan.",
       "visibleRule": "enableSastScan = true"
     },
     {
