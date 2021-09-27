@@ -212,10 +212,12 @@ export class ConfigReader {
             throw Error('Sources directory is not provided.');
         }
 
-        let rawTeamName = taskLib.getInput('fullTeamName', false) || '';
-        if(!rawTeamName){
+        let rawTeamName ;
+        if(teamsSASTServiceCon){
             rawTeamName = teamsSASTServiceCon || '';
         }
+        rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         //if preset is given in service connection then it will take as first priority
