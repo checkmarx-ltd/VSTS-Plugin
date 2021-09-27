@@ -128,6 +128,28 @@
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
             "inputDescriptors": [
               {
+                "id": "preset",
+                "name": "Preset",
+                "description": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": true
+                }
+              },
+              {
+                "id": "teams",
+                "name": "Teams",
+                "description": "The full team name",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": true
+                }
+              },
+              {
                 "id": "username",
                 "name": "Username",
                 "description": "Checkmarx username",
@@ -191,6 +213,17 @@
             "id": "dependencyTenant",
             "name": "Account",
             "description": "SCA account",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          },
+          {
+            "id": "teams",
+            "name": "Teams",
+            "description": "The full team name",
             "inputMode": "textbox",
             "isConfidential": false,
             "validation": {

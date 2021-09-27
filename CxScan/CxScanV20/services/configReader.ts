@@ -46,6 +46,8 @@ export class ConfigReader {
         let sastServerUrl;
         let sastUsername;
         let sastPassword;
+        let teamsSASTServiceCon;
+        let presetSASTServiceCon;
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -55,6 +57,8 @@ export class ConfigReader {
             }
             sastServerUrl = taskLib.getEndpointUrl(endpointId, false) || '';
             sastUsername = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
+            teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', false) || '';
+            presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', false) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
         }
 
@@ -78,6 +82,7 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
+        let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
@@ -105,6 +110,7 @@ export class ConfigReader {
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
             scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
+            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', false) || '';
             scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
             scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
@@ -116,8 +122,10 @@ export class ConfigReader {
             scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
             }
         }
-        //checking for projectFullPath and ProjectId either is mandatory to fill
-        
+        //
+        if(!scaTeamName){
+            scaTeamName = teamsSCAServiceCon;
+        }
         let proxy;
         let proxyUrl;
         let proxyUsername;
@@ -204,9 +212,16 @@ export class ConfigReader {
             throw Error('Sources directory is not provided.');
         }
 
-        const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        let rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        if(!rawTeamName){
+            rawTeamName = teamsSASTServiceCon || '';
+        }
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
+        //if preset is given in service connection then it will take as first priority
+        if(presetSASTServiceCon){
+            presetName=presetSASTServiceCon;
+        }
         if (customPreset) {
             presetName = customPreset;
         } else {
@@ -310,6 +325,7 @@ Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.file
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
