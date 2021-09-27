@@ -221,8 +221,7 @@ export class ConfigReader {
         //if preset is given in service connection then it will take as first priority
         if(presetSASTServiceCon){
             presetName=presetSASTServiceCon;
-        }
-        if (customPreset) {
+        }else if (customPreset) {
             presetName = customPreset;
         } else {
             presetName = taskLib.getInput('preset', false) || '';
