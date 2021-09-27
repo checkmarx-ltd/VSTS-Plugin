@@ -215,8 +215,10 @@ export class ConfigReader {
         let rawTeamName ;
         if(teamsSASTServiceCon){
             rawTeamName = teamsSASTServiceCon || '';
+        }else{
+            rawTeamName = taskLib.getInput('fullTeamName', false) || '';
         }
-        rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+     
         
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
