@@ -140,7 +140,7 @@
               },
               {
                 "id": "teams",
-                "name": "Teams",
+                "name": "Team",
                 "description": "The full team name",
                 "inputMode": "textbox",
                 "isConfidential": false,
@@ -222,7 +222,7 @@
           },
           {
             "id": "teams",
-            "name": "Teams",
+            "name": "Team",
             "description": "The full team name",
             "inputMode": "textbox",
             "isConfidential": false,
