@@ -121,7 +121,7 @@
       ],
       "properties": {
         "name": "Checkmarx-Endpoint",
-        "displayName": "Checkmarx",
+        "displayName": "Checkmarx SAST",
       
         "authenticationSchemes": [
           {
@@ -185,7 +185,7 @@
       "targets": [ "ms.vss-endpoint.endpoint-types" ],
       "properties": {
         "name": "SCA-Endpoint",
-        "displayName": "SCA",
+        "displayName": " Checkmarx SCA",
 
         "inputDescriptors": [
           {
