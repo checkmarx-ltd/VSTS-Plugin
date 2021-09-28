@@ -54,7 +54,7 @@ export class ConfigReader {
         let isScheduledScan=false;
         let isIncremental=false;
         let scheduleCycle:string;
-       
+        let cycleNumber : number;
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -67,7 +67,7 @@ export class ConfigReader {
             teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
             presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
-            isIncremental = isIncremental;
+            isIncremental = taskLib.getBoolInput('incScan', false) || false;
             // adding 
             isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
             scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
@@ -295,7 +295,7 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
-            isIncremental: taskLib.getBoolInput('incScan', false) || false,
+            isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
