@@ -57,8 +57,8 @@ export class ConfigReader {
             }
             sastServerUrl = taskLib.getEndpointUrl(endpointId, false) || '';
             sastUsername = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
-            teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', false) || '';
-            presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', false) || '';
+            teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
+            presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
         }
 
@@ -110,7 +110,7 @@ export class ConfigReader {
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
             scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
-            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', false) || '';
+            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
             scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
             scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
@@ -284,7 +284,8 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            engineConfigurationId : engineConfigId
+            engineConfigurationId : engineConfigId  
+            
             
         };
 
@@ -328,6 +329,7 @@ Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.file
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+
 
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
