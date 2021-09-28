@@ -76,6 +76,16 @@ export class ConfigReader {
         let sastServerUrl;
         let sastUsername;
         let sastPassword;
+        let teamsSASTServiceCon;
+        let presetSASTServiceCon;
+        let isThisBuildIncremental=false;
+        let FULL_SCAN_CYCLE_MIN=1;
+        let FULL_SCAN_CYCLE_MAX =99;
+        let isScheduledScan=false;
+        let isIncremental=false;
+        let scheduleCycle:string;
+        
+        let buildId  = taskLib.getVariable('Build.BuildId') || '';
 
 
         if (sastEnabled) {
@@ -86,7 +96,26 @@ export class ConfigReader {
             }
             sastServerUrl = taskLib.getEndpointUrl(endpointId, false) || '';
             sastUsername = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
+            teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
+            presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
+            isIncremental = taskLib.getBoolInput('incScan', false) || false;
+            // adding 
+            isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
+            scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
+            if(isScheduledScan && scheduleCycle){
+            let cycleNumber  = parseInt(scheduleCycle);
+            let buildIdForScan = parseInt(buildId);
+            // if user entered invalid value for full scan cycle - all scans will be incremental
+            if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
+                isIncremental= true;
+            }else
+            // If user asked to perform full scan after every 9 incremental scans -
+            // it means that every 10th scan should be full,
+            // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
+                isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
+            }
+           
         }
 
         let endpointIdSCA;
@@ -109,6 +138,7 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
+        let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
@@ -136,6 +166,7 @@ export class ConfigReader {
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
             scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
+            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
             scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
             scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
@@ -147,8 +178,10 @@ export class ConfigReader {
             scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
             }
         }
-        //checking for projectFullPath and ProjectId either is mandatory to fill
-        
+        //
+        if(teamsSCAServiceCon){
+            scaTeamName = teamsSCAServiceCon;
+        }
         let proxy;
         let proxyUrl;
         let proxyUsername;
@@ -205,6 +238,7 @@ export class ConfigReader {
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
         let projectName=taskLib.getVariable('System.TeamProject');
         const pipelineId=taskLib.getVariable('System.DefinitionId');
+        
         let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
@@ -235,10 +269,20 @@ export class ConfigReader {
             throw Error('Sources directory is not provided.');
         }
 
-        const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        let rawTeamName ;
+        if(teamsSASTServiceCon){
+            rawTeamName = teamsSASTServiceCon;
+        }else{
+            rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        }
+     
+        
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
-        if (customPreset) {
+        //if preset is given in service connection then it will take as first priority
+        if(presetSASTServiceCon){
+            presetName=presetSASTServiceCon;
+        }else if (customPreset) {
             presetName = customPreset;
         } else {
             presetName = taskLib.getInput('preset', false) || '';
@@ -286,7 +330,7 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
-            isIncremental: taskLib.getBoolInput('incScan', false) || false,
+            isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
@@ -301,6 +345,7 @@ export class ConfigReader {
             engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName : postScanAction,
             avoidDuplicateProjectScans : avoidDuplicateProjectScans
+            
             
         };
 
