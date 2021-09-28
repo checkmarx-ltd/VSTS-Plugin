@@ -123,7 +123,7 @@ export class ConfigReader {
             }
         }
         //
-        if(!scaTeamName){
+        if(teamsSCAServiceCon){
             scaTeamName = teamsSCAServiceCon;
         }
         let proxy;
