@@ -48,6 +48,14 @@ export class ConfigReader {
         let sastPassword;
         let teamsSASTServiceCon;
         let presetSASTServiceCon;
+        let isThisBuildIncremental=false;
+        let FULL_SCAN_CYCLE_MIN=1;
+        let FULL_SCAN_CYCLE_MAX =99;
+        let isScheduledScan=false;
+        let isIncremental=false;
+        let scheduleCycle:string;
+        
+        let buildId  = taskLib.getVariable('Build.BuildId') || '';
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -60,6 +68,23 @@ export class ConfigReader {
             teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
             presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
+            isIncremental = taskLib.getBoolInput('incScan', false) || false;
+            // adding 
+            isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
+            scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
+            if(isScheduledScan && scheduleCycle){
+            let cycleNumber  = parseInt(scheduleCycle);
+            let buildIdForScan = parseInt(buildId);
+            // if user entered invalid value for full scan cycle - all scans will be incremental
+            if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
+                isIncremental= true;
+            }else
+            // If user asked to perform full scan after every 9 incremental scans -
+            // it means that every 10th scan should be full,
+            // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
+                isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
+            }
+           
         }
 
         let endpointIdSCA;
@@ -182,6 +207,7 @@ export class ConfigReader {
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
         let projectName=taskLib.getVariable('System.TeamProject');
         const pipelineId=taskLib.getVariable('System.DefinitionId');
+        
         let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
@@ -273,7 +299,7 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
-            isIncremental: taskLib.getBoolInput('incScan', false) || false,
+            isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
@@ -284,7 +310,7 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            engineConfigurationId : engineConfigId  
+            engineConfigurationId : engineConfigId
             
             
         };
@@ -329,6 +355,7 @@ Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.file
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+
 
 
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
