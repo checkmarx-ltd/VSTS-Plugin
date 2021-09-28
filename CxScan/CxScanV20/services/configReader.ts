@@ -54,7 +54,8 @@ export class ConfigReader {
         let isScheduledScan=false;
         let isIncremental=false;
         let scheduleCycle:string;
-        let cycleNumber : number;
+        
+        let buildId  = taskLib.getVariable('Build.BuildId') || '';
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -73,6 +74,7 @@ export class ConfigReader {
             scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
             if(isScheduledScan && scheduleCycle){
             let cycleNumber  = parseInt(scheduleCycle);
+            let buildIdForScan = parseInt(buildId);
             // if user entered invalid value for full scan cycle - all scans will be incremental
             if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
                 isIncremental= true;
@@ -80,8 +82,9 @@ export class ConfigReader {
             // If user asked to perform full scan after every 9 incremental scans -
             // it means that every 10th scan should be full,
             // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
-                isIncremental = 10 % (cycleNumber + 1) == 1;
+                isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
             }
+           
         }
 
         let endpointIdSCA;
@@ -204,6 +207,7 @@ export class ConfigReader {
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
         let projectName=taskLib.getVariable('System.TeamProject');
         const pipelineId=taskLib.getVariable('System.DefinitionId');
+        
         let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
@@ -306,7 +310,7 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            engineConfigurationId : engineConfigId  
+            engineConfigurationId : engineConfigId
             
             
         };
@@ -351,6 +355,7 @@ Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.file
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+
 
 
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
