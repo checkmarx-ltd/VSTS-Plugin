@@ -48,6 +48,13 @@ export class ConfigReader {
         let sastPassword;
         let teamsSASTServiceCon;
         let presetSASTServiceCon;
+        let isThisBuildIncremental=false;
+        let FULL_SCAN_CYCLE_MIN=1;
+        let FULL_SCAN_CYCLE_MAX =99;
+        let isScheduledScan=false;
+        let isIncremental=false;
+        let scheduleCycle:string;
+        let cycleNumber : number;
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -60,6 +67,21 @@ export class ConfigReader {
             teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
             presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
+            isIncremental = taskLib.getBoolInput('incScan', false) || false;
+            // adding 
+            isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
+            scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
+            if(isScheduledScan && scheduleCycle){
+            let cycleNumber  = parseInt(scheduleCycle);
+            // if user entered invalid value for full scan cycle - all scans will be incremental
+            if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
+                isIncremental= true;
+            }else
+            // If user asked to perform full scan after every 9 incremental scans -
+            // it means that every 10th scan should be full,
+            // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
+                isIncremental = 10 % (cycleNumber + 1) == 1;
+            }
         }
 
         let endpointIdSCA;
