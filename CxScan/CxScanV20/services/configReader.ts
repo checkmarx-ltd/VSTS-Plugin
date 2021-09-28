@@ -214,7 +214,7 @@ export class ConfigReader {
 
         let rawTeamName ;
         if(teamsSASTServiceCon){
-            rawTeamName = teamsSASTServiceCon || '';
+            rawTeamName = teamsSASTServiceCon;
         }else{
             rawTeamName = taskLib.getInput('fullTeamName', false) || '';
         }
