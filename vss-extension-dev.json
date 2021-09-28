@@ -135,7 +135,7 @@
                 "isConfidential": false,
                 "validation": {
                   "dataType": "String",
-                  "isRequired": false
+                  "isRequired": true
                 }
               },
               {
@@ -146,7 +146,7 @@
                 "isConfidential": false,
                 "validation": {
                   "dataType": "String",
-                  "isRequired": false
+                  "isRequired": true
                 }
               },
               {
@@ -228,7 +228,7 @@
             "isConfidential": false,
             "validation": {
               "dataType": "String",
-              "isRequired": false
+              "isRequired": true
             }
           }
         ],
