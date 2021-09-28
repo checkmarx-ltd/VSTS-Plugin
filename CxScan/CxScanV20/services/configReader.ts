@@ -46,6 +46,8 @@ export class ConfigReader {
         let sastServerUrl;
         let sastUsername;
         let sastPassword;
+        let teamsSASTServiceCon;
+        let presetSASTServiceCon;
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -55,6 +57,8 @@ export class ConfigReader {
             }
             sastServerUrl = taskLib.getEndpointUrl(endpointId, false) || '';
             sastUsername = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
+            teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
+            presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
         }
 
@@ -78,6 +82,7 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
+        let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
@@ -105,6 +110,7 @@ export class ConfigReader {
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
             scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
+            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
             scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
             scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
@@ -116,8 +122,10 @@ export class ConfigReader {
             scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
             }
         }
-        //checking for projectFullPath and ProjectId either is mandatory to fill
-        
+        //
+        if(teamsSCAServiceCon){
+            scaTeamName = teamsSCAServiceCon;
+        }
         let proxy;
         let proxyUrl;
         let proxyUsername;
@@ -204,10 +212,20 @@ export class ConfigReader {
             throw Error('Sources directory is not provided.');
         }
 
-        const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        let rawTeamName ;
+        if(teamsSASTServiceCon){
+            rawTeamName = teamsSASTServiceCon;
+        }else{
+            rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        }
+     
+        
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
-        if (customPreset) {
+        //if preset is given in service connection then it will take as first priority
+        if(presetSASTServiceCon){
+            presetName=presetSASTServiceCon;
+        }else if (customPreset) {
             presetName = customPreset;
         } else {
             presetName = taskLib.getInput('preset', false) || '';
@@ -266,7 +284,8 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            engineConfigurationId : engineConfigId
+            engineConfigurationId : engineConfigId  
+            
             
         };
 
@@ -310,6 +329,8 @@ Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.file
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+
+
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
