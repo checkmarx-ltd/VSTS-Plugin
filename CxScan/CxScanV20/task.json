@@ -217,13 +217,21 @@
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
-    
     {
       "name": "scanTimeout",
       "type": "string",
       "label": "Scan Timeout In Minutes",
       "required": false,
       "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "customfields",
+      "type": "string",
+      "label": "Scan Level Custom Fields",
+      "required": false,
+      "helpMarkDown": "Add scan level custom fields and its value. Example: field1:value1,field2:value2",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -244,6 +252,15 @@
       "required": false,
       "helpMarkDown": "Free text comment that will appear within CxSAST scan information",
       "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "postScanAction",
+       "type": "string",
+      "label": "Post Scan Action",
+      "required": false,
+      "groupName": "scanSettings",
+      "helpMarkDown": "Select Post Scan Action name that is to be performed automatically after a scan.",
       "visibleRule": "enableSastScan = true"
     },
     {
@@ -290,6 +307,16 @@
       "required": false,
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST. (Only available if synchronous mode is enabled).",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "avoidDuplicateScans",
+      "type": "boolean",
+      "label": "Avoid duplicate project scans in queue",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Avoid duplicate project scans in queue.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },

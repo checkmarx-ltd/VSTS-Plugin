@@ -31,6 +31,36 @@ export class ConfigReader {
         return result;
     }
 
+    /**
+     * This method validates given scan level custom fields format
+     * @param scanCustomFields - Input given to custom fields
+     * @param log - Logger object 
+     * @returns 
+     */
+    private static getCustomFieldJSONString(scanCustomFields : any, log : Logger): string {
+        let customFieldJSONStr = "";
+        if(scanCustomFields)
+        {
+            let keyValuePairs = scanCustomFields.split(',');
+            for (const keyVal of keyValuePairs) 
+            {
+                const [key, value] = keyVal.split(':');
+                if(key && value){
+                    customFieldJSONStr = customFieldJSONStr + "\"" +key+"\"" + ":" + "\"" +value+"\",";
+                }else{
+                    log.error("Custom fields are not defined in correct format. Example: field1:value1,field2:value2");
+                    customFieldJSONStr = "";
+                    break;
+                }
+            }
+            if(customFieldJSONStr && customFieldJSONStr.length > 0){
+                customFieldJSONStr = customFieldJSONStr.substring(0,customFieldJSONStr.length-1);
+                customFieldJSONStr = "{" + customFieldJSONStr + "}";
+            }
+        }
+        return customFieldJSONStr;
+    }
+
     readConfig(): ScanConfig {
         const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
 
@@ -56,6 +86,7 @@ export class ConfigReader {
         let scheduleCycle:string;
         
         let buildId  = taskLib.getVariable('Build.BuildId') || '';
+
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -257,9 +288,9 @@ export class ConfigReader {
             presetName = taskLib.getInput('preset', false) || '';
         }
 
-        let engineConfigId : number;
-        let engineConfigurationId = taskLib.getInput('engineConfigId',false) || '0';
-        engineConfigId = Number(engineConfigurationId);
+        
+        const postScanAction = taskLib.getInput('postScanAction', false) || '';
+        const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
@@ -310,7 +341,10 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            engineConfigurationId : engineConfigId
+            customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
+            engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
+            postScanActionName : postScanAction,
+            avoidDuplicateProjectScans : avoidDuplicateProjectScans
             
             
         };
@@ -354,10 +388,10 @@ Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
+Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
-
-
-
+Post Scan Action: ${config.sastConfig.postScanActionName}
+Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
