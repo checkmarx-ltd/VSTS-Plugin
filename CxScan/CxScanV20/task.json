@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 2021,
-    "Minor": 3,
-    "Patch": 17
+    "Minor": 4,
+    "Patch": 1
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -156,6 +156,15 @@
       "label": "Team",
       "required": false,
       "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users). If team is mentioned in Service connection,then this will get overridden with Service connection Team",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "sastCaChainFilePath",
+      "type": "string",
+      "label": "CA Certificate Chain File Path",
+      "required": false,
+      "helpMarkDown": "Certificate Authority (CA) Certification Chain file path in PEM format. The chain file should contain all intermediate CA certificates and root certificate for the CxSAST Service. For example: d:\\certlocation\\cacert-chain.pem . This parameter is must when CxSAST is configured with Self-signed certificate.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -365,6 +374,15 @@
       "label": "Team",
       "required": false,
       "helpMarkDown": "CxSCA Team name.If team is mentioned in Service connection, then this will get overridden with Service connection Team",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaCaChainFilePath",
+      "type": "string",
+      "label": "CA Certificate Chain File Path",
+      "required": false,
+      "helpMarkDown": "Certificate Authority (CA) Certification Chain file path in PEM format. The chain file should contain all intermediate CA certificates and root CA certificate for CxSCA service. For example: d:\\certlocation\\cacert-chain.pem .",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },

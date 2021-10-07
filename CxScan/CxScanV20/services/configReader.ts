@@ -269,14 +269,14 @@ export class ConfigReader {
             throw Error('Sources directory is not provided.');
         }
 
-        let rawTeamName ;
+		let rawTeamName ;
         if(teamsSASTServiceCon){
             rawTeamName = teamsSASTServiceCon;
         }else{
             rawTeamName = taskLib.getInput('fullTeamName', false) || '';
         }
-     
-        
+        const scaCertFilePath=taskLib.getInput('scaCaChainFilePath', false) || '';
+        const sastCertFilePath=taskLib.getInput('sastCaChainFilePath', false) || '';
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         //if preset is given in service connection then it will take as first priority
@@ -320,6 +320,8 @@ export class ConfigReader {
             sastUsername:scaSASTUserName ||'',
             sastPassword:scaSASTPassword || '',
             isExploitable:isExploitableSca || false,
+            cacert_chainFilePath: scaCertFilePath
+
         };
         
         const sastResult: SastConfig = {
@@ -341,11 +343,11 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
+            cacert_chainFilePath: sastCertFilePath
+			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
             engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName : postScanAction,
             avoidDuplicateProjectScans : avoidDuplicateProjectScans
-            
             
         };
 
@@ -360,7 +362,7 @@ export class ConfigReader {
             cxOrigin: jobOrigin,
             cxOriginUrl:cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
-            proxyConfig: proxyResult
+            proxyConfig: proxyResult            
         };
         this.format(result);
         this.formatSCA(result);
