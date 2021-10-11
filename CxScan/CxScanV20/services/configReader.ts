@@ -343,7 +343,7 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            cacert_chainFilePath: sastCertFilePath
+            cacert_chainFilePath: sastCertFilePath,
 			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
             engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName : postScanAction,
