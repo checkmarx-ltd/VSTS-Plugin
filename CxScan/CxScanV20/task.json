@@ -240,7 +240,7 @@
       "type": "string",
       "label": "Scan Level Custom Fields",
       "required": false,
-      "helpMarkDown": "Add scan level custom fields and its value. Example: field1:value1,field2:value2",
+      "helpMarkDown": "Add scan level custom fields and its value. Example: field1:value1,field2:value2 (Note that the feature works with 9.4 version SAST onwards.)",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -269,7 +269,7 @@
       "label": "Post Scan Action",
       "required": false,
       "groupName": "scanSettings",
-      "helpMarkDown": "Select Post Scan Action name that is to be performed automatically after a scan.",
+      "helpMarkDown": "Select Post Scan Action name that is to be performed automatically after a scan.(Note that the feature works with 9.3 version SAST onwards.)",
       "visibleRule": "enableSastScan = true"
     },
     {
