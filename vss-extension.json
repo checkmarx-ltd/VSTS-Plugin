@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2021.4.1",
+  "version": "2021.4.2",
   "publisher": "Checkmarx",
   "targets": [
     {
@@ -120,11 +120,33 @@
       ],
       "properties": {
         "name": "Checkmarx-Endpoint",
-        "displayName": "Checkmarx",
+        "displayName": "Checkmarx SAST",
         "authenticationSchemes": [
           {
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
             "inputDescriptors": [
+              {
+                "id": "preset",
+                "name": "Preset",
+                "description": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": false
+                }
+              },
+              {
+                "id": "teams",
+                "name": "Team",
+                "description": "The full team name",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": false
+                }
+              },
               {
                 "id": "username",
                 "name": "Username",
@@ -162,7 +184,7 @@
       ],
       "properties": {
         "name": "SCA-Endpoint",
-        "displayName": "SCA",
+        "displayName": " Checkmarx SCA",
         "authenticationSchemes": [
           {
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
@@ -187,6 +209,17 @@
                 "validation": {
                   "dataType": "String",
                   "isRequired": true
+                }
+              },
+              {
+                "id": "teams",
+                "name": "Team",
+                "description": "The full team name",
+                "inputMode": "textbox",
+                "isConfidential": false,
+                "validation": {
+                  "dataType": "String",
+                  "isRequired": false
                 }
               }
             ]

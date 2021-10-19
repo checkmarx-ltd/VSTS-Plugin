@@ -12,7 +12,7 @@
   "version": {
     "Major": 2021,
     "Minor": 4,
-    "Patch": 1
+    "Patch": 2
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -91,7 +91,7 @@
       "required": false,
       "groupName": "scanSettings",
       "defaultValue": "Checkmarx Default",
-      "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).",
+      "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).If preset is mentioned in Service connection, then this will get overridden with Service connection Preset",
       "options": {
         "Checkmarx Default": "Checkmarx Default",
         "All": "All",
@@ -133,11 +133,29 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "engineConfigId",
+      "type": "pickList",
+      "label": "Source character encoding (Configuration)",
+      "required": false,
+      "groupName": "scanSettings",
+      "defaultValue": "Default Configuration",
+      "helpMarkDown": "Source character encoding for the project.",
+      "options": {
+        "1": "Default Configuration",
+        "2": "Japanese (Shift-JIS)",
+        "3": "Korean",
+        "5": "Multi-language Scan",
+        "6": "Improved Scan Flow",
+        "0": "Project Default (Only for CxSAST 9.3.0+)"
+      },
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "fullTeamName",
       "type": "string",
       "label": "Team",
       "required": false,
-      "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users).",
+      "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users). If team is mentioned in Service connection,then this will get overridden with Service connection Team",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -157,6 +175,24 @@
       "required": false,
       "defaultValue": "true",
       "helpMarkDown": "Set true for incremental scan. If no scan was done yet, the scan will be a full scan and the following ones will be incremental.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "fullScansScheduled",
+      "type": "boolean",
+      "label": "Schedule periodic full scans",
+      "required": false,
+      "helpMarkDown": "Set true for incremental scan. If no scan was done yet, the scan will be a full scan and the following ones will be incremental.",
+      "groupName": "scanSettings",
+      "visibleRule": "incScan = true"
+    },
+    {
+      "name": "fullScanCycle",
+      "type": "string",
+      "label": "Number of incremental scans between full scans (1-99)",
+      "required": false,
+      "helpMarkDown": "Incremental scans are faster, but with time they become less accurate.Therefore, after a number of incremental scans it is recommended to perform a full scan.Here you can schedule periodic full scans to be executed after a certain number of incremental scans.Alternatively, if you want to run full scans on weekends, you can create 2 separate jobs.First job - to run incremental scans on weekdays and second job - to run full scans on weekends.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -190,13 +226,21 @@
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
-    
     {
       "name": "scanTimeout",
       "type": "string",
       "label": "Scan Timeout In Minutes",
       "required": false,
       "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "customfields",
+      "type": "string",
+      "label": "Scan Level Custom Fields",
+      "required": false,
+      "helpMarkDown": "Add scan level custom fields and its value. Example: field1:value1,field2:value2 (Note that the feature works with 9.4 version SAST onwards.)",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -217,6 +261,15 @@
       "required": false,
       "helpMarkDown": "Free text comment that will appear within CxSAST scan information",
       "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "postScanAction",
+       "type": "string",
+      "label": "Post Scan Action",
+      "required": false,
+      "groupName": "scanSettings",
+      "helpMarkDown": "Select Post Scan Action name that is to be performed automatically after a scan.(Note that the feature works with 9.3 version SAST onwards.)",
       "visibleRule": "enableSastScan = true"
     },
     {
@@ -267,6 +320,16 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "avoidDuplicateScans",
+      "type": "boolean",
+      "label": "Avoid duplicate project scans in queue",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Avoid duplicate project scans in queue.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "enableDependencyScan",
       "type": "boolean",
       "label": "Enable Dependency Scan",
@@ -283,36 +346,7 @@
       "helpMarkDown": "CxSCA API endpoint. The node running the plugin is required to have connectivity to this address. The scanned code will be delivered to this address for analysis as part of the scan flow",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyAccessControlURL",
-      "type": "string",
-      "label": "CxSCA Access Control URL",
-      "required": false,
-      "defaultValue":"https://platform.checkmarx.net",
-      "helpMarkDown": "CxSCA Access Control URL, The node running the plugin is required to have connectivity to this address",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyWebAppURL",
-      "type": "string",
-      "label": "CxSCA Web App URL",
-      "required": false,
-      "defaultValue":"https://sca.checkmarx.net",
-      "helpMarkDown": "CxSCA Web App URL. The node running the plugin is not required to connect to this address. It is used for report links",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "dependencyTenant",
-      "type": "string",
-      "label": "CxSCA Account",
-      "required": false,
-      "helpMarkDown": "Account name of your CxSCA credentials",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
-    },
+    },    
     {
       "name": "dependencyFileExtension",
       "type": "string",
@@ -339,7 +373,7 @@
       "type": "string",
       "label": "Team",
       "required": false,
-      "helpMarkDown": "CxSCA Team name",
+      "helpMarkDown": "CxSCA Team name.If team is mentioned in Service connection, then this will get overridden with Service connection Team",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },

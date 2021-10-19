@@ -31,6 +31,36 @@ export class ConfigReader {
         return result;
     }
 
+    /**
+     * This method validates given scan level custom fields format
+     * @param scanCustomFields - Input given to custom fields
+     * @param log - Logger object 
+     * @returns 
+     */
+    private static getCustomFieldJSONString(scanCustomFields : any, log : Logger): string {
+        let customFieldJSONStr = "";
+        if(scanCustomFields)
+        {
+            let keyValuePairs = scanCustomFields.split(',');
+            for (const keyVal of keyValuePairs) 
+            {
+                const [key, value] = keyVal.split(':');
+                if(key && value){
+                    customFieldJSONStr = customFieldJSONStr + "\"" +key+"\"" + ":" + "\"" +value+"\",";
+                }else{
+                    log.error("Custom fields are not defined in correct format. Example: field1:value1,field2:value2");
+                    customFieldJSONStr = "";
+                    break;
+                }
+            }
+            if(customFieldJSONStr && customFieldJSONStr.length > 0){
+                customFieldJSONStr = customFieldJSONStr.substring(0,customFieldJSONStr.length-1);
+                customFieldJSONStr = "{" + customFieldJSONStr + "}";
+            }
+        }
+        return customFieldJSONStr;
+    }
+
     readConfig(): ScanConfig {
         const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
 
@@ -46,6 +76,17 @@ export class ConfigReader {
         let sastServerUrl;
         let sastUsername;
         let sastPassword;
+        let teamsSASTServiceCon;
+        let presetSASTServiceCon;
+        let isThisBuildIncremental=false;
+        let FULL_SCAN_CYCLE_MIN=1;
+        let FULL_SCAN_CYCLE_MAX =99;
+        let isScheduledScan=false;
+        let isIncremental=false;
+        let scheduleCycle:string;
+        
+        let buildId  = taskLib.getVariable('Build.BuildId') || '';
+
 
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
@@ -55,12 +96,34 @@ export class ConfigReader {
             }
             sastServerUrl = taskLib.getEndpointUrl(endpointId, false) || '';
             sastUsername = taskLib.getEndpointAuthorizationParameter(endpointId, 'username', false) || '';
+            teamsSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'teams', true) || '';
+            presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
+            isIncremental = taskLib.getBoolInput('incScan', false) || false;
+            // adding 
+            isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
+            scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
+            if(isScheduledScan && scheduleCycle){
+            let cycleNumber  = parseInt(scheduleCycle);
+            let buildIdForScan = parseInt(buildId);
+            // if user entered invalid value for full scan cycle - all scans will be incremental
+            if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
+                isIncremental= true;
+            }else
+            // If user asked to perform full scan after every 9 incremental scans -
+            // it means that every 10th scan should be full,
+            // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
+                isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
+            }
+           
         }
 
         let endpointIdSCA;
         let authSchemeSCA;
         let scaServerUrl;
+        let scaTenant;
+        let scaWebAppUrl;
+        let scaAccessControlUrl;
         let scaUsername;
         let scaPassword;
         let scaConfigFiles;
@@ -75,6 +138,7 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
+        let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
@@ -101,6 +165,10 @@ export class ConfigReader {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
+            scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
+            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
+            scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
+            scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
             //sca section sast credentials 
@@ -110,8 +178,10 @@ export class ConfigReader {
             scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
             }
         }
-        //checking for projectFullPath and ProjectId either is mandatory to fill
-        
+        //
+        if(teamsSCAServiceCon){
+            scaTeamName = teamsSCAServiceCon;
+        }
         let proxy;
         let proxyUrl;
         let proxyUsername;
@@ -168,6 +238,7 @@ export class ConfigReader {
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
         let projectName=taskLib.getVariable('System.TeamProject');
         const pipelineId=taskLib.getVariable('System.DefinitionId');
+        
         let cxOriginUrl:string='';
         let jobOrigin = '';
         if (collectionURI) {
@@ -198,28 +269,40 @@ export class ConfigReader {
             throw Error('Sources directory is not provided.');
         }
 
-        const rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+		let rawTeamName ;
+        if(teamsSASTServiceCon){
+            rawTeamName = teamsSASTServiceCon;
+        }else{
+            rawTeamName = taskLib.getInput('fullTeamName', false) || '';
+        }
         const scaCertFilePath=taskLib.getInput('scaCaChainFilePath', false) || '';
         const sastCertFilePath=taskLib.getInput('sastCaChainFilePath', false) || '';
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
-        if (customPreset) {
+        //if preset is given in service connection then it will take as first priority
+        if(presetSASTServiceCon){
+            presetName=presetSASTServiceCon;
+        }else if (customPreset) {
             presetName = customPreset;
         } else {
             presetName = taskLib.getInput('preset', false) || '';
         }
 
+        
+        const postScanAction = taskLib.getInput('postScanAction', false) || '';
+        const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
+
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
         
         const scaResult: ScaConfig = {
-            accessControlUrl: taskLib.getInput('dependencyAccessControlURL', false) || '',
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '' ,
             apiUrl: scaServerUrl || '',
             username: scaUsername || '',
             password: scaPassword || '',
-            tenant: taskLib.getInput('dependencyTenant', false) || '',
-            webAppUrl: taskLib.getInput('dependencyWebAppURL', false) || '',
+            tenant: scaTenant || '',
+            accessControlUrl: scaAccessControlUrl || '',
+            webAppUrl: scaWebAppUrl || '',
             dependencyFileExtension: taskLib.getInput('dependencyFileExtension', false) || '',
             dependencyFolderExclusion: taskLib.getInput('dependencyFolderExclusion', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
@@ -240,8 +323,6 @@ export class ConfigReader {
             cacert_chainFilePath: scaCertFilePath
 
         };
-
-        
         
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
@@ -251,7 +332,7 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
-            isIncremental: taskLib.getBoolInput('incScan', false) || false,
+            isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
@@ -262,7 +343,12 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('low'),
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
-            cacert_chainFilePath: sastCertFilePath
+            cacert_chainFilePath: sastCertFilePath,
+			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
+            engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
+            postScanActionName : postScanAction,
+            avoidDuplicateProjectScans : avoidDuplicateProjectScans
+            
         };
 
         const result: ScanConfig = {
@@ -304,7 +390,10 @@ Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
-
+Scan Custom Fields: ${config.sastConfig.customFields}
+Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
+Post Scan Action: ${config.sastConfig.postScanActionName}
+Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
@@ -347,6 +436,8 @@ if(config.scaConfig.isExploitable){
 Checkmarx SAST Username: ${config.scaConfig.sastUsername}
 Checkmarx SAST Password: *********
 Project Full Path: ${config.scaConfig.sastProjectName}
+
+
 Project ID: ${config.scaConfig.sastProjectId}`)
 if(!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName){
 this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
