@@ -165,10 +165,35 @@ export class ConfigReader {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
-            scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
             teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
-            scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
-            scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
+
+            try{
+                scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
+                if(!scaTenant || scaTenant == '')
+                {
+                    scaTenant = taskLib.getInput('dependencyTenant', false);
+                }
+            } catch (err) {
+                scaTenant = taskLib.getInput('dependencyTenant', false);
+            }
+            try{
+                scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
+                if(!scaAccessControlUrl || scaAccessControlUrl == '')
+               {
+                    scaAccessControlUrl = taskLib.getInput('dependencyAccessControlURL', false);
+                }
+            } catch (err) {
+                scaAccessControlUrl = taskLib.getInput('dependencyAccessControlURL', false);
+            }
+            try{
+                scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
+                if(!scaWebAppUrl || scaWebAppUrl == ''){
+                    scaWebAppUrl = taskLib.getInput('dependencyWebAppURL', false);
+                }
+            }catch(err){
+                scaWebAppUrl = taskLib.getInput('dependencyWebAppURL', false);
+            }
+           
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
             //sca section sast credentials 

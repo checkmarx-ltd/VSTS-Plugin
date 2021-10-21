@@ -436,6 +436,35 @@
       "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
     },
     {
+      "name": "dependencyAccessControlURL",
+      "type": "string",
+      "label": "CxSCA Access Control URL",
+      "required": false,
+      "defaultValue":"https://platform.checkmarx.net",
+      "helpMarkDown": "CxSCA Access Control URL, The node running the plugin is required to have connectivity to this address",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = ignore"
+    },
+    {
+      "name": "dependencyWebAppURL",
+      "type": "string",
+      "label": "CxSCA Web App URL",
+      "required": false,
+      "defaultValue":"https://sca.checkmarx.net",
+      "helpMarkDown": "CxSCA Web App URL. The node running the plugin is not required to connect to this address. It is used for report links",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = ignore"
+    },
+    {
+      "name": "dependencyTenant",
+      "type": "string",
+      "label": "CxSCA Account",
+      "required": false,
+      "helpMarkDown": "Account name of your CxSCA credentials",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = ignore"
+    },
+    {
       "name": "scaProjectFullPath",
       "type": "string",
       "label": "Project Full Path",
