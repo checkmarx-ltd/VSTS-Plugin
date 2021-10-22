@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
-  "version": "2021.4.2",
+  "version": "2021.4.4",
   "publisher": "Checkmarx",
   "targets": [
     {
@@ -185,6 +185,53 @@
       "properties": {
         "name": "SCA-Endpoint",
         "displayName": " Checkmarx SCA",
+
+        "inputDescriptors": [
+          {
+            "id": "dependencyAccessControlURL",
+            "name": "Access Control URL",
+            "description": "SCA Access Control URL",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          },{
+            "id": "dependencyWebAppURL",
+            "name": "Web App URL",
+            "description": "SCA Web App URL",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          },
+          {
+            "id": "dependencyTenant",
+            "name": "Account",
+            "description": "SCA account",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": true
+            }
+          },
+          {
+            "id": "teams",
+            "name": "Team",
+            "description": "The full team name",
+            "inputMode": "textbox",
+            "isConfidential": false,
+            "validation": {
+              "dataType": "String",
+              "isRequired": false
+            }
+          }
+        ],
+
         "authenticationSchemes": [
           {
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
@@ -209,17 +256,6 @@
                 "validation": {
                   "dataType": "String",
                   "isRequired": true
-                }
-              },
-              {
-                "id": "teams",
-                "name": "Team",
-                "description": "The full team name",
-                "inputMode": "textbox",
-                "isConfidential": false,
-                "validation": {
-                  "dataType": "String",
-                  "isRequired": false
                 }
               }
             ]
