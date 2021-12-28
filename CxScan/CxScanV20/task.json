@@ -12,7 +12,7 @@
   "version": {
     "Major": 2021,
     "Minor": 4,
-    "Patch": 4
+    "Patch": 6
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -404,7 +404,34 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
-    
+    {
+      "name": "isEnableScaResolver",
+      "type": "boolean",
+      "label": "Enable SCA Resolver",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "When this flag is enabled, it will include entire source code in the zip file to be scanned.",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "pathToScaResolver",
+      "type": "string",
+      "label": "SCA Resolver Path",
+      "required": false,
+      "helpMarkDown": " Folder path on the Jenkins node machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
+      "groupName": "dependencyScan",
+      "visibleRule": "isEnableScaResolver = true"
+    },
+    {
+      "name": "scaResolverAddParameters",
+      "type": "string",
+      "label": "SCA Resolver Additional Parameters",
+      "required": false,
+      "helpMarkDown": "Provide arguments to ScaResovler tool in the same format as supported by the ScaResolver tool. ScaResolver tool will be executed in offline mode. '-s', '-n' and '-r' are mandatory parameters. Example:  -s C:\\Users\\SampleProject -n ProjectName -r c:\\output, where -s: Path to the source code, -n: name of the project and -r: local machine path where the evidence file must be stored",
+      "groupName": "dependencyScan",
+      "visibleRule": "isEnableScaResolver = true"
+    },
     {
       "name": "includeSource",
       "type": "boolean",
