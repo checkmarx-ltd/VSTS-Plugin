@@ -401,7 +401,7 @@
       "type": "string",
       "label": "SCA Resolver Path",
       "required": false,
-      "helpMarkDown": " Folder path on the Jenkins node machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
+      "helpMarkDown": " Folder path on the Agent machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
       "groupName": "dependencyScan",
       "visibleRule": "isEnableScaResolver = true"
     },
