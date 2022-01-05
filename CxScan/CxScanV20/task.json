@@ -236,6 +236,15 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "projectcustomfields",
+      "type": "string",
+      "label": "Project Level Custom Fields",
+      "required": false,
+      "helpMarkDown": "This field allows user to store metadata about projects. Add project level custom fields and its value. Example: field1:value1,field2:value2",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "customfields",
       "type": "string",
       "label": "Scan Level Custom Fields",
