@@ -10,9 +10,9 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 2021,
-    "Minor": 4,
-    "Patch": 4
+    "Major": 2022,
+    "Minor": 1,
+    "Patch": 1
   },
   "demands": [],
   "minimumAgentVersion": "1.0.0",
@@ -410,13 +410,41 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "isEnableScaResolver",
+      "type": "boolean",
+      "label": "Enable SCA Resolver",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "To Enable SCA Resolver",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "pathToScaResolver",
+      "type": "string",
+      "label": "SCA Resolver Path",
+      "required": false,
+      "helpMarkDown": " Folder path on the Agent machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
+      "groupName": "dependencyScan",
+      "visibleRule": "isEnableScaResolver = true"
+    },
+    {
+      "name": "scaResolverAddParameters",
+      "type": "string",
+      "label": "SCA Resolver Additional Parameters",
+      "required": false,
+      "helpMarkDown": "Provide arguments to ScaResovler tool in the same format as supported by the ScaResolver tool. ScaResolver tool will be executed in offline mode. '-s', '-n' and '-r' are mandatory parameters. Example:  -s C:\\Users\\SampleProject -n ProjectName -r c:\\output, where -s: Path to the source code, -n: name of the project and -r: local machine path where the evidence file must be stored",
+      "groupName": "dependencyScan",
+      "visibleRule": "isEnableScaResolver = true"
+    },
+    {
       "name": "scaConfigFilePaths",
       "type": "string",
       "label": "Package Manager's Config File(s) Path",
       "required": false,
       "helpMarkDown": "This parameter is to provide configuration files of the package managers used in the project.For ex. Settings.xml for maven,Nuget.config for Nuget,.npmrc for npm etc.This option is relevant for projects that use private artifactory.Use CxSCA agent to perform the scan. CxSCA agent will try to perform dependency resolution using the package manager's configuration files provided. Multiple comma character separated file path can be provided. 'Example:c:/user/.m2/settings.xml,c:/user/npm/.npmrc'",
       "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
+      "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
     },
     {
       "name": "scaEnvVariables",
@@ -425,9 +453,8 @@
       "required": false,
       "helpMarkDown": "This option is relevant only if Package Manager's config files are provided. In many cases, package manager's configuration files reference environment variables, often to provide credentials without storing them in a file. Pass all such variables using this option.Example: param1:value1,param2:value2",
       "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
+      "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false "
     },
-    
     {
       "name": "includeSource",
       "type": "boolean",
@@ -436,7 +463,7 @@
       "defaultValue": "false",
       "helpMarkDown": "When this flag is enabled, it will include entire source code in the zip file to be scanned.",
       "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
+      "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
     },
     
     {
@@ -447,7 +474,7 @@
       "defaultValue": "false",
       "helpMarkDown": "Exploitable Path feature will attempt to co-relate CxSCA scan with the available CxSAST scan results. In this section, provide details like CxSAST server url, credentials. At the job level, two more parameters need to be configured. These project full path name and/or project id from CxSAST.Example of Project Full Path: CxServer/team1/projectname",
       "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true"
+      "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
     },
     {
       "name": "CheckmarxServiceForSca",
@@ -503,7 +530,7 @@
       "required": false,
       "helpMarkDown": "Project ID",
       "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
+      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true "
     },
     {
       "name": "scaEnablePolicyViolations",
