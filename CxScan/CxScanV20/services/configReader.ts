@@ -345,10 +345,7 @@ export class ConfigReader {
             sastUsername:scaSASTUserName ||'',
             sastPassword:scaSASTPassword || '',
             isExploitable:isExploitableSca || false,
-            cacert_chainFilePath: scaCertFilePath,
-            isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
-            pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
-            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || ''
+            cacert_chainFilePath: scaCertFilePath
 
         };
         
@@ -449,9 +446,6 @@ Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
-Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
-Path To SCA Resolver:${config.scaConfig.pathToScaResolver}
-Additional Paramters for SCA Resolver:${config.scaConfig.scaResolverAddParameters}
 Include Sources:${config.scaConfig.includeSource}
 Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViolations}
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
