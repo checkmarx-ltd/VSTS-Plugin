@@ -360,6 +360,7 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
+            overrideProjectSettings: taskLib.getBoolInput('overrideProjectSettings', false) || false,
             isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
@@ -413,6 +414,7 @@ Preset name: ${config.sastConfig.presetName}
 Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
+Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
 Is incremental scan: ${config.sastConfig.isIncremental}
 Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}

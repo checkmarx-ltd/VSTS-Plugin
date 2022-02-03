@@ -169,6 +169,16 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "overrideProjectSettings",
+      "type": "boolean",
+      "label": "Override Project Settings",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Specifies whether to overwrite project settings. If set to false or empty, overwrite is determined by configuration value 'OverrideProjectSetting' in dbo.CxComponentConfiguration",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "incScan",
       "type": "boolean",
       "label": "Incremental Scan",
