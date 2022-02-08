@@ -362,6 +362,7 @@ export class ConfigReader {
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
+            generatePDFReport: taskLib.getBoolInput('generatePDFReport', false) || false,
             vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false) || false,
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
@@ -419,6 +420,7 @@ Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
 Post Scan Action: ${config.sastConfig.postScanActionName}
 Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}
+Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
