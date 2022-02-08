@@ -283,6 +283,29 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "failBuildForNewVulnerabilitiesEnabled",
+      "type": "boolean",
+      "label": "Fail the build for new SAST vulnerabilities",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "This will fail the build if new vulnerabilities found. Enables the option to fail the build according to the defined severity (or higher). This option works in addition to the regular thresholds (e.g. if 'x' total high vulnerabilities were found OR at least 1 new vulnerability, fail the build).  This option is only available if the 'Enable vulnerability threshold' parameter is enabled.",
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
+    },
+    {
+      "name": "failBuildForNewVulnerabilitiesSeverity",
+      "type": "pickList",
+      "label": "Fail for the following severity or greater",
+      "required": false,
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true",    
+      "options": {
+        "HIGH": "HIGH",
+        "MEDIUM": "MEDIUM",
+        "LOW": "LOW"
+      }
+    },
+    {
       "name": "high",
       "type": "string",
       "label": "CxSAST High",
