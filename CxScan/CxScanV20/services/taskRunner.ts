@@ -11,6 +11,7 @@ import * as path from "path";
 
 export class TaskRunner {
     private static readonly REPORT_ATTACHMENT_NAME = 'cxReport';
+    private static readonly PDF_REPORT_ATTACHMENT_NAME = 'cxPDFReport';
     private static readonly REPORT_SCA_PACKAGES = 'cxSCAPackages';
     private static readonly REPORT_SCA_FINDINGS = 'cxSCAVulnerabilities';
     private static readonly REPORT_SCA_SUMMARY = 'cxSCASummary';
@@ -70,12 +71,19 @@ export class TaskRunner {
         const jsonReportPath = TaskRunner.generateJsonReportPath(TaskRunner.REPORT_ATTACHMENT_NAME);
 
         const reportJson = JSON.stringify(scanResults);
+        let pdfReportPath = '';
         let scaPackages ='';
         let scaFindings ='';
         let scaSummary ='';
         let scaPackagesPath = '';
         let scaFindingsPath = '';
         let scaSummaryPath = '';
+
+        if(scanResults.generatePDFReport){
+            pdfReportPath = TaskRunner.generateJsonReportPath(TaskRunner.PDF_REPORT_ATTACHMENT_NAME);
+            this.log.info(`Build Directory: ${pdfReportPath}`);
+        }
+
         if(scanResults.scaResults){
             scaPackages = JSON.stringify(scanResults.scaResults.packages);
             scaFindings = JSON.stringify(scanResults.scaResults.dependencyHighCVEReportTable.concat(scanResults.scaResults.dependencyMediumCVEReportTable,scanResults.scaResults.dependencyLowCVEReportTable));
@@ -89,6 +97,11 @@ export class TaskRunner {
         await this.writeReportFile(jsonReportPath,reportJson);
         taskLib.addAttachment(TaskRunner.REPORT_ATTACHMENT_NAME, TaskRunner.REPORT_ATTACHMENT_NAME, jsonReportPath);
 
+        if(scanResults.generatePDFReport){
+            await this.writePDFReportFile(pdfReportPath, scanResults.reportPDF);
+            taskLib.addAttachment(TaskRunner.PDF_REPORT_ATTACHMENT_NAME, TaskRunner.PDF_REPORT_ATTACHMENT_NAME, pdfReportPath);
+        }
+        
         if(scanResults.scaResults){
             await this.writeReportFile(scaPackagesPath,scaPackages);
             taskLib.addAttachment(TaskRunner.REPORT_SCA_PACKAGES, TaskRunner.REPORT_SCA_PACKAGES, scaPackagesPath);
@@ -98,6 +111,18 @@ export class TaskRunner {
             taskLib.addAttachment(TaskRunner.REPORT_SCA_FINDINGS, TaskRunner.REPORT_SCA_FINDINGS,scaFindingsPath);
         }
         this.log.info('Generated Checkmarx summary results.');
+    }
+    private async writePDFReportFile(pdfReportPath:string, pdfReport: any[]){
+        this.log.info(`Writing PDF report to ${pdfReportPath}`);
+        await new Promise((resolve, reject) => {
+            fs.writeFile(pdfReportPath, pdfReport, err => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(pdfReportPath);
+                }
+            });
+        });
     }
 
     private async writeReportFile(jsonReportPath:string,jsonReport:string){
@@ -120,8 +145,11 @@ export class TaskRunner {
         let buildNumber = taskLib.getVariable('Build.BuildNumber');
 
 
-        if(buildDir){
+        if(buildDir && reportType !== TaskRunner.PDF_REPORT_ATTACHMENT_NAME){
             return buildDir+path.sep+reportType+'_'+buildNumber+'.json';
+        }
+        else if(buildDir && reportType === TaskRunner.PDF_REPORT_ATTACHMENT_NAME){
+            return buildDir+path.sep+reportType+'_'+buildNumber+'.pdf';
         }
         // If the agent variable above is not specified (e.g. in debug environment), tempDir is undefined and
         // tmpNameSync function falls back to a default temp directory.
@@ -129,6 +157,9 @@ export class TaskRunner {
         switch (reportType) {
             case TaskRunner.REPORT_ATTACHMENT_NAME:
                 result = tmpNameSync({dir: buildDir, prefix: 'cxreport-', postfix: '.json'});
+                break;
+            case TaskRunner.PDF_REPORT_ATTACHMENT_NAME:
+                result = tmpNameSync({dir: buildDir, prefix: 'cxPDFReport-', postfix: '.pdf'});
                 break;
             case TaskRunner.REPORT_SCA_PACKAGES:
                 result = tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_PACKAGES, postfix: '.json'});
