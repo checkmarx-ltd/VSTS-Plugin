@@ -171,6 +171,16 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "overrideProjectSettings",
+      "type": "boolean",
+      "label": "Override Project Settings",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Select if project settings like Preset, EngineConfigurationID are to be updated in the CxSAST project. For new project, settings will be always saved on the CxSAST project.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "incScan",
       "type": "boolean",
       "label": "Incremental Scan",
