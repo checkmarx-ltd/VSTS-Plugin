@@ -176,7 +176,7 @@
       "label": "Override Project Settings",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "Specifies whether to overwrite project settings. If set to false or empty, overwrite is determined by configuration value 'OverrideProjectSetting' in dbo.CxComponentConfiguration",
+      "helpMarkDown": "Select if project settings like Preset, EngineConfigurationID are to be updated in the CxSAST project. For new project, settings will be always saved on the CxSAST project.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
