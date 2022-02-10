@@ -114,6 +114,8 @@
         "OWASP TOP 10 - 2010": "OWASP TOP 10 - 2010",
         "OWASP TOP 10 - 2013": "OWASP TOP 10 - 2013",
         "OWASP TOP 10 - 2017": "OWASP TOP 10 - 2017",
+        "OWASP TOP 10 - 2021": "OWASP TOP 10 - 2021",
+        "OWASP TOP 10 API": "OWASP TOP 10 API",
         "PCI": "PCI",
         "SANS top 25": "SANS top 25",
         "STIG": "STIG",
@@ -165,6 +167,16 @@
       "label": "CA Certificate Chain File Path",
       "required": false,
       "helpMarkDown": "Certificate Authority (CA) Certification Chain file path in PEM format. The chain file should contain all intermediate CA certificates and root certificate for the CxSAST Service. For example: d:\\certlocation\\cacert-chain.pem . This parameter is must when CxSAST is configured with Self-signed certificate.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "overrideProjectSettings",
+      "type": "boolean",
+      "label": "Override Project Settings",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Select if project settings like Preset, EngineConfigurationID are to be updated in the CxSAST project. For new project, settings will be always saved on the CxSAST project.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -236,6 +248,15 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "projectcustomfields",
+      "type": "string",
+      "label": "Project Level Custom Fields",
+      "required": false,
+      "helpMarkDown": "This field allows user to store metadata about projects. Add project level custom fields and its value. Example: field1:value1,field2:value2",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "customfields",
       "type": "string",
       "label": "Scan Level Custom Fields",
@@ -273,6 +294,16 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "generatePDFReport",
+      "type": "boolean",
+      "label": "Generate CxSAST PDF report",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Downloads a PDF report with scan results from the Checkmarx server. The report is available via a link on 'Checkmarx Scan Results' page.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "vulnerabilityThreshold",
       "type": "boolean",
       "label": "Enable CxSAST Vulnerability Thresholds",
@@ -281,6 +312,29 @@
       "helpMarkDown": "Set the maximum number of CxSAST vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "failBuildForNewVulnerabilitiesEnabled",
+      "type": "boolean",
+      "label": "Fail the build for new SAST vulnerabilities",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "This will fail the build if new vulnerabilities found. Enables the option to fail the build according to the defined severity (or higher). This option works in addition to the regular thresholds (e.g. if 'x' total high vulnerabilities were found OR at least 1 new vulnerability, fail the build).  This option is only available if the 'Enable vulnerability threshold' parameter is enabled.",
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
+    },
+    {
+      "name": "failBuildForNewVulnerabilitiesSeverity",
+      "type": "pickList",
+      "label": "Fail for the following severity or greater",
+      "required": false,
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true",    
+      "options": {
+        "HIGH": "HIGH",
+        "MEDIUM": "MEDIUM",
+        "LOW": "LOW"
+      }
     },
     {
       "name": "high",

@@ -360,18 +360,23 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
+            overrideProjectSettings: taskLib.getBoolInput('overrideProjectSettings', false) || false,
             isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
+            generatePDFReport: taskLib.getBoolInput('generatePDFReport', false) || false,
             vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false) || false,
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
+            failBuildForNewVulnerabilitiesEnabled: taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false,
+            failBuildForNewVulnerabilitiesSeverity: taskLib.getInput('failBuildForNewVulnerabilitiesSeverity',false) || '',
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
             cacert_chainFilePath: sastCertFilePath,
+            projectCustomFields: taskLib.getInput('projectcustomfields', false) || '',
 			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
             engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName : postScanAction,
@@ -413,16 +418,22 @@ Preset name: ${config.sastConfig.presetName}
 Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
+Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
 Is incremental scan: ${config.sastConfig.isIncremental}
 Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
+Project Custom Fields: ${config.sastConfig.projectCustomFields}
 Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
 Post Scan Action: ${config.sastConfig.postScanActionName}
 Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}
-CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
+Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
+CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}
+CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}
+CxSAST Fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);
+
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
                 this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
