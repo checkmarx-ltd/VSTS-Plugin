@@ -15,7 +15,7 @@
     "Patch": 1
   },
   "demands": [],
-  "minimumAgentVersion": "1.0.0",
+  "minimumAgentVersion": "2.144.0",
   "groups": [
     {
       "name": "projectName",
@@ -612,7 +612,7 @@
     }
   ],
   "execution": {
-    "Node": {
+    "Node10": {
       "target": "target/index.js"
     }
   },
