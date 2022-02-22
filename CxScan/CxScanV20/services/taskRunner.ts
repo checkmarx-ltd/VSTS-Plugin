@@ -112,7 +112,7 @@ export class TaskRunner {
         }
         this.log.info('Generated Checkmarx summary results.');
     }
-    private async writePDFReportFile(pdfReportPath:string, pdfReport: any[]){
+    private async writePDFReportFile(pdfReportPath:string, pdfReport: any){
         this.log.info(`Writing PDF report to ${pdfReportPath}`);
         await new Promise((resolve, reject) => {
             fs.writeFile(pdfReportPath, pdfReport, err => {
