@@ -169,8 +169,7 @@ export class ConfigReader {
 
             try{
                 scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
-                if(!scaTenant || scaTenant == '')
-                {
+                if(!scaTenant || scaTenant == ''){
                     scaTenant = taskLib.getInput('dependencyTenant', false);
                 }
             } catch (err) {
@@ -178,8 +177,7 @@ export class ConfigReader {
             }
             try{
                 scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
-                if(!scaAccessControlUrl || scaAccessControlUrl == '')
-               {
+                if(!scaAccessControlUrl || scaAccessControlUrl == ''){
                     scaAccessControlUrl = taskLib.getInput('dependencyAccessControlURL', false);
                 }
             } catch (err) {
@@ -212,17 +210,24 @@ export class ConfigReader {
         let proxyUsername;
         let proxyPassword;
         let proxyPort;
+        let sastProxyUrl;
+        let scaProxyUrl;
         let proxyResult: ProxyConfig ={
-                    proxyHost : '',
-                    proxyPass :  '',
-                    proxyPort : '',
-                    proxyUser :  '',
-                    proxyUrl :  '',
-                    resolvedProxyUrl :  ''
+                    proxyHost: '',
+                    proxyPass:  '',
+                    proxyPort: '',
+                    proxyUser:  '',
+                    proxyUrl:  '',
+                    sastProxyUrl: '',
+                    scaProxyUrl: '',
+                    resolvedProxyUrl: ''
         };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
             proxyUrl=taskLib.getInput('proxyURL');
+            sastProxyUrl=taskLib.getInput('sastProxyUrl');
+            scaProxyUrl=taskLib.getInput('scaProxyUrl');
+            //add this 
             if (proxy) {
                 if (!proxy.proxyUrl || proxy.proxyUrl == '') {
                     this.log.warning('Proxy is enabled but no proxy settings are defined.');
@@ -232,32 +237,17 @@ export class ConfigReader {
                     proxyResult.proxyPort = '';
                     proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
-
             }
-            else if(proxyUrl && proxyUrl != ''){
-                proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
+            else if( (proxyUrl && proxyUrl != '') || (sastProxyUrl && sastProxyUrl != '') || (scaProxyUrl && scaProxyUrl != '') ){
+                proxyResult.proxyUrl = proxyUrl ? proxyUrl : '';
+                proxyResult.sastProxyUrl = sastProxyUrl ? sastProxyUrl : '';     
+                proxyResult.scaProxyUrl = scaProxyUrl ? scaProxyUrl : '';
             }else {
                 this.log.warning('Proxy is enabled but no proxy settings are defined.');
             }
-
-            if(proxyResult.proxyUrl){
-
-                if(!proxyResult.proxyUrl.startsWith("https://") && !proxyResult.proxyUrl.startsWith("http://")){
-                    this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
-                    proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
-                }
-                
-                let urlParts = url.parse(proxyResult.proxyUrl);
-                //if path in the url is / or empty, it is http proxy url. Add creds if needed.
-                if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") {
-                    let proxyUsernameVar=taskLib.getVariable('proxy-username');
-                    let proxyPasswordVar=taskLib.getVariable('proxy-password');
-                    if(proxyPasswordVar && proxyUsernameVar){
-                        let splitUrl = proxyResult.proxyUrl.split("//");
-                        proxyResult.proxyUrl=splitUrl[0]+'//'+proxyUsernameVar+':'+proxyPasswordVar+'@'+splitUrl[1];
-                    }
-                }
-            }
+            proxyResult.proxyUrl = this.appendCredsToProxyUrl(proxyResult.proxyUrl);
+            proxyResult.sastProxyUrl = this.appendCredsToProxyUrl(proxyResult.sastProxyUrl);
+            proxyResult.scaProxyUrl = this.appendCredsToProxyUrl(proxyResult.scaProxyUrl);
         }
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
@@ -348,8 +338,7 @@ export class ConfigReader {
             cacert_chainFilePath: scaCertFilePath,
             isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
             pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
-            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || ''
-
+            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
         };
         
         const sastResult: SastConfig = {
@@ -380,8 +369,7 @@ export class ConfigReader {
 			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
             engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName : postScanAction,
-            avoidDuplicateProjectScans : avoidDuplicateProjectScans
-            
+            avoidDuplicateProjectScans : avoidDuplicateProjectScans,
         };
 
         const result: ScanConfig = {
@@ -402,6 +390,32 @@ export class ConfigReader {
         this.formatProxy(result);
 
         return result;
+    }
+
+    private appendCredsToProxyUrl(Url: string | undefined): string | undefined {
+        
+        if(Url){
+            let proxyUrl = Url;
+            if(!Url.startsWith("https://") && !Url.startsWith("http://")){
+                this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
+                proxyUrl = "http://" + Url;
+            }
+            
+            let urlParts = url.parse(Url);
+            //if path in the url is / or empty, it is http proxy url. Add creds if needed.
+            if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") 
+            {
+                let proxyUsernameVar=taskLib.getVariable('proxy-username');
+                let proxyPasswordVar=taskLib.getVariable('proxy-password');
+                if(proxyPasswordVar && proxyUsernameVar)
+                {
+                    let splitUrl = Url.split("//");
+                    proxyUrl = splitUrl[0] + '//' + proxyUsernameVar + ':' + proxyPasswordVar + '@' + splitUrl[1];
+                }
+            }
+            return proxyUrl;
+        }
+        return Url;
     }
 
     private format(config: ScanConfig): void {
@@ -504,6 +518,12 @@ Proxy Pass: ******`);
             }
         }else  if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl!=null && config.proxyConfig.proxyUrl!=''){
             this.log.info('Entered Proxy Url '+config.proxyConfig.proxyUrl);
+        }
+        if(config.proxyConfig?.sastProxyUrl != '' && config.proxyConfig?.sastProxyUrl != null){
+            this.log.info(`SAST Proxy URL: ${config.proxyConfig.sastProxyUrl}`);
+        }
+        if(config.proxyConfig?.scaProxyUrl != '' && config.proxyConfig?.scaProxyUrl != null){
+            this.log.info(`SCA Proxy URL: ${config.proxyConfig.scaProxyUrl}`);
         }
         this.log.info('------------------------------------------------------------------------------');
     }

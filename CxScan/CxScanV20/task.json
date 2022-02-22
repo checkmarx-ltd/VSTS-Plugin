@@ -64,7 +64,7 @@
       "label": "Proxy URL",
       "required": false,
       "helpMarkDown": "Provide URL of the proxy server. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport.For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline.Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
-      "visibleRule": "enableProxy = true"
+      "visibleRule": "enableProxy = true && enableProxy = false"
     },
     {
       "name": "enableSastScan",
@@ -83,6 +83,15 @@
       "helpMarkDown": "The CX server endpoint.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "sastProxyUrl",
+      "type": "string",
+      "label": "SAST Proxy URL",
+      "required": false,
+      "helpMarkDown": "Provide URL of the proxy server for SAST scan. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport. For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline. Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableProxy = true && enableSastScan = true"
     },
     {
       "name": "preset",
@@ -401,6 +410,15 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },    
+    {
+      "name": "scaProxyUrl",
+      "type": "string",
+      "label": "CxSCA Proxy URL",
+      "required": false,
+      "helpMarkDown": "Provide URL of the proxy server for CxSCA scan. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport.For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline.Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableProxy = true && enableDependencyScan = true"
+    },
     {
       "name": "dependencyFileExtension",
       "type": "string",
