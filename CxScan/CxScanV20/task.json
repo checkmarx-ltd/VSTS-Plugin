@@ -337,8 +337,9 @@
       "type": "pickList",
       "label": "Fail for the following severity or greater",
       "required": false,
+      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail) ",
       "groupName": "scanSettings",
-      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true",    
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && failBuildForNewVulnerabilitiesEnabled = true",    
       "options": {
         "HIGH": "HIGH",
         "MEDIUM": "MEDIUM",

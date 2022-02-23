@@ -84,6 +84,9 @@ export class ConfigReader {
         let isScheduledScan=false;
         let isIncremental=false;
         let scheduleCycle:string;
+        let vulnerabilityThresholdEnabled=false;
+        let failBuildForNewVulnerabilitiesEnabled=false;
+        let failBuildForNewVulnerabilitiesSeverity='';
         
         let buildId  = taskLib.getVariable('Build.BuildId') || '';
 
@@ -115,7 +118,9 @@ export class ConfigReader {
             // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
                 isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
             }
-           
+            vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
+            failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;  
+            failBuildForNewVulnerabilitiesSeverity = (vulnerabilityThresholdEnabled && failBuildForNewVulnerabilitiesEnabled) ? taskLib.getInput('failBuildForNewVulnerabilitiesSeverity',false) || '' : '';      
         }
 
         let endpointIdSCA;
@@ -356,12 +361,12 @@ export class ConfigReader {
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
             generatePDFReport: taskLib.getBoolInput('generatePDFReport', false) || false,
-            vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false) || false,
+            vulnerabilityThreshold: vulnerabilityThresholdEnabled,
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
-            failBuildForNewVulnerabilitiesEnabled: taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false,
-            failBuildForNewVulnerabilitiesSeverity: taskLib.getInput('failBuildForNewVulnerabilitiesSeverity',false) || '',
+            failBuildForNewVulnerabilitiesEnabled: failBuildForNewVulnerabilitiesEnabled, 
+            failBuildForNewVulnerabilitiesSeverity: failBuildForNewVulnerabilitiesSeverity,
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
             cacert_chainFilePath: sastCertFilePath,
