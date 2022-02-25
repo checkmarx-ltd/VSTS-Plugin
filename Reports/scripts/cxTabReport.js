@@ -36,7 +36,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                     var isPdf_Link = true;
                     taskClient.getPlanAttachments(vsoContext.project.id, "build", build.orchestrationPlan.planId, "cxPDFReport").then(function(pdfTaskAttachments){
                         if(pdfTaskAttachments.length === 1) {
-                            isPdf_Link =flase;
+                            isPdf_Link =false;
                             var recId = pdfTaskAttachments[0].recordId;
                             var timelineId = pdfTaskAttachments[0].timelineId;
                             taskClient.getAttachmentContent(vsoContext.project.id, "build", build.orchestrationPlan.planId, timelineId, recId, "cxPDFReport", "cxPDFReport").then(function(pdfAttachmentContent) {
