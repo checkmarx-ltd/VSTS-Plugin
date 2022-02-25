@@ -143,6 +143,7 @@ export class TaskRunner {
         // temp files manually.
         let buildDir = taskLib.getVariable('Agent.BuildDirectory');
         let buildNumber = taskLib.getVariable('Build.BuildNumber');
+        let projectName=taskLib.getVariable('System.TeamProject');
 
 
         if(buildDir && reportType !== TaskRunner.PDF_REPORT_ATTACHMENT_NAME){
@@ -159,7 +160,7 @@ export class TaskRunner {
                 result = tmpNameSync({dir: buildDir, prefix: 'cxreport-', postfix: '.json'});
                 break;
             case TaskRunner.PDF_REPORT_ATTACHMENT_NAME:
-                result = tmpNameSync({dir: buildDir, prefix: 'cxPDFReport-', postfix: '.pdf'});
+                result = tmpNameSync({dir: buildDir, prefix: projectName+'-', postfix: '.pdf'});
                 break;
             case TaskRunner.REPORT_SCA_PACKAGES:
                 result = tmpNameSync({dir: buildDir, prefix: this.REPORT_SCA_PACKAGES, postfix: '.json'});
