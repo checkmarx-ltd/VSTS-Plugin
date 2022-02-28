@@ -12,7 +12,7 @@
   "version": {
     "Major": 2022,
     "Minor": 1,
-    "Patch": 5
+    "Patch": 14
   },
   "demands": [],
   "minimumAgentVersion": "2.144.0",
@@ -308,9 +308,9 @@
       "label": "Generate CxSAST PDF report",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "Downloads a PDF report with scan results from the Checkmarx server. The report is available via a link on 'Checkmarx Scan Results' page.",
+      "helpMarkDown": "Downloads a PDF report with scan results from the Checkmarx server. The report is available via a link on 'Checkmarx Scan Results' page. (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "visibleRule": "enableSastScan = true && syncMode=true "
     },
     {
       "name": "vulnerabilityThreshold",
@@ -320,7 +320,7 @@
       "defaultValue": "false",
       "helpMarkDown": "Set the maximum number of CxSAST vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "visibleRule": "enableSastScan = true && syncMode=true"
     },
     {
       "name": "failBuildForNewVulnerabilitiesEnabled",
@@ -330,7 +330,7 @@
       "defaultValue": "false",
       "helpMarkDown": "This will fail the build if new vulnerabilities found. Enables the option to fail the build according to the defined severity (or higher). This option works in addition to the regular thresholds (e.g. if 'x' total high vulnerabilities were found OR at least 1 new vulnerability, fail the build).  This option is only available if the 'Enable vulnerability threshold' parameter is enabled.",
       "groupName": "scanSettings",
-      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && syncMode=true "
     },
     {
       "name": "failBuildForNewVulnerabilitiesSeverity",
@@ -381,7 +381,7 @@
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST. (Only available if synchronous mode is enabled).",
       "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "visibleRule": "enableSastScan = true && syncMode=true"
     },
     {
       "name": "avoidDuplicateScans",

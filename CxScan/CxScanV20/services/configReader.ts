@@ -527,7 +527,7 @@ Proxy Pass: ******`);
         if(config.proxyConfig?.sastProxyUrl != '' && config.proxyConfig?.sastProxyUrl != null){
             this.log.info(`SAST Proxy URL: ${config.proxyConfig.sastProxyUrl}`);
         }
-        if(config.proxyConfig?.scaProxyUrl != '' && config.proxyConfig?.scaProxyUrl != null){
+        if(config.proxyConfig?.scaProxyUrl != '' && config.proxyConfig?.scaProxyUrl != null &&config.enableDependencyScan){
             this.log.info(`SCA Proxy URL: ${config.proxyConfig.scaProxyUrl}`);
         }
         this.log.info('------------------------------------------------------------------------------');
