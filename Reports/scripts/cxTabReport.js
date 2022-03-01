@@ -55,7 +55,6 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                
                         }
                     });
-                    
                     taskClient.getPlanAttachments(vsoContext.project.id, "build", build.orchestrationPlan.planId, "cxReport").then(function (taskAttachments) {
                         if (taskAttachments.length === 1) {
                             $(".cx-report-message").remove();
@@ -96,13 +95,6 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var syncMode = resultObject.syncMode;
                                 var generatePDFReport = resultObject.generatePDFReport;
                                 var pdf_link = document.getElementById("pdf-report-download-link");
-                                if(syncMode){
-                                    if(!generatePDFReport){
-                                        pdf_link.style.display = "none";
-                                    }
-                                }else{
-                                    pdf_link.style.display = "none";
-                                }
                                 var scaResults = resultObject.scaResults;
 
                                 if (syncMode && (sastResultsReady || scaResults)) {
@@ -308,6 +300,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     document.getElementById("results-report").setAttribute("style", "display:block");
                                     if(sastResultsReady != true){
                                         document.getElementById("sast-summary").setAttribute("style", "display:none");
+                                    }
+                                    if(!generatePDFReport){ //for pdf link disable
+                                        pdf_link.style.display = "none";
                                     }
 
                                     if (sastResultsReady == true) {
@@ -547,8 +542,6 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
                                 }
                                 else {  //AsyncMode
-                                    
-
                                     if (buildFailed == true) {
                                         document.getElementById("onSastError").setAttribute("style", "display:block");
                                         document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
@@ -560,6 +553,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("onAsyncMode").setAttribute("style", "display:block");
 
                                     }
+                                    pdf_link.style.display = "none"; //for PDF link disable
                                 }
 
 
@@ -963,9 +957,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                     });
                 });
             }
-    
         };
-        
         return StatusSection;
     }(Controls.BaseControl));
     exports.StatusSection = StatusSection;
