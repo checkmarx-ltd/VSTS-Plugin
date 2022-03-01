@@ -94,7 +94,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 //AsyncMode
                                 var syncMode = resultObject.syncMode;
                                 var generatePDFReport = resultObject.generatePDFReport;
-                                var pdf_link = document.getElementById("pdf-report-download-link");
+                                var is_Pdf_link = document.getElementById("pdf-report-download-link");
                                 var scaResults = resultObject.scaResults;
 
                                 if (syncMode && (sastResultsReady || scaResults)) {
@@ -301,8 +301,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     if(sastResultsReady != true){
                                         document.getElementById("sast-summary").setAttribute("style", "display:none");
                                     }
-                                    if(!generatePDFReport){ //for pdf link disable
-                                        pdf_link.style.display = "none";
+                                    if(!generatePDFReport){ //To hide pdf link
+                                        is_Pdf_link.style.display = "none";
                                     }
 
                                     if (sastResultsReady == true) {
@@ -553,7 +553,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("onAsyncMode").setAttribute("style", "display:block");
 
                                     }
-                                    pdf_link.style.display = "none"; //for PDF link disable
+                                    is_Pdf_link.style.display = "none"; //to hide pdf link
                                 }
 
 
