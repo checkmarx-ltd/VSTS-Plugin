@@ -345,7 +345,13 @@ export class ConfigReader {
             pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
             scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
         };
-        
+        var isSyncMode = taskLib.getBoolInput('syncMode', false);
+        var  generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
+        if(!isSyncMode){
+            generatePDFReport=false;
+        }
+       
+       
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -360,7 +366,8 @@ export class ConfigReader {
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
-            generatePDFReport: taskLib.getBoolInput('generatePDFReport', false) || false,
+        
+            generatePDFReport: generatePDFReport,
             vulnerabilityThreshold: vulnerabilityThresholdEnabled,
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
@@ -376,7 +383,7 @@ export class ConfigReader {
             postScanActionName : postScanAction,
             avoidDuplicateProjectScans : avoidDuplicateProjectScans,
         };
-
+        
         const result: ScanConfig = {
             enableSastScan: taskLib.getBoolInput('enableSastScan', false),
             enableDependencyScan: taskLib.getBoolInput('enableDependencyScan', false),
@@ -447,7 +454,9 @@ Project Custom Fields: ${config.sastConfig.projectCustomFields}
 Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
 Post Scan Action: ${config.sastConfig.postScanActionName}
-Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}
+Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
+if(config.isSyncMode){
+    this.log.info(`
 Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}
 CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}
@@ -458,9 +467,9 @@ CxSAST Fail build for the following severity or greater: ${config.sastConfig.fai
                 this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
                 this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
             }
-
             this.log.info(`Enable Project Policy Enforcement: ${config.sastConfig.enablePolicyViolations}`);
             this.log.info('------------------------------------------------------------------------------');
+        }
         }
     }
 
