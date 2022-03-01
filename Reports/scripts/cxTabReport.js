@@ -95,13 +95,12 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 //AsyncMode
                                 var syncMode = resultObject.syncMode;
                                 var generatePDFReport = resultObject.generatePDFReport;
+                                var pdf_link = document.getElementById("pdf-report-download-link");
                                 if(syncMode){
                                     if(!generatePDFReport){
-                                        var pdf_link = document.getElementById("pdf-report-download-link");
                                         pdf_link.style.display = "none";
                                     }
                                 }else{
-                                    var pdf_link = document.getElementById("pdf-report-download-link");
                                     pdf_link.style.display = "none";
                                 }
                                 var scaResults = resultObject.scaResults;
