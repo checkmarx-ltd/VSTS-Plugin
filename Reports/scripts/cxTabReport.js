@@ -33,10 +33,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                 // register your extension with host through callback
                 sharedConfig.onBuildChanged(function (build) {
                     var taskClient = DT_Client.getClient();
-                    var isPdf_Link = true;
                     taskClient.getPlanAttachments(vsoContext.project.id, "build", build.orchestrationPlan.planId, "cxPDFReport").then(function(pdfTaskAttachments){
                         if(pdfTaskAttachments.length === 1) {
-                            isPdf_Link =false;
                             var recId = pdfTaskAttachments[0].recordId;
                             var timelineId = pdfTaskAttachments[0].timelineId;
                             taskClient.getAttachmentContent(vsoContext.project.id, "build", build.orchestrationPlan.planId, timelineId, recId, "cxPDFReport", "cxPDFReport").then(function(pdfAttachmentContent) {
@@ -57,10 +55,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                
                         }
                     });
-                    if(isPdf_Link){
-                        var pdf_link = document.getElementById("pdf-report-download-link");
-                        pdf_link.style.display = "none";
-                    }
+                    
                     taskClient.getPlanAttachments(vsoContext.project.id, "build", build.orchestrationPlan.planId, "cxReport").then(function (taskAttachments) {
                         if (taskAttachments.length === 1) {
                             $(".cx-report-message").remove();
@@ -99,7 +94,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //AsyncMode
                                 var syncMode = resultObject.syncMode;
-
+                                var generatePDFReport = resultObject.generatePDFReport;
+                                if(syncMode){
+                                    if(!generatePDFReport){
+                                        var pdf_link = document.getElementById("pdf-report-download-link");
+                                        pdf_link.style.display = "none";
+                                    }
+                                }else{
+                                    var pdf_link = document.getElementById("pdf-report-download-link");
+                                    pdf_link.style.display = "none";
+                                }
                                 var scaResults = resultObject.scaResults;
 
                                 if (syncMode && (sastResultsReady || scaResults)) {
@@ -544,6 +548,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     }
                                 }
                                 else {  //AsyncMode
+                                    
+
                                     if (buildFailed == true) {
                                         document.getElementById("onSastError").setAttribute("style", "display:block");
                                         document.getElementById("scanErrorMessage").setAttribute("style", "display:block");
@@ -958,7 +964,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                     });
                 });
             }
+    
         };
+        
         return StatusSection;
     }(Controls.BaseControl));
     exports.StatusSection = StatusSection;
