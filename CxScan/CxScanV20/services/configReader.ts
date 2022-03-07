@@ -84,6 +84,9 @@ export class ConfigReader {
         let isScheduledScan=false;
         let isIncremental=false;
         let scheduleCycle:string;
+        let vulnerabilityThresholdEnabled=false;
+        let failBuildForNewVulnerabilitiesEnabled=false;
+        let failBuildForNewVulnerabilitiesSeverity='';
         
         let buildId  = taskLib.getVariable('Build.BuildId') || '';
 
@@ -115,7 +118,9 @@ export class ConfigReader {
             // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
                 isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
             }
-           
+            vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
+            failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;  
+            failBuildForNewVulnerabilitiesSeverity = (vulnerabilityThresholdEnabled && failBuildForNewVulnerabilitiesEnabled) ? taskLib.getInput('failBuildForNewVulnerabilitiesSeverity',false) || '' : '';      
         }
 
         let endpointIdSCA;
@@ -169,8 +174,7 @@ export class ConfigReader {
 
             try{
                 scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
-                if(!scaTenant || scaTenant == '')
-                {
+                if(!scaTenant || scaTenant == ''){
                     scaTenant = taskLib.getInput('dependencyTenant', false);
                 }
             } catch (err) {
@@ -178,8 +182,7 @@ export class ConfigReader {
             }
             try{
                 scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
-                if(!scaAccessControlUrl || scaAccessControlUrl == '')
-               {
+                if(!scaAccessControlUrl || scaAccessControlUrl == ''){
                     scaAccessControlUrl = taskLib.getInput('dependencyAccessControlURL', false);
                 }
             } catch (err) {
@@ -212,17 +215,24 @@ export class ConfigReader {
         let proxyUsername;
         let proxyPassword;
         let proxyPort;
+        let sastProxyUrl;
+        let scaProxyUrl;
         let proxyResult: ProxyConfig ={
-                    proxyHost : '',
-                    proxyPass :  '',
-                    proxyPort : '',
-                    proxyUser :  '',
-                    proxyUrl :  '',
-                    resolvedProxyUrl :  ''
+                    proxyHost: '',
+                    proxyPass:  '',
+                    proxyPort: '',
+                    proxyUser:  '',
+                    proxyUrl:  '',
+                    sastProxyUrl: '',
+                    scaProxyUrl: '',
+                    resolvedProxyUrl: ''
         };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
             proxyUrl=taskLib.getInput('proxyURL');
+            sastProxyUrl=taskLib.getInput('sastProxyUrl');
+            scaProxyUrl=taskLib.getInput('scaProxyUrl');
+            //add this 
             if (proxy) {
                 if (!proxy.proxyUrl || proxy.proxyUrl == '') {
                     this.log.warning('Proxy is enabled but no proxy settings are defined.');
@@ -232,32 +242,17 @@ export class ConfigReader {
                     proxyResult.proxyPort = '';
                     proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
-
             }
-            else if(proxyUrl && proxyUrl != ''){
-                proxyResult.proxyUrl = proxyUrl?proxyUrl:'';
+            else if( (proxyUrl && proxyUrl != '') || (sastProxyUrl && sastProxyUrl != '') || (scaProxyUrl && scaProxyUrl != '') ){
+                proxyResult.proxyUrl = proxyUrl ? proxyUrl : '';
+                proxyResult.sastProxyUrl = sastProxyUrl ? sastProxyUrl : '';     
+                proxyResult.scaProxyUrl = scaProxyUrl ? scaProxyUrl : '';
             }else {
                 this.log.warning('Proxy is enabled but no proxy settings are defined.');
             }
-
-            if(proxyResult.proxyUrl){
-
-                if(!proxyResult.proxyUrl.startsWith("https://") && !proxyResult.proxyUrl.startsWith("http://")){
-                    this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
-                    proxyResult.proxyUrl="http://"+proxyResult.proxyUrl;
-                }
-                
-                let urlParts = url.parse(proxyResult.proxyUrl);
-                //if path in the url is / or empty, it is http proxy url. Add creds if needed.
-                if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") {
-                    let proxyUsernameVar=taskLib.getVariable('proxy-username');
-                    let proxyPasswordVar=taskLib.getVariable('proxy-password');
-                    if(proxyPasswordVar && proxyUsernameVar){
-                        let splitUrl = proxyResult.proxyUrl.split("//");
-                        proxyResult.proxyUrl=splitUrl[0]+'//'+proxyUsernameVar+':'+proxyPasswordVar+'@'+splitUrl[1];
-                    }
-                }
-            }
+            proxyResult.proxyUrl = this.appendCredsToProxyUrl(proxyResult.proxyUrl);
+            proxyResult.sastProxyUrl = this.appendCredsToProxyUrl(proxyResult.sastProxyUrl);
+            proxyResult.scaProxyUrl = this.appendCredsToProxyUrl(proxyResult.scaProxyUrl);
         }
         //Create Job Link
         const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
@@ -348,10 +343,15 @@ export class ConfigReader {
             cacert_chainFilePath: scaCertFilePath,
             isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
             pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
-            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || ''
-
+            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
         };
-        
+        var isSyncMode = taskLib.getBoolInput('syncMode', false);
+        var  generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
+        if(!isSyncMode){
+            generatePDFReport=false;
+        }
+       
+       
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -360,25 +360,30 @@ export class ConfigReader {
             denyProject: taskLib.getBoolInput('denyProject', false),
             folderExclusion: taskLib.getInput('folderExclusion', false) || '',
             fileExtension: taskLib.getInput('fileExtension', false) || '',
+            overrideProjectSettings: taskLib.getBoolInput('overrideProjectSettings', false) || false,
             isIncremental: isIncremental,
             presetName,
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
-            vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false) || false,
+        
+            generatePDFReport: generatePDFReport,
+            vulnerabilityThreshold: vulnerabilityThresholdEnabled,
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
+            failBuildForNewVulnerabilitiesEnabled: failBuildForNewVulnerabilitiesEnabled, 
+            failBuildForNewVulnerabilitiesSeverity: failBuildForNewVulnerabilitiesSeverity,
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
             cacert_chainFilePath: sastCertFilePath,
+            projectCustomFields: taskLib.getInput('projectcustomfields', false) || '',
 			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
             engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName : postScanAction,
-            avoidDuplicateProjectScans : avoidDuplicateProjectScans
-            
+            avoidDuplicateProjectScans : avoidDuplicateProjectScans,
         };
-
+        
         const result: ScanConfig = {
             enableSastScan: taskLib.getBoolInput('enableSastScan', false),
             enableDependencyScan: taskLib.getBoolInput('enableDependencyScan', false),
@@ -399,6 +404,32 @@ export class ConfigReader {
         return result;
     }
 
+    private appendCredsToProxyUrl(Url: string | undefined): string | undefined {
+        
+        if(Url){
+            let proxyUrl = Url;
+            if(!Url.startsWith("https://") && !Url.startsWith("http://")){
+                this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
+                proxyUrl = "http://" + Url;
+            }
+            
+            let urlParts = url.parse(Url);
+            //if path in the url is / or empty, it is http proxy url. Add creds if needed.
+            if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") 
+            {
+                let proxyUsernameVar=taskLib.getVariable('proxy-username');
+                let proxyPasswordVar=taskLib.getVariable('proxy-password');
+                if(proxyPasswordVar && proxyUsernameVar)
+                {
+                    let splitUrl = Url.split("//");
+                    proxyUrl = splitUrl[0] + '//' + proxyUsernameVar + ':' + proxyPasswordVar + '@' + splitUrl[1];
+                }
+            }
+            return proxyUrl;
+        }
+        return Url;
+    }
+
     private format(config: ScanConfig): void {
         const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
@@ -413,24 +444,32 @@ Preset name: ${config.sastConfig.presetName}
 Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
+Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
 Is incremental scan: ${config.sastConfig.isIncremental}
 Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
+Project Custom Fields: ${config.sastConfig.projectCustomFields}
 Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
 Post Scan Action: ${config.sastConfig.postScanActionName}
-Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}
-CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
+Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
+if(config.isSyncMode){
+    this.log.info(`
+Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
+CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}
+CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}
+CxSAST Fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);
+
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
                 this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
                 this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
             }
-
             this.log.info(`Enable Project Policy Enforcement: ${config.sastConfig.enablePolicyViolations}`);
             this.log.info('------------------------------------------------------------------------------');
+        }
         }
     }
 
@@ -493,6 +532,12 @@ Proxy Pass: ******`);
             }
         }else  if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl!=null && config.proxyConfig.proxyUrl!=''){
             this.log.info('Entered Proxy Url '+config.proxyConfig.proxyUrl);
+        }
+        if(config.proxyConfig?.sastProxyUrl != '' && config.proxyConfig?.sastProxyUrl != null){
+            this.log.info(`SAST Proxy URL: ${config.proxyConfig.sastProxyUrl}`);
+        }
+        if(config.proxyConfig?.scaProxyUrl != '' && config.proxyConfig?.scaProxyUrl != null &&config.enableDependencyScan){
+            this.log.info(`SCA Proxy URL: ${config.proxyConfig.scaProxyUrl}`);
         }
         this.log.info('------------------------------------------------------------------------------');
     }

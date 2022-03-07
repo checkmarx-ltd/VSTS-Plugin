@@ -12,10 +12,10 @@
   "version": {
     "Major": 2022,
     "Minor": 1,
-    "Patch": 1
+    "Patch": 15
   },
   "demands": [],
-  "minimumAgentVersion": "1.0.0",
+  "minimumAgentVersion": "2.144.0",
   "groups": [
     {
       "name": "projectName",
@@ -64,7 +64,7 @@
       "label": "Proxy URL",
       "required": false,
       "helpMarkDown": "Provide URL of the proxy server. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport.For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline.Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
-      "visibleRule": "enableProxy = true"
+      "visibleRule": "enableProxy = true && enableProxy = false"
     },
     {
       "name": "enableSastScan",
@@ -83,6 +83,15 @@
       "helpMarkDown": "The CX server endpoint.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "sastProxyUrl",
+      "type": "string",
+      "label": "SAST Proxy URL",
+      "required": false,
+      "helpMarkDown": "Provide URL of the proxy server for SAST scan. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport. For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline. Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableProxy = true && enableSastScan = true"
     },
     {
       "name": "preset",
@@ -114,6 +123,8 @@
         "OWASP TOP 10 - 2010": "OWASP TOP 10 - 2010",
         "OWASP TOP 10 - 2013": "OWASP TOP 10 - 2013",
         "OWASP TOP 10 - 2017": "OWASP TOP 10 - 2017",
+        "OWASP TOP 10 - 2021": "OWASP TOP 10 - 2021",
+        "OWASP TOP 10 API": "OWASP TOP 10 API",
         "PCI": "PCI",
         "SANS top 25": "SANS top 25",
         "STIG": "STIG",
@@ -165,6 +176,16 @@
       "label": "CA Certificate Chain File Path",
       "required": false,
       "helpMarkDown": "Certificate Authority (CA) Certification Chain file path in PEM format. The chain file should contain all intermediate CA certificates and root certificate for the CxSAST Service. For example: d:\\certlocation\\cacert-chain.pem . This parameter is must when CxSAST is configured with Self-signed certificate.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "overrideProjectSettings",
+      "type": "boolean",
+      "label": "Override Project Settings",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Select if project settings like Preset, EngineConfigurationID are to be updated in the CxSAST project. For new project, settings will be always saved on the CxSAST project.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -236,6 +257,15 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "projectcustomfields",
+      "type": "string",
+      "label": "Project Level Custom Fields",
+      "required": false,
+      "helpMarkDown": "This field allows user to store metadata about projects. Add project level custom fields and its value. Example: field1:value1,field2:value2",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "customfields",
       "type": "string",
       "label": "Scan Level Custom Fields",
@@ -273,6 +303,16 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "generatePDFReport",
+      "type": "boolean",
+      "label": "Generate CxSAST PDF report",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "Downloads a PDF report with scan results from the Checkmarx server. The report is available via a link on 'Checkmarx Scan Results' page. (Only available if synchronous mode is enabled)",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true && syncMode=true "
+    },
+    {
       "name": "vulnerabilityThreshold",
       "type": "boolean",
       "label": "Enable CxSAST Vulnerability Thresholds",
@@ -280,7 +320,31 @@
       "defaultValue": "false",
       "helpMarkDown": "Set the maximum number of CxSAST vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "visibleRule": "enableSastScan = true && syncMode=true"
+    },
+    {
+      "name": "failBuildForNewVulnerabilitiesEnabled",
+      "type": "boolean",
+      "label": "Fail the build for new SAST vulnerabilities",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "This will fail the build if new vulnerabilities found. Enables the option to fail the build according to the defined severity (or higher). This option works in addition to the regular thresholds (e.g. if 'x' total high vulnerabilities were found OR at least 1 new vulnerability, fail the build).  This option is only available if the 'Enable vulnerability threshold' parameter is enabled.",
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && syncMode=true "
+    },
+    {
+      "name": "failBuildForNewVulnerabilitiesSeverity",
+      "type": "pickList",
+      "label": "Fail for the following severity or greater",
+      "required": false,
+      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail) ",
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && failBuildForNewVulnerabilitiesEnabled = true",    
+      "options": {
+        "HIGH": "HIGH",
+        "MEDIUM": "MEDIUM",
+        "LOW": "LOW"
+      }
     },
     {
       "name": "high",
@@ -317,7 +381,7 @@
       "defaultValue": "false",
       "helpMarkDown": "Mark the build as failed if the project's policy is violated. Note: Assigning a policy to a project is done from within CxSAST. (Only available if synchronous mode is enabled).",
       "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "visibleRule": "enableSastScan = true && syncMode=true"
     },
     {
       "name": "avoidDuplicateScans",
@@ -347,6 +411,15 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },    
+    {
+      "name": "scaProxyUrl",
+      "type": "string",
+      "label": "CxSCA Proxy URL",
+      "required": false,
+      "helpMarkDown": "Provide URL of the proxy server for CxSCA scan. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport.For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline.Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableProxy = true && enableDependencyScan = true"
+    },
     {
       "name": "dependencyFileExtension",
       "type": "string",
@@ -558,7 +631,7 @@
     }
   ],
   "execution": {
-    "Node": {
+    "Node10": {
       "target": "target/index.js"
     }
   },
