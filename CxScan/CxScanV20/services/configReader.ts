@@ -90,7 +90,7 @@ export class ConfigReader {
         
         let buildId  = taskLib.getVariable('Build.BuildId') || '';
 
-
+        scheduleCycle = '';
         if (sastEnabled) {
             endpointId = taskLib.getInput('CheckmarxService', false) || '';
             authScheme = taskLib.getEndpointAuthorizationScheme(endpointId, false) || undefined;
@@ -110,13 +110,16 @@ export class ConfigReader {
             let cycleNumber  = parseInt(scheduleCycle);
             let buildIdForScan = parseInt(buildId);
             // if user entered invalid value for full scan cycle - all scans will be incremental
-            if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
-                isIncremental= true;
-            }else
-            // If user asked to perform full scan after every 9 incremental scans -
-            // it means that every 10th scan should be full,
-            // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
-                isIncremental =  buildIdForScan % (cycleNumber + 1) == 1;
+          
+                if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
+                        isIncremental= true;
+                }else
+                    // If user asked to perform full scan after every 9 incremental scans -
+                    // it means that every 10th scan should be full,
+                    // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
+                    isThisBuildIncremental =  (buildIdForScan % (cycleNumber + 1) == 1);
+                    isIncremental = !isThisBuildIncremental;
+                
             }
             vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
             failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;  
@@ -351,6 +354,8 @@ export class ConfigReader {
             generatePDFReport=false;
         }
        
+        this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
+        this.log.info("Scheduled full scan frequency:" + scheduleCycle);
        
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
@@ -396,7 +401,7 @@ export class ConfigReader {
             cxOriginUrl:cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
             proxyConfig: proxyResult            
-        };
+        };        
         this.format(result);
         this.formatSCA(result);
         this.formatProxy(result);
