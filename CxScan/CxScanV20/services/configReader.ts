@@ -110,7 +110,7 @@ export class ConfigReader {
             let cycleNumber  = parseInt(scheduleCycle);
             let buildIdForScan = parseInt(buildId);
             // if user entered invalid value for full scan cycle - all scans will be incremental
-            if(isScheduledScan){
+          
                 if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
                         isIncremental= true;
                 }else
@@ -119,7 +119,7 @@ export class ConfigReader {
                     // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
                     isThisBuildIncremental =  (buildIdForScan % (cycleNumber + 1) == 1);
                     isIncremental = !isThisBuildIncremental;
-                }
+                
             }
             vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
             failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;  
