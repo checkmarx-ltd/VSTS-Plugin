@@ -54,10 +54,8 @@ export class TaskRunner {
                 taskLib.setResult(taskLib.TaskResult.Skipped, err.message);
             } else if (err instanceof Error) {
                 if(err.message.includes(errorMessage)){
-                    this.log.error(err.message);
                     taskLib.setResult(taskLib.TaskResult.Failed, err.message);
                 }else{
-                    this.log.error(`Scan cannot be completed. ${err.message}`);
                     taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err.message}`);
                 }
 

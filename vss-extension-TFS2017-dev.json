@@ -3,19 +3,19 @@
   "id": "cxsast",
   "name": "Checkmarx CxSAST",
   "version": "2022.2.1",
-  "publisher": "Checkmarx",
+  "publisher": "Checkmarx-Prerelease",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "public": true,
+  "public": false,
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "icons": {
     "default": "images/extension-icon.png"
   },
   "categories": [
-    "Azure Pipelines"
+    "Build and release"
   ],
   "tags": [
     "Security",
@@ -57,7 +57,7 @@
   },
   "files": [
     {
-      "path": "CxScan"
+      "path": "CxScan/CxScanV20"
     },
     {
       "path": "images/config.PNG",
@@ -111,8 +111,9 @@
         "name": "CxScan"
       }
     },
+
     {
-      "id": "CxEndpoint",
+      "id": "CxEndpoint-Persistent",
       "description": "Service Endpoint type for all Cx connections",
       "type": "ms.vss-endpoint.service-endpoint-type",
       "targets": [
@@ -121,6 +122,7 @@
       "properties": {
         "name": "Checkmarx-Endpoint",
         "displayName": "Checkmarx SAST",
+      
         "authenticationSchemes": [
           {
             "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
@@ -175,13 +177,12 @@
         "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a Checkmarx cloud account</span>"
       }
     },
+
     {
-      "id": "SCA-Endpoint",
+      "id": "SCA-Endpoint-Persistent",
       "description": "Service Endpoint type for all SCA connections",
       "type": "ms.vss-endpoint.service-endpoint-type",
-      "targets": [
-        "ms.vss-endpoint.endpoint-types"
-      ],
+      "targets": [ "ms.vss-endpoint.endpoint-types" ],
       "properties": {
         "name": "SCA-Endpoint",
         "displayName": " Checkmarx SCA",
@@ -264,6 +265,7 @@
         "helpMarkDown": "<span style=\"color: #222\"><font size=\"3\"><span style=\"color: #222\"><font size=\"3\">If you don't already have Checkmarx installed, click </font></span><a href=\"https://info.checkmarx.com/cx-microsoft-vs-team-services\" target=\"_blank\"><span style=\"color: #0072c6\"><font size=\"3\">here</font></span></a>   to register for a Checkmarx cloud account</span>"
       }
     },
+
     {
       "id": "cx-report",
       "type": "ms.vss-build-web.build-results-tab",

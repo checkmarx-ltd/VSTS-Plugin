@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 2022,
-    "Minor": 1,
-    "Patch": 16
+    "Minor": 2,
+    "Patch": 1
   },
   "demands": [],
   "minimumAgentVersion": "2.144.0",
@@ -48,6 +48,7 @@
       "label": "Synchronous Mode",
       "required": false,
       "defaultValue": true,
+      "groupName": "scanSettings",
       "helpMarkDown": "Enabling this option causes the build step to wait for scan results. You can follow the scan results in the Checkmarx plug-in results window. If disabled, the results are displayed inside the Checkmarx web application and available as a link in the logs once the scan is complete. The Sync/Async mode is configured globally for both SAST and SCA scans."
     },
     {
@@ -91,7 +92,7 @@
       "required": false,
       "helpMarkDown": "Provide URL of the proxy server for SAST scan. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport. For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline. Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
       "groupName": "scanSettings",
-      "visibleRule": "enableProxy = true && enableSastScan = true"
+      "visibleRule": "enableSastScan = true"
     },
     {
       "name": "preset",
@@ -215,7 +216,7 @@
       "required": false,
       "helpMarkDown": "Incremental scans are faster, but with time they become less accurate.Therefore, after a number of incremental scans it is recommended to perform a full scan.Here you can schedule periodic full scans to be executed after a certain number of incremental scans.Alternatively, if you want to run full scans on weekends, you can create 2 separate jobs.First job - to run incremental scans on weekdays and second job - to run full scans on weekends.",
       "groupName": "scanSettings",
-      "visibleRule": "enableSastScan = true"
+      "visibleRule": "enableSastScan = true && fullScansScheduled = true && incScan = true"
     },
     {
       "name": "forceScan",
@@ -418,7 +419,7 @@
       "required": false,
       "helpMarkDown": "Provide URL of the proxy server for CxSCA scan. For example,for PAC proxy (Proxy Auto Config) enter URL in format http://prac-proxy-hosting-server:port/<name of proxy pac file> or for standard http proxy enter URL in format http(s)://proxyhost:proxyport.For http proxy that requires authenctication define variables 'proxy-username' and 'proxy-password' in the pipeline.Ignore this field if you have configured proxy details at the Self-Hosted Agent.",
       "groupName": "dependencyScan",
-      "visibleRule": "enableProxy = true && enableDependencyScan = true"
+      "visibleRule": "enableDependencyScan = true"
     },
     {
       "name": "dependencyFileExtension",
