@@ -131,7 +131,8 @@
         "STIG": "STIG",
         "WordPress": "WordPress",
         "XS": "XS",
-        "XSS and SQLi only": "XSS and SQLi only"
+        "XSS and SQLi only": "XSS and SQLi only",
+        "Project Default":"Project Default"
       },
       "visibleRule": "enableSastScan = true"
     },
