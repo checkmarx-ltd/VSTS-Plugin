@@ -274,7 +274,7 @@ export class ConfigReader {
             if (jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
                 jobOrigin = jobOrigin.substr(0, this.SIZE_CXORIGIN);
 
-            //In collectionURI   
+            //In collectionURI         
             cxOriginUrl = collectionURI + projectName + '/' + '_build?definitionId=' + pipelineId;
             cxOriginUrl = cxOriginUrl.replace(/[^:.=/\w\s]/g, '');
             if (cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)) {
@@ -557,8 +557,7 @@ Proxy Pass: ******`);
     }
 
     private isValidUrl(url: string): boolean {
-
-        let matcher = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+        let matcher = /(https?:\/\/(?:www\.|(?!www))[\w-]+\.[^\s]{2,}|www\.[\w-]+\.[^\s]{2,})/gi;
         return matcher.test(url);
     }
 
