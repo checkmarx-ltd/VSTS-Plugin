@@ -7,13 +7,13 @@ import {
     SourceLocationType,
     TeamApiClient
 } from "@checkmarx/cx-common-js-client";
-import {SastConfig} from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
+import { SastConfig } from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
 import * as url from "url";
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
-    private readonly MAX_SIZE_CXORIGINURL=128;
-    private readonly SIZE_CXORIGIN=50;
+    private readonly MAX_SIZE_CXORIGINURL = 128;
+    private readonly SIZE_CXORIGIN = 50;
 
     constructor(private readonly log: Logger) {
     }
@@ -37,24 +37,22 @@ export class ConfigReader {
      * @param log - Logger object 
      * @returns 
      */
-    private static getCustomFieldJSONString(scanCustomFields : any, log : Logger): string {
+    private static getCustomFieldJSONString(scanCustomFields: any, log: Logger): string {
         let customFieldJSONStr = "";
-        if(scanCustomFields)
-        {
+        if (scanCustomFields) {
             let keyValuePairs = scanCustomFields.split(',');
-            for (const keyVal of keyValuePairs) 
-            {
+            for (const keyVal of keyValuePairs) {
                 const [key, value] = keyVal.split(':');
-                if(key && value){
-                    customFieldJSONStr = customFieldJSONStr + "\"" +key+"\"" + ":" + "\"" +value+"\",";
-                }else{
+                if (key && value) {
+                    customFieldJSONStr = customFieldJSONStr + "\"" + key + "\"" + ":" + "\"" + value + "\",";
+                } else {
                     log.error("Custom fields are not defined in correct format. Example: field1:value1,field2:value2");
                     customFieldJSONStr = "";
                     break;
                 }
             }
-            if(customFieldJSONStr && customFieldJSONStr.length > 0){
-                customFieldJSONStr = customFieldJSONStr.substring(0,customFieldJSONStr.length-1);
+            if (customFieldJSONStr && customFieldJSONStr.length > 0) {
+                customFieldJSONStr = customFieldJSONStr.substring(0, customFieldJSONStr.length - 1);
                 customFieldJSONStr = "{" + customFieldJSONStr + "}";
             }
         }
@@ -65,7 +63,7 @@ export class ConfigReader {
         const SUPPORTED_AUTH_SCHEME = 'UsernamePassword';
 
         this.log.debug('Reading configuration.');
-        
+
 
         const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
         const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
@@ -78,17 +76,17 @@ export class ConfigReader {
         let sastPassword;
         let teamsSASTServiceCon;
         let presetSASTServiceCon;
-        let isThisBuildIncremental=false;
-        let FULL_SCAN_CYCLE_MIN=1;
-        let FULL_SCAN_CYCLE_MAX =99;
-        let isScheduledScan=false;
-        let isIncremental=false;
-        let scheduleCycle:string;
-        let vulnerabilityThresholdEnabled=false;
-        let failBuildForNewVulnerabilitiesEnabled=false;
-        let failBuildForNewVulnerabilitiesSeverity='';
-        
-        let buildId  = taskLib.getVariable('Build.BuildId') || '';
+        let isThisBuildIncremental = false;
+        let FULL_SCAN_CYCLE_MIN = 1;
+        let FULL_SCAN_CYCLE_MAX = 99;
+        let isScheduledScan = false;
+        let isIncremental = false;
+        let scheduleCycle: string;
+        let vulnerabilityThresholdEnabled = false;
+        let failBuildForNewVulnerabilitiesEnabled = false;
+        let failBuildForNewVulnerabilitiesSeverity = '';
+
+        let buildId = taskLib.getVariable('Build.BuildId') || '';
 
         scheduleCycle = '';
         if (sastEnabled) {
@@ -106,24 +104,24 @@ export class ConfigReader {
             // adding 
             isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
             scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
-            if(isScheduledScan && scheduleCycle){
-            let cycleNumber  = parseInt(scheduleCycle);
-            let buildIdForScan = parseInt(buildId);
-            // if user entered invalid value for full scan cycle - all scans will be incremental
-          
+            if (isScheduledScan && scheduleCycle) {
+                let cycleNumber = parseInt(scheduleCycle);
+                let buildIdForScan = parseInt(buildId);
+                // if user entered invalid value for full scan cycle - all scans will be incremental
+
                 if (cycleNumber < FULL_SCAN_CYCLE_MIN || cycleNumber > FULL_SCAN_CYCLE_MAX) {
-                        isIncremental= true;
-                }else
+                    isIncremental = true;
+                } else
                     // If user asked to perform full scan after every 9 incremental scans -
                     // it means that every 10th scan should be full,
                     // that is the ordinal numbers of full scans will be "1", "11", "21" and so on...
-                    isThisBuildIncremental =  (buildIdForScan % (cycleNumber + 1) == 1);
-                    isIncremental = !isThisBuildIncremental;
-                
+                    isThisBuildIncremental = (buildIdForScan % (cycleNumber + 1) == 1);
+                isIncremental = !isThisBuildIncremental;
+
             }
             vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
-            failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;  
-            failBuildForNewVulnerabilitiesSeverity = (vulnerabilityThresholdEnabled && failBuildForNewVulnerabilitiesEnabled) ? taskLib.getInput('failBuildForNewVulnerabilitiesSeverity',false) || '' : '';      
+            failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;
+            failBuildForNewVulnerabilitiesSeverity = (vulnerabilityThresholdEnabled && failBuildForNewVulnerabilitiesEnabled) ? taskLib.getInput('failBuildForNewVulnerabilitiesSeverity', false) || '' : '';
         }
 
         let endpointIdSCA;
@@ -136,8 +134,8 @@ export class ConfigReader {
         let scaPassword;
         let scaConfigFiles;
         let scaEnvVars;
-        let scaConfigFilesArray:string[]=[];
-        let envVariables:Map<string, string>=new Map;
+        let scaConfigFilesArray: string[] = [];
+        let envVariables: Map<string, string> = new Map;
         let scaSASTServerUrl;
         let scaSASTUserName;
         let scaSASTPassword;
@@ -150,67 +148,67 @@ export class ConfigReader {
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
-            isExploitableSca=taskLib.getBoolInput('scaExploitablePath', false) || false;
-            endPointIdScaSast=taskLib.getInput('CheckmarxServiceForSca', false) || '';
-            scaSastProjectFullPath=taskLib.getInput('scaProjectFullPath', false) || '';
-            scaSastProjectId=taskLib.getInput('scaProjectId', false) || '';
-            scaConfigFiles=taskLib.getInput('scaConfigFilePaths',false);
-            scaEnvVars=taskLib.getInput('scaEnvVariables',false);
-            if(scaConfigFiles)
-            scaConfigFilesArray = scaConfigFiles.split(',');
-            if(scaEnvVars){
-            let keyValuePairs = scaEnvVars.split(',');
-            envVariables = keyValuePairs.reduce((acc, curr) => {
-                const [key, value] = curr.split(':');
-                if (!acc.has(key)) {
-                    acc.set(key, value);
-                }	
-                return acc;
-            }, new Map());
+                isExploitableSca = taskLib.getBoolInput('scaExploitablePath', false) || false;
+            endPointIdScaSast = taskLib.getInput('CheckmarxServiceForSca', false) || '';
+            scaSastProjectFullPath = taskLib.getInput('scaProjectFullPath', false) || '';
+            scaSastProjectId = taskLib.getInput('scaProjectId', false) || '';
+            scaConfigFiles = taskLib.getInput('scaConfigFilePaths', false);
+            scaEnvVars = taskLib.getInput('scaEnvVariables', false);
+            if (scaConfigFiles)
+                scaConfigFilesArray = scaConfigFiles.split(',');
+            if (scaEnvVars) {
+                let keyValuePairs = scaEnvVars.split(',');
+                envVariables = keyValuePairs.reduce((acc, curr) => {
+                    const [key, value] = curr.split(':');
+                    if (!acc.has(key)) {
+                        acc.set(key, value);
+                    }
+                    return acc;
+                }, new Map());
             }
             authSchemeSCA = taskLib.getEndpointAuthorizationScheme(endpointIdSCA, false) || undefined;
             if (authSchemeSCA !== SUPPORTED_AUTH_SCHEME) {
                 throw Error(`The authorization scheme ${authSchemeSCA} is not supported for a CX server.`);
             }
             scaServerUrl = taskLib.getEndpointUrl(endpointIdSCA, false) || '';
-            teamsSCAServiceCon=taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
+            teamsSCAServiceCon = taskLib.getEndpointDataParameter(endpointIdSCA, 'teams', true) || '';
 
-            try{
+            try {
                 scaTenant = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyTenant', false) || '';
-                if(!scaTenant || scaTenant == ''){
+                if (!scaTenant || scaTenant == '') {
                     scaTenant = taskLib.getInput('dependencyTenant', false);
                 }
             } catch (err) {
                 scaTenant = taskLib.getInput('dependencyTenant', false);
             }
-            try{
+            try {
                 scaAccessControlUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyAccessControlURL', false) || '';
-                if(!scaAccessControlUrl || scaAccessControlUrl == ''){
+                if (!scaAccessControlUrl || scaAccessControlUrl == '') {
                     scaAccessControlUrl = taskLib.getInput('dependencyAccessControlURL', false);
                 }
             } catch (err) {
                 scaAccessControlUrl = taskLib.getInput('dependencyAccessControlURL', false);
             }
-            try{
+            try {
                 scaWebAppUrl = taskLib.getEndpointDataParameter(endpointIdSCA, 'dependencyWebAppURL', false) || '';
-                if(!scaWebAppUrl || scaWebAppUrl == ''){
+                if (!scaWebAppUrl || scaWebAppUrl == '') {
                     scaWebAppUrl = taskLib.getInput('dependencyWebAppURL', false);
                 }
-            }catch(err){
+            } catch (err) {
                 scaWebAppUrl = taskLib.getInput('dependencyWebAppURL', false);
             }
-           
+
             scaUsername = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'username', false) || '';
             scaPassword = taskLib.getEndpointAuthorizationParameter(endpointIdSCA, 'password', false) || '';
             //sca section sast credentials 
-            if(isExploitableSca){
-            scaSASTServerUrl = taskLib.getEndpointUrl(endPointIdScaSast, false) || '';
-            scaSASTUserName = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'username', false) || '';
-            scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
+            if (isExploitableSca) {
+                scaSASTServerUrl = taskLib.getEndpointUrl(endPointIdScaSast, false) || '';
+                scaSASTUserName = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'username', false) || '';
+                scaSASTPassword = taskLib.getEndpointAuthorizationParameter(endPointIdScaSast, 'password', false) || '';
             }
         }
         //
-        if(teamsSCAServiceCon){
+        if (teamsSCAServiceCon) {
             scaTeamName = teamsSCAServiceCon;
         }
         let proxy;
@@ -220,37 +218,37 @@ export class ConfigReader {
         let proxyPort;
         let sastProxyUrl;
         let scaProxyUrl;
-        let proxyResult: ProxyConfig ={
-                    proxyHost: '',
-                    proxyPass:  '',
-                    proxyPort: '',
-                    proxyUser:  '',
-                    proxyUrl:  '',
-                    sastProxyUrl: '',
-                    scaProxyUrl: '',
-                    resolvedProxyUrl: ''
+        let proxyResult: ProxyConfig = {
+            proxyHost: '',
+            proxyPass: '',
+            proxyPort: '',
+            proxyUser: '',
+            proxyUrl: '',
+            sastProxyUrl: '',
+            scaProxyUrl: '',
+            resolvedProxyUrl: ''
         };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
-            proxyUrl=taskLib.getInput('proxyURL');
-            sastProxyUrl=taskLib.getInput('sastProxyUrl');
-            scaProxyUrl=taskLib.getInput('scaProxyUrl');
+            proxyUrl = taskLib.getInput('proxyURL');
+            sastProxyUrl = taskLib.getInput('sastProxyUrl');
+            scaProxyUrl = taskLib.getInput('scaProxyUrl');
             //add this 
             if (proxy) {
                 if (!proxy.proxyUrl || proxy.proxyUrl == '') {
                     this.log.warning('Proxy is enabled but no proxy settings are defined.');
-                }else{
+                } else {
                     proxyResult.proxyHost = proxy ? proxy.proxyUrl : '';
                     proxyResult.proxyPass = proxy ? proxy.proxyPassword : '';
                     proxyResult.proxyPort = '';
                     proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
             }
-            else if( (proxyUrl && proxyUrl != '') || (sastProxyUrl && sastProxyUrl != '') || (scaProxyUrl && scaProxyUrl != '') ){
+            else if ((proxyUrl && proxyUrl != '') || (sastProxyUrl && sastProxyUrl != '') || (scaProxyUrl && scaProxyUrl != '')) {
                 proxyResult.proxyUrl = proxyUrl ? proxyUrl : '';
-                proxyResult.sastProxyUrl = sastProxyUrl ? sastProxyUrl : '';     
+                proxyResult.sastProxyUrl = sastProxyUrl ? sastProxyUrl : '';
                 proxyResult.scaProxyUrl = scaProxyUrl ? scaProxyUrl : '';
-            }else {
+            } else {
                 this.log.warning('Proxy is enabled but no proxy settings are defined.');
             }
             proxyResult.proxyUrl = this.appendCredsToProxyUrl(proxyResult.proxyUrl);
@@ -258,68 +256,70 @@ export class ConfigReader {
             proxyResult.scaProxyUrl = this.appendCredsToProxyUrl(proxyResult.scaProxyUrl);
         }
         //Create Job Link
-        const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
-        let projectName=taskLib.getVariable('System.TeamProject');
-        const pipelineId=taskLib.getVariable('System.DefinitionId');
-        
-        let cxOriginUrl:string='';
+        let collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
+        let projectName = taskLib.getVariable('System.TeamProject');
+        const pipelineId = taskLib.getVariable('System.DefinitionId');
+
+        let cxOriginUrl: string = '';
         let jobOrigin = '';
         if (collectionURI) {
+            collectionURI = collectionURI.replace(/[^:.=/\w\s]/g, '')
             if (collectionURI.includes(this.devAzure)) {
-                jobOrigin = 'ADO ' + this.devAzure +" "+projectName;
+                jobOrigin = 'ADO ' + this.devAzure + " " + projectName;
             } else {
-                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI)+" "+projectName;
+                jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI) + " " + projectName;
             }
-            jobOrigin = jobOrigin.replace(/[^.a-zA-Z 0-9]/g,' ');
+            jobOrigin = jobOrigin.replace(/[^.a-zA-Z 0-9]/g, ' ');
 
-            if(jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
-            jobOrigin = jobOrigin.substr(0,this.SIZE_CXORIGIN);
-        
-            //In collectionURI
-            cxOriginUrl = collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
-            if(cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)){
+            if (jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
+                jobOrigin = jobOrigin.substr(0, this.SIZE_CXORIGIN);
+
+            //In collectionURI         
+            cxOriginUrl = collectionURI + projectName + '/' + '_build?definitionId=' + pipelineId;
+            cxOriginUrl = cxOriginUrl.replace(/[^:.=/\w\s]/g, '');
+            if (cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)) {
                 cxOriginUrl = this.extractBaseURL(cxOriginUrl);
-            }else if(cxOriginUrl.length>this.MAX_SIZE_CXORIGINURL){
+            } else if (cxOriginUrl.length > this.MAX_SIZE_CXORIGINURL) {
                 cxOriginUrl = this.extractBaseURL(cxOriginUrl);
             }
         }
-        
-        this.log.info("CxOrgin: "+jobOrigin);
-        this.log.info("CxOriginUrl:"+cxOriginUrl);
+
+        this.log.info("CxOrgin: " + jobOrigin);
+        this.log.info("CxOriginUrl:" + cxOriginUrl);
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
             throw Error('Sources directory is not provided.');
         }
 
-		let rawTeamName ;
-        if(teamsSASTServiceCon){
+        let rawTeamName;
+        if (teamsSASTServiceCon) {
             rawTeamName = teamsSASTServiceCon;
-        }else{
+        } else {
             rawTeamName = taskLib.getInput('fullTeamName', false) || '';
         }
-        const scaCertFilePath=taskLib.getInput('scaCaChainFilePath', false) || '';
-        const sastCertFilePath=taskLib.getInput('sastCaChainFilePath', false) || '';
+        const scaCertFilePath = taskLib.getInput('scaCaChainFilePath', false) || '';
+        const sastCertFilePath = taskLib.getInput('sastCaChainFilePath', false) || '';
         let presetName;
         const customPreset = taskLib.getInput('customPreset', false) || '';
         //if preset is given in service connection then it will take as first priority
-        if(presetSASTServiceCon){
-            presetName=presetSASTServiceCon;
-        }else if (customPreset) {
+        if (presetSASTServiceCon) {
+            presetName = presetSASTServiceCon;
+        } else if (customPreset) {
             presetName = customPreset;
         } else {
             presetName = taskLib.getInput('preset', false) || '';
         }
 
-        
+
         const postScanAction = taskLib.getInput('postScanAction', false) || '';
         const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
-        
+
         const scaResult: ScaConfig = {
-            scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '' ,
+            scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '',
             apiUrl: scaServerUrl || '',
             username: scaUsername || '',
             password: scaPassword || '',
@@ -335,28 +335,28 @@ export class ConfigReader {
             lowThreshold: ConfigReader.getNumericInput('scaLow'),
             scaEnablePolicyViolations: taskLib.getBoolInput('scaEnablePolicyViolations', false) || false,
             includeSource: taskLib.getBoolInput('includeSource', false) || false,
-            configFilePaths:scaConfigFilesArray || new Array<string>(),
-            envVariables:envVariables || new Map(),
-            sastProjectId:scaSastProjectId || '',
-            sastProjectName:scaSastProjectFullPath || '',
-            sastServerUrl:scaSASTServerUrl || '',
-            sastUsername:scaSASTUserName ||'',
-            sastPassword:scaSASTPassword || '',
-            isExploitable:isExploitableSca || false,
+            configFilePaths: scaConfigFilesArray || new Array<string>(),
+            envVariables: envVariables || new Map(),
+            sastProjectId: scaSastProjectId || '',
+            sastProjectName: scaSastProjectFullPath || '',
+            sastServerUrl: scaSASTServerUrl || '',
+            sastUsername: scaSASTUserName || '',
+            sastPassword: scaSASTPassword || '',
+            isExploitable: isExploitableSca || false,
             cacert_chainFilePath: scaCertFilePath,
-            isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
-            pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
-            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
+            isEnableScaResolver: taskLib.getBoolInput('isEnableScaResolver', false) || false,
+            pathToScaResolver: taskLib.getInput('pathToScaResolver', false) || '',
+            scaResolverAddParameters: taskLib.getInput('scaResolverAddParameters', false) || '',
         };
         var isSyncMode = taskLib.getBoolInput('syncMode', false);
-        var  generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
-        if(!isSyncMode){
-            generatePDFReport=false;
+        var generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
+        if (!isSyncMode) {
+            generatePDFReport = false;
         }
-       
+
         this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
         this.log.info("Scheduled full scan frequency:" + scheduleCycle);
-       
+
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -371,24 +371,24 @@ export class ConfigReader {
             scanTimeoutInMinutes: scanTimeoutInMinutes || undefined,
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false) || false,
-        
+
             generatePDFReport: generatePDFReport,
             vulnerabilityThreshold: vulnerabilityThresholdEnabled,
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
-            failBuildForNewVulnerabilitiesEnabled: failBuildForNewVulnerabilitiesEnabled, 
+            failBuildForNewVulnerabilitiesEnabled: failBuildForNewVulnerabilitiesEnabled,
             failBuildForNewVulnerabilitiesSeverity: failBuildForNewVulnerabilitiesSeverity,
             forceScan: (taskLib.getBoolInput('forceScan', false) && !taskLib.getBoolInput('incScan', false)) || false,
             isPublic: true,
             cacert_chainFilePath: sastCertFilePath,
             projectCustomFields: taskLib.getInput('projectcustomfields', false) || '',
-			customFields: ConfigReader.getCustomFieldJSONString( taskLib.getInput('customfields',false),this.log),
-            engineConfigurationId :  ConfigReader.getNumericInput('engineConfigId'),
-            postScanActionName : postScanAction,
-            avoidDuplicateProjectScans : avoidDuplicateProjectScans,
+            customFields: ConfigReader.getCustomFieldJSONString(taskLib.getInput('customfields', false), this.log),
+            engineConfigurationId: ConfigReader.getNumericInput('engineConfigId'),
+            postScanActionName: postScanAction,
+            avoidDuplicateProjectScans: avoidDuplicateProjectScans,
         };
-        
+
         const result: ScanConfig = {
             enableSastScan: taskLib.getBoolInput('enableSastScan', false),
             enableDependencyScan: taskLib.getBoolInput('enableDependencyScan', false),
@@ -398,10 +398,10 @@ export class ConfigReader {
             isSyncMode: taskLib.getBoolInput('syncMode', false),
             sourceLocation,
             cxOrigin: jobOrigin,
-            cxOriginUrl:cxOriginUrl,
+            cxOriginUrl: cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
-            proxyConfig: proxyResult            
-        };        
+            proxyConfig: proxyResult
+        };
         this.format(result);
         this.formatSCA(result);
         this.formatProxy(result);
@@ -410,22 +410,20 @@ export class ConfigReader {
     }
 
     private appendCredsToProxyUrl(Url: string | undefined): string | undefined {
-        
-        if(Url){
+
+        if (Url) {
             let proxyUrl = Url;
-            if(!Url.startsWith("https://") && !Url.startsWith("http://")){
+            if (!Url.startsWith("https://") && !Url.startsWith("http://")) {
                 this.log.warning("Protocol scheme is not specified in the proxy url. Assuming HTTP.");
                 proxyUrl = "http://" + Url;
             }
-            
+
             let urlParts = url.parse(Url);
             //if path in the url is / or empty, it is http proxy url. Add creds if needed.
-            if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") 
-            {
-                let proxyUsernameVar=taskLib.getVariable('proxy-username');
-                let proxyPasswordVar=taskLib.getVariable('proxy-password');
-                if(proxyPasswordVar && proxyUsernameVar)
-                {
+            if (urlParts.path == undefined || urlParts.path == "" || urlParts.path == "/") {
+                let proxyUsernameVar = taskLib.getVariable('proxy-username');
+                let proxyPasswordVar = taskLib.getVariable('proxy-password');
+                if (proxyPasswordVar && proxyUsernameVar) {
                     let splitUrl = Url.split("//");
                     proxyUrl = splitUrl[0] + '//' + proxyUsernameVar + ':' + proxyPasswordVar + '@' + splitUrl[1];
                 }
@@ -460,28 +458,28 @@ Scan Custom Fields: ${config.sastConfig.customFields}
 Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
 Post Scan Action: ${config.sastConfig.postScanActionName}
 Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
-if(config.isSyncMode){
-    this.log.info(`
+            if (config.isSyncMode) {
+                this.log.info(`
 Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
 CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}
 CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}
 CxSAST Fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);
 
-            if (config.sastConfig.vulnerabilityThreshold) {
-                this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
-                this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
-                this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
+                if (config.sastConfig.vulnerabilityThreshold) {
+                    this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
+                    this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
+                    this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
+                }
+                this.log.info(`Enable Project Policy Enforcement: ${config.sastConfig.enablePolicyViolations}`);
+                this.log.info('------------------------------------------------------------------------------');
             }
-            this.log.info(`Enable Project Policy Enforcement: ${config.sastConfig.enablePolicyViolations}`);
-            this.log.info('------------------------------------------------------------------------------');
-        }
         }
     }
 
     private formatSCA(config: ScanConfig): void {
         if (config.enableDependencyScan && config.scaConfig != null) {
             const ourMap = config.scaConfig.envVariables;
-            const envVar=JSON.stringify(Array.from(ourMap.entries()));
+            const envVar = JSON.stringify(Array.from(ourMap.entries()));
             this.log.info(`
 -------------------------------SCA Configurations:--------------------------------
 AccessControl: ${config.scaConfig.accessControlUrl}
@@ -505,21 +503,21 @@ Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
 CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`)
             }
-this.log.info('Enable Exploitable Path:'+config.scaConfig.isExploitable);
-if(config.scaConfig.isExploitable){
-   this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}
+            this.log.info('Enable Exploitable Path:' + config.scaConfig.isExploitable);
+            if (config.scaConfig.isExploitable) {
+                this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}
 Checkmarx SAST Username: ${config.scaConfig.sastUsername}
 Checkmarx SAST Password: *********
 Project Full Path: ${config.scaConfig.sastProjectName}
 
 
 Project ID: ${config.scaConfig.sastProjectId}`)
-if(!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName){
-this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
-throw "Must provide value for either 'Project Full Path' or 'Project Id'";
-;
-}
-}
+                if (!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName) {
+                    this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
+                    throw "Must provide value for either 'Project Full Path' or 'Project Id'";
+                    ;
+                }
+            }
 
             this.log.info('------------------------------------------------------------------------------');
         }
@@ -535,13 +533,13 @@ Proxy Enabled: ${config.enableProxy}`);
                 this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
 Proxy Pass: ******`);
             }
-        }else  if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl!=null && config.proxyConfig.proxyUrl!=''){
-            this.log.info('Entered Proxy Url '+config.proxyConfig.proxyUrl);
+        } else if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl != null && config.proxyConfig.proxyUrl != '') {
+            this.log.info('Entered Proxy Url ' + config.proxyConfig.proxyUrl);
         }
-        if(config.proxyConfig?.sastProxyUrl != '' && config.proxyConfig?.sastProxyUrl != null){
+        if (config.proxyConfig?.sastProxyUrl != '' && config.proxyConfig?.sastProxyUrl != null) {
             this.log.info(`SAST Proxy URL: ${config.proxyConfig.sastProxyUrl}`);
         }
-        if(config.proxyConfig?.scaProxyUrl != '' && config.proxyConfig?.scaProxyUrl != null &&config.enableDependencyScan){
+        if (config.proxyConfig?.scaProxyUrl != '' && config.proxyConfig?.scaProxyUrl != null && config.enableDependencyScan) {
             this.log.info(`SCA Proxy URL: ${config.proxyConfig.scaProxyUrl}`);
         }
         this.log.info('------------------------------------------------------------------------------');
@@ -549,27 +547,27 @@ Proxy Pass: ******`);
 
     private static getHostNameFromURL(path: string): string {
         let host = url.parse(path).hostname;
-        if(!host){
+        if (!host) {
             return '';
         }
-        if(host.length>43){
-            host = host.substring(0,43);
+        if (host.length > 43) {
+            host = host.substring(0, 43);
         }
         return host;
     }
 
-    private isValidUrl(url:string) :boolean{
-        var matcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/;
+    private isValidUrl(url: string): boolean {
+        let matcher = /(https?:\/\/(?:www\.|(?!www))[\w-]+\.[^\s]{2,}|www\.[\w-]+\.[^\s]{2,})/gi;
         return matcher.test(url);
     }
 
-    private extractBaseURL(url :string) : string {
+    private extractBaseURL(url: string): string {
         //look for index of first / that appears after host:port 
-        var index = url.indexOf("/", url.indexOf("://")+3); 
-        if(index > -1){
-            return url.substring(0,index);
+        var index = url.indexOf("/", url.indexOf("://") + 3);
+        if (index > -1) {
+            return url.substring(0, index);
         }
         else
-            return "";       
+            return "";
     }
 }
