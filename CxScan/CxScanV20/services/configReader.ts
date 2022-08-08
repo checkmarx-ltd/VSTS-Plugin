@@ -258,25 +258,27 @@ export class ConfigReader {
             proxyResult.scaProxyUrl = this.appendCredsToProxyUrl(proxyResult.scaProxyUrl);
         }
         //Create Job Link
-        const collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
+        let collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
         let projectName=taskLib.getVariable('System.TeamProject');
         const pipelineId=taskLib.getVariable('System.DefinitionId');
         
         let cxOriginUrl:string='';
         let jobOrigin = '';
-        if (collectionURI) {
+        if (collectionURI) {                
+                collectionURI = collectionURI.replace(/[^:._=/\w\s]/g, '')
             if (collectionURI.includes(this.devAzure)) {
                 jobOrigin = 'ADO ' + this.devAzure +" "+projectName;
             } else {
                 jobOrigin = 'TFS - ' + ConfigReader.getHostNameFromURL(collectionURI)+" "+projectName;
-            }
+            }        
             jobOrigin = jobOrigin.replace(/[^.a-zA-Z 0-9]/g,' ');
 
             if(jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
             jobOrigin = jobOrigin.substr(0,this.SIZE_CXORIGIN);
         
-            //In collectionURI
-            cxOriginUrl = collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;
+            //In collectionURI                      
+            cxOriginUrl = collectionURI+projectName+'/'+'_build?definitionId='+pipelineId;         
+            cxOriginUrl = cxOriginUrl.replace(/[^:._=/\w\s]/g, '');            
             if(cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)){
                 cxOriginUrl = this.extractBaseURL(cxOriginUrl);
             }else if(cxOriginUrl.length>this.MAX_SIZE_CXORIGINURL){
@@ -558,9 +560,10 @@ Proxy Pass: ******`);
         return host;
     }
 
-    private isValidUrl(url:string) :boolean{
-        var matcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/;
-        return matcher.test(url);
+    private isValidUrl(url:string) :boolean{        
+        
+         var matcher = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/i;
+         return matcher.test(url);        
     }
 
     private extractBaseURL(url :string) : string {
