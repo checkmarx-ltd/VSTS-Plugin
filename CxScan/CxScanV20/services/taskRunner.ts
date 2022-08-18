@@ -57,8 +57,9 @@ export class TaskRunner {
                 if(err.message.includes(errorMessage)){
                     taskLib.setResult(taskLib.TaskResult.Failed, err.message);
                 }
-                else if (err.message.includes(avoidDuplicateErrorMessage)){
-                    taskLib.setResult(taskLib.TaskResult.Succeeded, `Scan cannot be completed. ${err.message}`);   
+                else if (err.message.includes(avoidDuplicateErrorMessage)){                    
+                    taskLib.setResult(taskLib.TaskResult.Succeeded, `Scan cannot be completed. ${err.message}`);                       
+                    this.log.warning(`Scan cannot be completed. ${err.message}`);
                 }
                 else{
                     taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err.message}`);

@@ -259,11 +259,10 @@ export class ConfigReader {
         let collectionURI = taskLib.getVariable('System.TeamFoundationCollectionUri');
         let projectName = taskLib.getVariable('System.TeamProject');
         const pipelineId = taskLib.getVariable('System.DefinitionId');
-
+        let cxOriginUrlNew = '';
         let cxOriginUrl: string = '';
         let jobOrigin = '';
-        if (collectionURI) {
-            collectionURI = collectionURI.replace(/[^:.=/\w\s]/g, '')
+        if (collectionURI) {            
             if (collectionURI.includes(this.devAzure)) {
                 jobOrigin = 'ADO ' + this.devAzure + " " + projectName;
             } else {
@@ -274,9 +273,12 @@ export class ConfigReader {
             if (jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
                 jobOrigin = jobOrigin.substr(0, this.SIZE_CXORIGIN);
 
-            //In collectionURI         
-            cxOriginUrl = collectionURI + projectName + '/' + '_build?definitionId=' + pipelineId;
-            cxOriginUrl = cxOriginUrl.replace(/[^:.=/\w\s]/g, '');
+            //In collectionURI               
+            cxOriginUrl = collectionURI + '/' + projectName + '/' + '_build?definitionId=' + pipelineId;
+            if(cxOriginUrl.toString().match(/[\u3400-\u9FBF]/)) {
+            this.log.info("Original CxOriginUrl before replace:" + cxOriginUrl);            
+            cxOriginUrlNew = cxOriginUrl.replace(/[^:.=?/\w\s]/g, '');
+            }
             if (cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)) {
                 cxOriginUrl = this.extractBaseURL(cxOriginUrl);
             } else if (cxOriginUrl.length > this.MAX_SIZE_CXORIGINURL) {
@@ -285,7 +287,13 @@ export class ConfigReader {
         }
 
         this.log.info("CxOrgin: " + jobOrigin);
-        this.log.info("CxOriginUrl:" + cxOriginUrl);
+        if(cxOriginUrlNew){
+        this.log.info("CxOriginUrl after replace:" + cxOriginUrlNew);
+        cxOriginUrl = cxOriginUrlNew;
+        }
+        else{
+            this.log.info("CxOriginUrl:" + cxOriginUrl);
+        }
 
         const sourceLocation = taskLib.getVariable('Build.SourcesDirectory');
         if (typeof sourceLocation === 'undefined') {
@@ -491,13 +499,15 @@ Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
-Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
-Path To SCA Resolver:${config.scaConfig.pathToScaResolver}
-Additional Paramters for SCA Resolver:${config.scaConfig.scaResolverAddParameters}
 Include Sources:${config.scaConfig.includeSource}
 Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViolations}
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
+Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
+if(config.scaConfig.isEnableScaResolver){
+    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
+    this.log.info(`Additional Paramters for SCA Resolver:${config.scaConfig.scaResolverAddParameters}`);
+    }
             if (config.scaConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
 CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
