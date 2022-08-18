@@ -279,6 +279,7 @@ export class ConfigReader {
             this.log.info("Original CxOriginUrl before replace:" + cxOriginUrl);            
             cxOriginUrlNew = cxOriginUrl.replace(/[^:.=?/\w\s]/g, '');
             }
+            cxOriginUrl = cxOriginUrl.replace(/[^:.=?/\w\s]/g, '');
             if (cxOriginUrl.length <= this.MAX_SIZE_CXORIGINURL && !this.isValidUrl(cxOriginUrl)) {
                 cxOriginUrl = this.extractBaseURL(cxOriginUrl);
             } else if (cxOriginUrl.length > this.MAX_SIZE_CXORIGINURL) {
