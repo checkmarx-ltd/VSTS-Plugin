@@ -274,7 +274,7 @@ export class ConfigReader {
                 jobOrigin = jobOrigin.substr(0, this.SIZE_CXORIGIN);
 
             //In collectionURI               
-            cxOriginUrl = collectionURI + '/' + projectName + '/' + '_build?definitionId=' + pipelineId;
+            cxOriginUrl = collectionURI + projectName + '/' + '_build?definitionId=' + pipelineId;
             if(cxOriginUrl.toString().match(/[\u3400-\u9FBF]/)) {
             this.log.info("Original CxOriginUrl before replace:" + cxOriginUrl);            
             cxOriginUrlNew = cxOriginUrl.replace(/[^:.=?/\w\s]/g, '');
