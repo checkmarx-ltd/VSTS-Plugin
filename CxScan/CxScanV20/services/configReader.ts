@@ -273,7 +273,7 @@ export class ConfigReader {
             if (jobOrigin && jobOrigin.length > this.SIZE_CXORIGIN)
                 jobOrigin = jobOrigin.substr(0, this.SIZE_CXORIGIN);
 
-            //In collectionURI               
+            //In collectionURI                        
             cxOriginUrl = collectionURI + projectName + '/' + '_build?definitionId=' + pipelineId;
             if(cxOriginUrl.toString().match(/[\u3400-\u9FBF]/)) {
             this.log.info("Original CxOriginUrl before replace:" + cxOriginUrl);            
@@ -325,8 +325,7 @@ export class ConfigReader {
         const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
-        let scanTimeoutInMinutes = +rawTimeout;
-
+        let scanTimeoutInMinutes = +rawTimeout;        
         const scaResult: ScaConfig = {
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '',
             apiUrl: scaServerUrl || '',
@@ -355,7 +354,7 @@ export class ConfigReader {
             cacert_chainFilePath: scaCertFilePath,
             isEnableScaResolver: taskLib.getBoolInput('isEnableScaResolver', false) || false,
             pathToScaResolver: taskLib.getInput('pathToScaResolver', false) || '',
-            scaResolverAddParameters: taskLib.getInput('scaResolverAddParameters', false) || '',
+            scaResolverAddParameters: taskLib.getInput('scaResolverAddParameters', false) || '',            
         };
         var isSyncMode = taskLib.getBoolInput('syncMode', false);
         var generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
@@ -505,9 +504,8 @@ Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViol
 Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
-if(config.scaConfig.isEnableScaResolver){
-    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
-    this.log.info(`Additional Paramters for SCA Resolver:${config.scaConfig.scaResolverAddParameters}`);
+if(config.scaConfig.isEnableScaResolver) {
+    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);    
     }
             if (config.scaConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
