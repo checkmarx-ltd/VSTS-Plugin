@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
-  "id": "cxsast",
+  "id": "cxsast2",
   "name": "Checkmarx SAST 9.x",
-  "version": "2022.3.4",
+  "version": "2022.3.5",
   "publisher": "Checkmarx-Prerelease",
   "targets": [
     {
