@@ -11,7 +11,7 @@
   "author": "Checkmarx",
   "version": {
     "Major": 2022,
-    "Minor": 2,
+    "Minor": 4,
     "Patch": 1
   },
   "demands": [],
@@ -131,7 +131,8 @@
         "STIG": "STIG",
         "WordPress": "WordPress",
         "XS": "XS",
-        "XSS and SQLi only": "XSS and SQLi only"
+        "XSS and SQLi only": "XSS and SQLi only",
+        "Project Default":"Project Default"
       },
       "visibleRule": "enableSastScan = true"
     },
@@ -466,7 +467,7 @@
       "label": "Enable SCA Resolver",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "To Enable SCA Resolver",
+      "helpMarkDown": "To perform SCA scan through SCA Resolver which provides option for exploitable path",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },

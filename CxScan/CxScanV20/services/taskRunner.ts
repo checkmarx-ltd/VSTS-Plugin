@@ -35,6 +35,7 @@ export class TaskRunner {
     */
     async run() {
         const errorMessage = "cannot be completed";
+        const avoidDuplicateErrorMessage = "Project scan is already in progress";
         try {
             this.printHeader();
 
@@ -55,7 +56,12 @@ export class TaskRunner {
             } else if (err instanceof Error) {
                 if(err.message.includes(errorMessage)){
                     taskLib.setResult(taskLib.TaskResult.Failed, err.message);
-                }else{
+                }
+                else if (err.message.includes(avoidDuplicateErrorMessage)){                    
+                    taskLib.setResult(taskLib.TaskResult.Succeeded, `Scan cannot be completed. ${err.message}`);                       
+                    this.log.warning(`Scan cannot be completed. ${err.message}`);
+                }
+                else{
                     taskLib.setResult(taskLib.TaskResult.Failed, `Scan cannot be completed. ${err.message}`);
                 }
 
