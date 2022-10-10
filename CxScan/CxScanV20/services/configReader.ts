@@ -104,6 +104,7 @@ export class ConfigReader {
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
             isIncremental = taskLib.getBoolInput('incScan', false) || false;
             // adding 
+            if(isIncremental) {
             isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
             scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
             if(isScheduledScan && scheduleCycle){
@@ -121,6 +122,7 @@ export class ConfigReader {
                     isIncremental = !isThisBuildIncremental;
                 
             }
+        }
             vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
             failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;  
             failBuildForNewVulnerabilitiesSeverity = (vulnerabilityThresholdEnabled && failBuildForNewVulnerabilitiesEnabled) ? taskLib.getInput('failBuildForNewVulnerabilitiesSeverity',false) || '' : '';      
@@ -318,6 +320,11 @@ export class ConfigReader {
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
         let scanTimeoutInMinutes = +rawTimeout;
         
+        let scaScanTimeout = taskLib.getInput('scaScanTimeout',false) as any;
+        let scaScanTimeoutInMinutes = +scaScanTimeout;
+        if (scaScanTimeoutInMinutes) {
+        this.log.info("Sca scan time out: " + scaScanTimeoutInMinutes);
+        }
         const scaResult: ScaConfig = {
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '' ,
             apiUrl: scaServerUrl || '',
@@ -347,16 +354,13 @@ export class ConfigReader {
             isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
             pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
             scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
+            scaScanTimeoutInMinutes: scaScanTimeoutInMinutes || undefined
         };
         var isSyncMode = taskLib.getBoolInput('syncMode', false);
         var  generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
         if(!isSyncMode){
             generatePDFReport=false;
-        }
-       
-        this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
-        this.log.info("Scheduled full scan frequency:" + scheduleCycle);
-       
+        }        
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -450,8 +454,15 @@ Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
 Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
-Is incremental scan: ${config.sastConfig.isIncremental}
-Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
+Is incremental scan: ${config.sastConfig.isIncremental}`);
+if (config.sastConfig.isIncremental) {
+    let isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
+    let scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
+    this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
+    this.log.info("Scheduled full scan frequency:" + scheduleCycle);
+}
+
+this.log.info(`Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
@@ -463,11 +474,11 @@ Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
 if(config.isSyncMode){
     this.log.info(`
 Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
-CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}
-CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}
-CxSAST Fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);
+CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
 
             if (config.sastConfig.vulnerabilityThreshold) {
+                this.log.info(`CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}`);
+                this.log.info(`CxSAST fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);                    
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
                 this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
                 this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
@@ -491,6 +502,7 @@ Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
+Scan timeout in minutes: ${config.scaConfig.scaScanTimeoutInMinutes}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
