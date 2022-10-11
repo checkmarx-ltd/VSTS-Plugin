@@ -498,6 +498,7 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             }
         }
     }
+}
 
     private formatSCA(config: ScanConfig): void {
         if (config.enableDependencyScan && config.scaConfig != null) {
