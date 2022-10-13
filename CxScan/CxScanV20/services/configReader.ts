@@ -1,13 +1,13 @@
 import taskLib = require('azure-pipelines-task-lib/task');
 import {
     Logger,
-    ProxyConfig,
-    ScaConfig,
+    ProxyConfig,    
     ScanConfig,
     SourceLocationType,
     TeamApiClient
 } from "@checkmarx/cx-common-js-client";
 import { SastConfig } from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
+import { ScaConfig } from "@checkmarx/cx-common-js-client/dist/dto/sca/scaConfig";
 import * as url from "url";
 
 export class ConfigReader {
