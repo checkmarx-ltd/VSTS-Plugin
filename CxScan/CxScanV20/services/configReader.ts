@@ -9,12 +9,17 @@ import {
 import { SastConfig } from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
 import { ScaConfig } from "@checkmarx/cx-common-js-client/dist/dto/sca/scaConfig";
 import * as url from "url";
+import { homedir } from 'os';
+import path = require('path');
+import { config } from 'process';
+const os = require("os");
+const fs = require('fs');
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
-    private readonly SIZE_CXORIGIN = 50;
-
+    private readonly SIZE_CXORIGIN = 50;    
+    
     constructor(private readonly log: Logger) {
     }
 
@@ -330,12 +335,9 @@ export class ConfigReader {
 
         let scanTimeoutInMinutes = +rawTimeout;
         
-        let scaScanTimeout = taskLib.getInput('scaScanTimeout',false) as any;
-        let scaScanTimeoutInMinutes = +scaScanTimeout;
-        if (scaScanTimeoutInMinutes) {
-        this.log.info("Sca scan time out: " + scaScanTimeoutInMinutes);
-        }
-
+        let scaScanTimeout = taskLib.getInput('scaScanTimeout', false) as any;
+        let scaScanTimeoutInMinutes = +scaScanTimeout;        
+        
         const scaResult: ScaConfig = {
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '',
             apiUrl: scaServerUrl || '',
@@ -367,7 +369,8 @@ export class ConfigReader {
             pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
             scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
             scaScanTimeoutInMinutes: scaScanTimeoutInMinutes || undefined
-        };
+        };       
+        
         var isSyncMode = taskLib.getBoolInput('syncMode', false);
         var  generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
         if(!isSyncMode){
@@ -461,7 +464,6 @@ Project name: ${config.projectName}
 Source location: ${config.sourceLocation}
 Full team path: ${config.sastConfig.teamName}
 Preset name: ${config.sastConfig.presetName}
-Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
 Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
@@ -472,7 +474,9 @@ if (config.sastConfig.isIncremental) {
     this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
     this.log.info("Scheduled full scan frequency:" + scheduleCycle);
 }
-
+if(config.sastConfig.scanTimeoutInMinutes != undefined){
+    this.log.info(`Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}`);
+    }
 this.log.info(`Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
@@ -513,7 +517,6 @@ Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
-Scan timeout in minutes: ${config.scaConfig.scaScanTimeoutInMinutes}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
 Include Sources:${config.scaConfig.includeSource}
@@ -522,7 +525,14 @@ Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
-    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);    
+    
+    if (config.scaConfig.pathToScaResolver == ''){    
+        config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver);
+    }
+    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
+    }
+if(config.scaConfig.scaScanTimeoutInMinutes != undefined) {
+    this.log.info(`Scan timeout in minutes: ${config.scaConfig.scaScanTimeoutInMinutes}`);
     }
             if (config.scaConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
@@ -595,5 +605,46 @@ Proxy Pass: ******`);
         }
         else
             return "";
+    }
+
+    //To get path of SCA Resolver
+    public getPathToScaResolver(config : string){  
+        let pathToScaResolver;    
+        try {
+                let SCAResDowonloadCommand = '';
+                const child_process = require('child_process');
+                const userHomeDir = os.homedir();         
+                pathToScaResolver = userHomeDir;
+                    
+                this.log.debug("Downloading SCA Resolver and extracting it to user home directory.");
+                let osType = os.type();
+                switch(osType) {
+                case 'Darwin':
+                this.log.debug("Downloading and extracting SCA Resolver for Mac operating system");
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver /usr/local/bin && rm ScaResolver.tar.gz";         
+                break;
+                case 'Linux': 
+                this.log.debug("Downloading and extracting SCA Resolver for linux operating system");
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver /usr/local/bin && rm ScaResolver.tar.gz";
+                break;
+                case 'Windows_NT':
+                this.log.debug("Downloading and extracting SCA Resolver for windows operating system");        
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/1.11.3/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";         
+                break;          
+                }  
+                this.log.debug("Command for SCA Resolver download and extract : " + SCAResDowonloadCommand); 
+                try {     
+                child_process.execSync(SCAResDowonloadCommand, { stdio: 'pipe' }); 
+                }
+                catch(ex :any) {           
+                    this.log.debug(`Status Code: ${ex.status} with '${ex.message}'`);
+                    throw Error("Error occured while downloading and extracting SCA Resolver automatically" + ex.message);
+                }
+            }
+            catch(ex :any) {
+                throw Error("Error occured while downloading and extracting SCA Resolver automatically" + ex.message);
+                
+            }    
+    return pathToScaResolver;
     }
 }
