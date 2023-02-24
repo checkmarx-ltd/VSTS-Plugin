@@ -230,7 +230,6 @@ export class ConfigReader {
         };
         if (proxyEnabled) {
             proxy = taskLib.getHttpProxyConfiguration();
-            proxyUrl = taskLib.getInput('proxyURL');
             sastProxyUrl = taskLib.getInput('sastProxyUrl');
             scaProxyUrl = taskLib.getInput('scaProxyUrl');
             //add this 
