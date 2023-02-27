@@ -453,6 +453,23 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "projectLevelTags",
+      "type": "String",
+      "label": "Project Level Tags",
+      "required": false,
+      "helpMarkDown": "Add tags to the Project. A tag can be a simple String or a key:value pair",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scanLevelTags",
+      "type": "string",
+      "label": "Scan Level Tags",
+      "required": false,
+      "helpMarkDown": "Add tags to the Scan. A tag can be a simple String or a key:value pair",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
       "name": "scaCaChainFilePath",
       "type": "string",
       "label": "CA Certificate Chain File Path",
