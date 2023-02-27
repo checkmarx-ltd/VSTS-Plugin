@@ -458,6 +458,7 @@
       "label": "Project Level Tags",
       "required": false,
       "helpMarkDown": "Add tags to the Project. A tag can be a simple String or a key:value pair",
+      "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
     {

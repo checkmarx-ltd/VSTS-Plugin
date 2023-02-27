@@ -144,16 +144,22 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
+        let projectLevelTags;
+        let scanLevelTags;
         let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
-                isExploitableSca = taskLib.getBoolInput('scaExploitablePath', false) || false;
+            isExploitableSca = taskLib.getBoolInput('scaExploitablePath', false) || false;
+            projectLevelTags = taskLib.getInput('projectLevelTags',false) || '';
+            scanLevelTags = taskLib.getInput('scanLevelTags',false) || '';
             endPointIdScaSast = taskLib.getInput('CheckmarxServiceForSca', false) || '';
             scaSastProjectFullPath = taskLib.getInput('scaProjectFullPath', false) || '';
             scaSastProjectId = taskLib.getInput('scaProjectId', false) || '';
             scaConfigFiles = taskLib.getInput('scaConfigFilePaths', false);
             scaEnvVars = taskLib.getInput('scaEnvVariables', false);
+            this.log.info("project Level Tags: "+projectLevelTags);
+            this.log.info("scan level tags: "+scanLevelTags);
             if (scaConfigFiles)
                 scaConfigFilesArray = scaConfigFiles.split(',');
             if (scaEnvVars) {
