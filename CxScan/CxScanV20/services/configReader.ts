@@ -144,14 +144,10 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
-        let projectCustomTags;
-        let scanCustomTags;
         let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
-            projectCustomTags = taskLib.getInput('projectCustomTags', false) || '',
-            scanCustomTags = taskLib.getInput('scanCustomTags', false) || '',
                 isExploitableSca = taskLib.getBoolInput('scaExploitablePath', false) || false;
             endPointIdScaSast = taskLib.getInput('CheckmarxServiceForSca', false) || '';
             scaSastProjectFullPath = taskLib.getInput('scaProjectFullPath', false) || '';
@@ -503,6 +499,8 @@ Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
+Project custom tags: ${config.scaConfig.projectCustomTags}
+Scan custom tags: ${config.scaConfig.scanCustomTags}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
 Include Sources:${config.scaConfig.includeSource}
