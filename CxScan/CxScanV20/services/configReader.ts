@@ -144,10 +144,14 @@ export class ConfigReader {
         let scaSastProjectId;
         let isExploitableSca;
         let scaTeamName;
+        let projectCustomTags;
+        let scanCustomTags;
         let teamsSCAServiceCon;
         if (dependencyScanEnabled) {
             endpointIdSCA = taskLib.getInput('dependencyServerURL', false) || '';
             scaTeamName = taskLib.getInput('scaTeam', false) || '',
+            projectCustomTags = taskLib.getInput('projectCustomTags', false) || '',
+            scanCustomTags = taskLib.getInput('scanCustomTags', false) || '',
                 isExploitableSca = taskLib.getBoolInput('scaExploitablePath', false) || false;
             endPointIdScaSast = taskLib.getInput('CheckmarxServiceForSca', false) || '';
             scaSastProjectFullPath = taskLib.getInput('scaProjectFullPath', false) || '';
@@ -336,6 +340,8 @@ export class ConfigReader {
             webAppUrl: scaWebAppUrl || '',
             dependencyFileExtension: taskLib.getInput('dependencyFileExtension', false) || '',
             dependencyFolderExclusion: taskLib.getInput('dependencyFolderExclusion', false) || '',
+            projectCustomTags: taskLib.getInput('projectCustomTags',false) || '',
+            scanCustomTags: taskLib.getInput('scanCustomTags', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
             vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold', false) || false,
             highThreshold: ConfigReader.getNumericInput('scaHigh'),

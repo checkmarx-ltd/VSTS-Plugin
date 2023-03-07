@@ -453,6 +453,24 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "projectCustomTags",
+      "type": "string",
+      "label": "Project Custom Tags",
+      "required": false,
+      "helpMarkDown": "A project tag is a key:value pair, and  multiple tags can be seperated using comma(,).(E.g: a:b, c:d)",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scanCustomTags",
+      "type": "string",
+      "label": "Scan Custom Tags",
+      "required": false,
+      "helpMarkDown": "A scan tag is a key:value pair, and  multiple tags can be seperated using comma(,).(E.g: a:b, c:d)",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
       "name": "scaCaChainFilePath",
       "type": "string",
       "label": "CA Certificate Chain File Path",
