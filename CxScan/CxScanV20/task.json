@@ -444,6 +444,24 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "manifestPattern",
+      "type": "string",
+      "label": "Manifest Pattern(Include/Exclude)",
+      "required": false,
+      "helpMarkDown": "Comma separated file or folder patterns can be included or excluded in manifest pattern. Example 1: `**/folder1/**,!**/folder2/** (Here, folder1 will be included, folder2 will be excluded)`. Example 2:`**/file1.json,!**/file2.xml (Here, file1.json will be included, file2.xml will be excluded)`. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "fingerprintPattern",
+      "type": "string",
+      "label": "Fingerprint Pattern(Include/Exclude)",
+      "required": false,
+      "helpMarkDown": "Comma separated file or folder patterns can be included or excluded in fingerprint pattern. Example 1: `**/folder1/**,!**/folder2/** (Here, folder1 will be included, folder2 will be excluded)`. Example 2:`**/file1.json,!**/file2.xml (Here, file1.json will be included, file2.xml will be excluded)`. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
       "name": "scaTeam",
       "type": "string",
       "label": "Team",

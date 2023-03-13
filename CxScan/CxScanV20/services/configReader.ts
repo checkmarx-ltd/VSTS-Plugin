@@ -336,6 +336,8 @@ export class ConfigReader {
             webAppUrl: scaWebAppUrl || '',
             dependencyFileExtension: taskLib.getInput('dependencyFileExtension', false) || '',
             dependencyFolderExclusion: taskLib.getInput('dependencyFolderExclusion', false) || '',
+            manifestPattern:taskLib.getInput('manifestPattern', false) || '',
+            fingerprintPattern:taskLib.getInput('fingerprintPattern', false) || '',
             projectCustomTags: taskLib.getInput('projectCustomTags',false) || '',
             scanCustomTags: taskLib.getInput('scanCustomTags', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
