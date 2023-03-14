@@ -500,6 +500,8 @@ WebAppUrl: ${config.scaConfig.webAppUrl}
 Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
+Manifest Pattern(Include/Exclude): ${config.scaConfig.manifestPattern}
+Fingerprint Pattern(Include/Exclude): ${config.scaConfig.fingerprintPattern}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
 Project custom tags: ${config.scaConfig.projectCustomTags}
 Scan custom tags: ${config.scaConfig.scanCustomTags}
