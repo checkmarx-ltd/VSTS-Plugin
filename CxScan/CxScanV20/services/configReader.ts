@@ -335,6 +335,10 @@ export class ConfigReader {
             webAppUrl: scaWebAppUrl || '',
             dependencyFileExtension: taskLib.getInput('dependencyFileExtension', false) || '',
             dependencyFolderExclusion: taskLib.getInput('dependencyFolderExclusion', false) || '',
+            manifestPattern:taskLib.getInput('manifestPattern', false) || '',
+            fingerprintPattern:taskLib.getInput('fingerprintPattern', false) || '',
+            projectCustomTags: taskLib.getInput('projectCustomTags',false) || '',
+            scanCustomTags: taskLib.getInput('scanCustomTags', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
             vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold', false) || false,
             highThreshold: ConfigReader.getNumericInput('scaHigh'),
@@ -495,7 +499,11 @@ WebAppUrl: ${config.scaConfig.webAppUrl}
 Account: ${config.scaConfig.tenant}
 Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
 Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
+Manifest Pattern(Include/Exclude): ${config.scaConfig.manifestPattern}
+Fingerprint Pattern(Include/Exclude): ${config.scaConfig.fingerprintPattern}
 CxSCA Full team path: ${config.scaConfig.scaSastTeam}
+Project custom tags: ${config.scaConfig.projectCustomTags}
+Scan custom tags: ${config.scaConfig.scanCustomTags}
 Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
 Private Registry Environment Variable:${envVar}
 Include Sources:${config.scaConfig.includeSource}
