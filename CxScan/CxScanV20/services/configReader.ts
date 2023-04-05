@@ -1,20 +1,25 @@
 import taskLib = require('azure-pipelines-task-lib/task');
 import {
     Logger,
-    ProxyConfig,
-    ScaConfig,
+    ProxyConfig,    
     ScanConfig,
     SourceLocationType,
     TeamApiClient
 } from "@checkmarx/cx-common-js-client";
 import { SastConfig } from "@checkmarx/cx-common-js-client/dist/dto/sastConfig";
+import { ScaConfig } from "@checkmarx/cx-common-js-client/dist/dto/sca/scaConfig";
 import * as url from "url";
+import { homedir } from 'os';
+import path = require('path');
+import { config } from 'process';
+const os = require("os");
+const fs = require('fs');
 
 export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
-    private readonly SIZE_CXORIGIN = 50;
-
+    private readonly SIZE_CXORIGIN = 50;    
+    
     constructor(private readonly log: Logger) {
     }
 
@@ -102,6 +107,7 @@ export class ConfigReader {
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
             isIncremental = taskLib.getBoolInput('incScan', false) || false;
             // adding 
+            if(isIncremental) {
             isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
             scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
             if (isScheduledScan && scheduleCycle) {
@@ -119,6 +125,7 @@ export class ConfigReader {
                 isIncremental = !isThisBuildIncremental;
 
             }
+        }
             vulnerabilityThresholdEnabled = taskLib.getBoolInput('vulnerabilityThreshold', false) || false;
             failBuildForNewVulnerabilitiesEnabled = vulnerabilityThresholdEnabled ? taskLib.getBoolInput('failBuildForNewVulnerabilitiesEnabled', false) || false : false;
             failBuildForNewVulnerabilitiesSeverity = (vulnerabilityThresholdEnabled && failBuildForNewVulnerabilitiesEnabled) ? taskLib.getInput('failBuildForNewVulnerabilitiesSeverity', false) || '' : '';
@@ -324,7 +331,12 @@ export class ConfigReader {
         const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
-        let scanTimeoutInMinutes = +rawTimeout;        
+
+        let scanTimeoutInMinutes = +rawTimeout;
+        
+        let scaScanTimeout = taskLib.getInput('scaScanTimeout', false) as any;
+        let scaScanTimeoutInMinutes = +scaScanTimeout;        
+        
         const scaResult: ScaConfig = {
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '',
             apiUrl: scaServerUrl || '',
@@ -355,18 +367,18 @@ export class ConfigReader {
             sastPassword: scaSASTPassword || '',
             isExploitable: isExploitableSca || false,
             cacert_chainFilePath: scaCertFilePath,
-            isEnableScaResolver: taskLib.getBoolInput('isEnableScaResolver', false) || false,
-            pathToScaResolver: taskLib.getInput('pathToScaResolver', false) || '',
-            scaResolverAddParameters: taskLib.getInput('scaResolverAddParameters', false) || '',            
-        };
-        var isSyncMode = taskLib.getBoolInput('syncMode', false);
-        var generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
-        if (!isSyncMode) {
-            generatePDFReport = false;
-        }
 
-        this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
-        this.log.info("Scheduled full scan frequency:" + scheduleCycle);
+            isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
+            pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
+            scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
+            scaScanTimeoutInMinutes: scaScanTimeoutInMinutes || undefined
+        };       
+        
+        var isSyncMode = taskLib.getBoolInput('syncMode', false);
+        var  generatePDFReport = taskLib.getBoolInput('generatePDFReport', false) || false;
+        if(!isSyncMode){
+            generatePDFReport=false;
+        }        
 
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
@@ -455,12 +467,20 @@ Project name: ${config.projectName}
 Source location: ${config.sourceLocation}
 Full team path: ${config.sastConfig.teamName}
 Preset name: ${config.sastConfig.presetName}
-Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
 Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
-Is incremental scan: ${config.sastConfig.isIncremental}
-Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
+Is incremental scan: ${config.sastConfig.isIncremental}`);
+if (config.sastConfig.isIncremental) {
+    let isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
+    let scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
+    this.log.info("Scheduled periodic full scan enabled:" + isScheduledScan);
+    this.log.info("Scheduled full scan frequency:" + scheduleCycle);
+}
+if(config.sastConfig.scanTimeoutInMinutes != undefined){
+    this.log.info(`Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}`);
+    }
+this.log.info(`Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
 SAST Comment: ${config.sastConfig.comment}
@@ -472,20 +492,20 @@ Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
             if (config.isSyncMode) {
                 this.log.info(`
 Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
-CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}
-CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}
-CxSAST Fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);
+CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
 
-                if (config.sastConfig.vulnerabilityThreshold) {
-                    this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
-                    this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
-                    this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
-                }
-                this.log.info(`Enable Project Policy Enforcement: ${config.sastConfig.enablePolicyViolations}`);
-                this.log.info('------------------------------------------------------------------------------');
+
+            if (config.sastConfig.vulnerabilityThreshold) {
+                this.log.info(`CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}`);
+                this.log.info(`CxSAST fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);                    
+                this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
+                this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
+                this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);
+
             }
         }
     }
+}
 
     private formatSCA(config: ScanConfig): void {
         if (config.enableDependencyScan && config.scaConfig != null) {
@@ -512,7 +532,14 @@ Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
-    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);    
+    
+    if (config.scaConfig.pathToScaResolver == ''){    
+        config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver);
+    }
+    this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
+    }
+if(config.scaConfig.scaScanTimeoutInMinutes != undefined) {
+    this.log.info(`Scan timeout in minutes: ${config.scaConfig.scaScanTimeoutInMinutes}`);
     }
             if (config.scaConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
@@ -585,5 +612,46 @@ Proxy Pass: ******`);
         }
         else
             return "";
+    }
+
+    //To get path of SCA Resolver
+    public getPathToScaResolver(config : string){  
+        let pathToScaResolver;    
+        try {
+                let SCAResDowonloadCommand = '';
+                const child_process = require('child_process');
+                const userHomeDir = os.homedir();         
+                pathToScaResolver = userHomeDir;
+                    
+                this.log.debug("Downloading SCA Resolver and extracting it to user home directory.");
+                let osType = os.type();
+                switch(osType) {
+                case 'Darwin':
+                this.log.debug("Downloading and extracting SCA Resolver for Mac operating system");
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver /usr/local/bin && rm ScaResolver.tar.gz";         
+                break;
+                case 'Linux': 
+                this.log.debug("Downloading and extracting SCA Resolver for linux operating system");
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver /usr/local/bin && rm ScaResolver.tar.gz";
+                break;
+                case 'Windows_NT':
+                this.log.debug("Downloading and extracting SCA Resolver for windows operating system");        
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/1.11.3/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";         
+                break;          
+                }  
+                this.log.debug("Command for SCA Resolver download and extract : " + SCAResDowonloadCommand); 
+                try {     
+                child_process.execSync(SCAResDowonloadCommand, { stdio: 'pipe' }); 
+                }
+                catch(ex :any) {           
+                    this.log.debug(`Status Code: ${ex.status} with '${ex.message}'`);
+                    throw Error("Error occured while downloading and extracting SCA Resolver automatically" + ex.message);
+                }
+            }
+            catch(ex :any) {
+                throw Error("Error occured while downloading and extracting SCA Resolver automatically" + ex.message);
+                
+            }    
+    return pathToScaResolver;
     }
 }

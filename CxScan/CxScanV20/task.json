@@ -666,6 +666,15 @@
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold.  Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "dependencyScan",
       "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
+    },
+    {
+      "name": "scaScanTimeout",
+      "type": "string",
+      "label": "Scan Timeout In Minutes",
+      "required": false,
+      "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
     }
   ],
   "execution": {
