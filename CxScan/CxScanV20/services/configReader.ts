@@ -636,7 +636,7 @@ Proxy Pass: ******`);
                 break;
                 case 'Windows_NT':
                 this.log.debug("Downloading and extracting SCA Resolver for windows operating system");        
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/1.11.3/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";         
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";         
                 break;          
                 }  
                 this.log.debug("Command for SCA Resolver download and extract : " + SCAResDowonloadCommand); 
