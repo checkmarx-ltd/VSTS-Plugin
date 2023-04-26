@@ -1,6 +1,6 @@
 {
   "name": "cxsast",
-  "version": "2023.2.2",
+  "version": "2023.2.3",
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "main": "index.js",
   "repository": "https://github.com/checkmarx-ltd/VSTS-Plugin",
@@ -10,8 +10,8 @@
   "author": "MajdM",
   "license": "SEE LICENSE IN checkmarx-license-terms.md",
   "dependencies": {
-    "@checkmarx/cx-common-js-client": "0.1.81",
-    "degenerator": "3.0.2",
+    "@checkmarx/cx-common-js-client": "0.1.82",
+    "degenerator": "3.0.4",
     "azure-pipelines-task-lib": "^3.1.7",
     "superagent": "^5.1.0",
     "tmp": "^0.1.0",
@@ -26,5 +26,10 @@
     "@types/node": "^14.0.0",
     "@types/q": "^1.5.4",
     "@types/tmp": "^0.1.0"
+  }, 
+  "overrides": {
+    "source-map-resolve": {
+      "decode-uri-component" : "0.3.0"
+    }
   }
 }
