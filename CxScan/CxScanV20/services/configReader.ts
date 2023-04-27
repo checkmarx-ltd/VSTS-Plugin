@@ -628,7 +628,7 @@ Proxy Pass: ******`);
                 switch(osType) {
                 case 'Darwin':
                 this.log.debug("Downloading and extracting SCA Resolver for Mac operating system");
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";   
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-macos64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";   
                 this.log.debug("Sca Resolver gets downloaded at location: "+userHomeDir);     
                 break;
                 case 'Linux': 
