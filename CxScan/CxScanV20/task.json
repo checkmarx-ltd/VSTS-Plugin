@@ -10,9 +10,9 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 2022,
-    "Minor": 4,
-    "Patch": 1
+    "Major": 2023,
+    "Minor": 2,
+    "Patch": 5
   },
   "demands": [],
   "minimumAgentVersion": "2.144.0",
@@ -444,11 +444,47 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "manifestPattern",
+      "type": "string",
+      "label": "Manifest Pattern(Include/Exclude)",
+      "required": false,
+      "helpMarkDown": "Comma separated file or folder patterns can be included or excluded in manifest pattern. Example 1: `**/folder1/**,!**/folder2/** (Here, folder1 will be included, folder2 will be excluded)`. Example 2:`**/file1.json,!**/file2.xml (Here, file1.json will be included, file2.xml will be excluded)`. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "fingerprintPattern",
+      "type": "string",
+      "label": "Fingerprint Pattern(Include/Exclude)",
+      "required": false,
+      "helpMarkDown": "Comma separated file or folder patterns can be included or excluded in fingerprint pattern. Example 1: `**/folder1/**,!**/folder2/** (Here, folder1 will be included, folder2 will be excluded)`. Example 2:`**/file1.json,!**/file2.xml (Here, file1.json will be included, file2.xml will be excluded)`. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
       "name": "scaTeam",
       "type": "string",
       "label": "Team",
       "required": false,
       "helpMarkDown": "CxSCA Team name.If team is mentioned in Service connection, then this will get overridden with Service connection Team",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "projectCustomTags",
+      "type": "string",
+      "label": "Project Custom Tags",
+      "required": false,
+      "helpMarkDown": "A project tag is a key:value pair, and  multiple tags can be seperated using comma(,).(E.g: a:b, c:d)",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scanCustomTags",
+      "type": "string",
+      "label": "Scan Custom Tags",
+      "required": false,
+      "helpMarkDown": "A scan tag is a key:value pair, and  multiple tags can be seperated using comma(,).(E.g: a:b, c:d)",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
@@ -467,18 +503,9 @@
       "label": "Enable SCA Resolver",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "To perform SCA scan through SCA Resolver which provides option for exploitable path",
+      "helpMarkDown": "To perform SCA scan through SCA Resolver which provides option for exploitable path. It gets automatically downloaded in user directory.",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
-    },
-    {
-      "name": "pathToScaResolver",
-      "type": "string",
-      "label": "SCA Resolver Path",
-      "required": false,
-      "helpMarkDown": " Folder path on the Agent machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
-      "groupName": "dependencyScan",
-      "visibleRule": "isEnableScaResolver = true"
     },
     {
       "name": "scaResolverAddParameters",
@@ -630,6 +657,15 @@
       "helpMarkDown": "Define a threshold for the low severity vulnerabilities. The build will be marked as failed  if the number of the low severity vulnerabilities is larger than the threshold.  Threshold must be 0 or greater to set a threshold, or leave blank for no thresholds ",
       "groupName": "dependencyScan",
       "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
+    },
+    {
+      "name": "scaScanTimeout",
+      "type": "string",
+      "label": "Scan Timeout In Minutes",
+      "required": false,
+      "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
     }
   ],
   "execution": {

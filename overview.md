@@ -29,4 +29,4 @@ Enhancing your code portfolio risk assessment coverage is merely a few mouse cli
 No time is wasted on trying to understand the required actions items to mitigate the detected security or compliance risk.
 
 
-To learn more about the Azure Devops extension features and capabilities, please refer to [Checkmarx SAST 9.x ADO Extension Page](https://checkmarx.atlassian.net/wiki/spaces/SD/pages/1339162942/Azure+DevOps+Plugin) 
+To learn more about the Azure Devops extension features and capabilities, please refer to [Checkmarx SAST 9.x ADO Extension Page](https://checkmarx.com/resource/documents/en/34965-8186-azure-devops-plugin.html) 

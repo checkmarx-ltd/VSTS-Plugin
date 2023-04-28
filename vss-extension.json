@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx SAST 9.x",
-  "version": "2022.4.1",
+  "version": "2023.2.5",
   "publisher": "Checkmarx",
   "targets": [
     {
@@ -45,7 +45,7 @@
       "uri": "https://info.checkmarx.com/cx-microsoft-vs-team-services"
     },
     "learn": {
-      "uri": "https://checkmarx.atlassian.net/wiki/spaces/KC/pages/96731162/CxSAST+MS-VSTS+Plugin+v8.4.1+and+up"
+      "uri": "https://checkmarx.com/resource/documents/en/34965-8186-azure-devops-plugin.html"
     },
     "support": {
       "uri": "https://support.checkmarx.com/home"
