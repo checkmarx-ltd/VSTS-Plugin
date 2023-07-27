@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx SAST 9.x",
   "version": "2023.3.1",
-  "publisher": "nidhijaiswal",
+  "publisher": "rahulpidde",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
