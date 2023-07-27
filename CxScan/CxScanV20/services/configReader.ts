@@ -12,6 +12,7 @@ import * as url from "url";
 import { homedir } from 'os';
 import path = require('path');
 import { config } from 'process';
+import { file } from 'tmp';
 const os = require("os");
 const fs = require('fs');
 
@@ -19,6 +20,7 @@ export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
     private readonly SIZE_CXORIGIN = 50;    
+    private readonly SCARESOLVER_FILENAME = "ScaResolver.exe";   
     
     constructor(private readonly log: Logger) {
     }
@@ -533,7 +535,14 @@ Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
     
-    if (config.scaConfig.pathToScaResolver == ''){    
+    var isScaResolverFileExists= fs.existsSync(config.scaConfig.pathToScaResolver + this.SCARESOLVER_FILENAME)
+
+    if (!isScaResolverFileExists)
+    {
+        this.log.warning(`SCA Resolver file not found at path:${config.scaConfig.pathToScaResolver}`);
+    }
+
+    if (config.scaConfig.pathToScaResolver == '' || !isScaResolverFileExists){    
         config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver);
     }
     this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
