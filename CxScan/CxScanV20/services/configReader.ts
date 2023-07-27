@@ -534,8 +534,9 @@ Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
     
-    this.log.info(`SCA Resolver Path :${config.scaConfig.pathToScaResolver + this.SCARESOLVER_FILENAME}`);
-    var isScaResolverFileExists= fs.existsSync(config.scaConfig.pathToScaResolver + this.SCARESOLVER_FILENAME);
+    this.log.info(`SCA Resolver Path :${config.scaConfig.pathToScaResolver.concat(this.SCARESOLVER_FILENAME)}`);
+    
+    var isScaResolverFileExists= fs.existsSync(config.scaConfig.pathToScaResolver.concat(this.SCARESOLVER_FILENAME) );
 
     this.log.info(`isScaResolverFileExists : ${isScaResolverFileExists}`);
     if (!isScaResolverFileExists)
