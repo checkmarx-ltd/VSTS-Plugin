@@ -12,7 +12,6 @@ import * as url from "url";
 import { homedir } from 'os';
 import path = require('path');
 import { config } from 'process';
-import { file } from 'tmp';
 const os = require("os");
 const fs = require('fs');
 
