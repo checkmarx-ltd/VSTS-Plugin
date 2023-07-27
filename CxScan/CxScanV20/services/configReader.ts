@@ -19,7 +19,7 @@ export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
     private readonly SIZE_CXORIGIN = 50;    
-    private readonly SCARESOLVER_FILENAME = "ScaResolver.exe";   
+    private readonly SCARESOLVER_FILENAME = "\ScaResolver.exe";   
     
     constructor(private readonly log: Logger) {
     }
