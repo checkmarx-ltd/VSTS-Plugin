@@ -246,6 +246,7 @@ export class ConfigReader {
                 } else {
                     proxyResult.proxyHost = proxy ? proxy.proxyUrl : '';
                     proxyResult.proxyPass = proxy ? proxy.proxyPassword : '';
+                    proxyResult.proxyUrl = proxy.proxyUrl;
                     proxyResult.proxyPort = '';
                     proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
