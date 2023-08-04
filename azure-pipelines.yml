@@ -27,7 +27,7 @@ steps:
 - task: Npm@1
   inputs:
     command : 'custom'
-    customCommand: 'run-script build -- --verbose'
+    customCommand: 'run-script build '
     displayName: 'npm build 20'
     workingDir: $(nodejsAppDir20)
 
