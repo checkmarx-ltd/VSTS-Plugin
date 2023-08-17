@@ -14,11 +14,11 @@ variables:
 
 steps:
 - task: Bash@3
-    displayName: 'TypeScript version'
-    inputs:
-      script: |
-        echo "Check TypeScript version:"
-        tsc --version
+  displayName: 'TypeScript version'
+  inputs:
+    script: |
+      echo "Check TypeScript version:"
+      tsc --version
         
 - task: NodeTool@0
   inputs:
