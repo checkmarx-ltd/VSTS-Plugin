@@ -23,14 +23,6 @@ steps:
       npm install -g typescript@4.1.6
       echo "Check TypeScript version:"
       tsc -v
-      
-- task: Bash@3
-  displayName: Compile TypeScript'
-  inputs:
-    targetType: inline
-    script: |
-      echo "Compile TypeScript file:"
-      tsc example.ts
         
 - task: NodeTool@0
   inputs:
