@@ -13,6 +13,9 @@ variables:
   nodejsAppDir20: CxScan/CxScanV20
 
 steps:
+- sh:
+        inputs:
+          command: echo ${tsc -v}
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
