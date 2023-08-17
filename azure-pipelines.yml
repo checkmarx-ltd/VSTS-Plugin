@@ -24,7 +24,7 @@ steps:
   inputs:
     script: |
       echo "Check TypeScript version:"
-      tsc --version
+      tsc -v
 
 - task: Npm@1
   inputs:
