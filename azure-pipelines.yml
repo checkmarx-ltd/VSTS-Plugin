@@ -17,7 +17,7 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
-    
+  
 - task: Npm@1
   inputs:
     command: 'custom'
@@ -27,7 +27,7 @@ steps:
 - task: Npm@1
   inputs:
     command : 'custom'
-    customCommand: 'run-script build '
+    customCommand: 'run-script build'
     displayName: 'npm build 20'
     workingDir: $(nodejsAppDir20)
 
