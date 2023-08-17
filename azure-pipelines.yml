@@ -13,16 +13,7 @@ variables:
   nodejsAppDir20: CxScan/CxScanV20
 
 steps:
-- task: Bash@3
-  displayName: 'TypeScript version'
-  inputs:
-    targetType: inline
-    script: |
-      echo "Install TypeScript:"
-      npm i typescript@4.1.6
-      echo "Check TypeScript version:"
-      tsc -v
-      
+
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
@@ -34,6 +25,16 @@ steps:
     customCommand: 'install --no-optional'
     workingDir: $(nodejsAppDir20)
 
+- task: Bash@3
+  displayName: 'TypeScript version'
+  inputs:
+    targetType: inline
+    script: |
+      echo "Install TypeScript:"
+      npm i typescript@4.1.6
+      echo "Check TypeScript version:"
+      tsc -v
+      
 - task: Npm@1
   inputs:
     command : 'custom'
