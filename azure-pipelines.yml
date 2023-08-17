@@ -13,6 +13,13 @@ variables:
   nodejsAppDir20: CxScan/CxScanV20
 
 steps:
+- task: Bash@3
+    displayName: 'Check TypeScript version'
+    inputs:
+      targetType: inline
+      script: |
+        echo "Check TypeScript version:"
+        tsc --version
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
