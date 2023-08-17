@@ -19,10 +19,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-      echo "Install TypeScript:"
       npm install -g typescript@4.1.6
-      echo "Check TypeScript version:"
-      tsc -v
+      echo "TypeScript version: ${tsc -v}"
         
 - task: NodeTool@0
   inputs:
