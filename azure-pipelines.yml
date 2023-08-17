@@ -15,7 +15,7 @@ variables:
 steps:
 
 - task: Bash@3
-  displayName: 'TypeScript version'
+  displayName: 'Install TypeScript'
   inputs:
     targetType: inline
     script: |
