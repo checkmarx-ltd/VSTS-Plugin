@@ -19,7 +19,7 @@ steps:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
 
-  - task: Bash@3
+- task: Bash@3
   displayName: 'TypeScript version'
   inputs:
     script: |
