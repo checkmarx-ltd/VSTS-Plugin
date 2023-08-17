@@ -14,6 +14,23 @@ variables:
 
 steps:
 
+- task: Bash@3
+  displayName: 'TypeScript version'
+  inputs:
+    targetType: inline
+    script: |
+      echo "Install TypeScript:"
+      npm i typescript@4.1.6
+      echo "Check TypeScript version:"
+      tsc -v
+- task: Bash@3
+    displayName: Compile TypeScript'
+    inputs:
+      targetType: inline
+      script: |
+        echo "Compile TypeScript file:"
+        tsc example.ts
+        
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
@@ -24,16 +41,6 @@ steps:
     command: 'custom'
     customCommand: 'install --no-optional'
     workingDir: $(nodejsAppDir20)
-
-- task: Bash@3
-  displayName: 'TypeScript version'
-  inputs:
-    targetType: inline
-    script: |
-      echo "Install TypeScript:"
-      npm i typescript@4.1.6
-      echo "Check TypeScript version:"
-      tsc -v
       
 - task: Npm@1
   inputs:
