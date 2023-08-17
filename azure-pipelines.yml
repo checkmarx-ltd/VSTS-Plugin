@@ -22,6 +22,7 @@ steps:
 - task: Bash@3
   displayName: 'TypeScript version'
   inputs:
+    targetType: inline
     script: |
       echo "Check TypeScript version:"
       tsc -v
