@@ -508,6 +508,15 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "pathToScaResolver",
+      "type": "string",
+      "label": "SCA Resolver Path",
+      "required": false,
+      "helpMarkDown": " Folder path on the Agent machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
+      "groupName": "dependencyScan",
+      "visibleRule": "isEnableScaResolver = true"
+    },
+    {
       "name": "scaResolverAddParameters",
       "type": "string",
       "label": "SCA Resolver Additional Parameters",

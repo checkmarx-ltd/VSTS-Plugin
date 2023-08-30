@@ -19,6 +19,7 @@ export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
     private readonly SIZE_CXORIGIN = 50;    
+    private readonly SCARESOLVER_FILENAME = "\\ScaResolver.exe";   
     
     constructor(private readonly log: Logger) {
     }
@@ -533,8 +534,15 @@ Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
-    
-    if (config.scaConfig.pathToScaResolver == ''){    
+        
+    var isScaResolverFileExists= fs.existsSync(config.scaConfig.pathToScaResolver.concat(this.SCARESOLVER_FILENAME) );
+
+    if (!isScaResolverFileExists && config.scaConfig.pathToScaResolver != '' )
+    {
+        this.log.warning(`SCA Resolver file not found at path:${config.scaConfig.pathToScaResolver}`);
+    }
+
+    if (config.scaConfig.pathToScaResolver == '' || !isScaResolverFileExists){    
         config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver);
     }
     this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
