@@ -503,7 +503,7 @@
       "label": "Enable SCA Resolver",
       "required": false,
       "defaultValue": "false",
-      "helpMarkDown": "To perform SCA scan through SCA Resolver which provides option for exploitable path. It gets automatically downloaded in user directory.",
+      "helpMarkDown": "To perform SCA scan through SCA Resolver which provides option for exploitable path.",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     },
@@ -512,7 +512,7 @@
       "type": "string",
       "label": "SCA Resolver Path",
       "required": false,
-      "helpMarkDown": " Folder path on the Agent machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.",
+      "helpMarkDown": " Folder path on the Agent machine where ScaResolver is installed. For example: C:\\Users\\Installations\\ScaResolver-win64 or /opt/ScaResolver-linux64.If SCA Resolver Path is not provided or invalid then SCA Resolver automatically downloads in user directory.",
       "groupName": "dependencyScan",
       "visibleRule": "isEnableScaResolver = true"
     },
