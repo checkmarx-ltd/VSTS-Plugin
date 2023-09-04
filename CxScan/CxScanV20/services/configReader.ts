@@ -19,6 +19,7 @@ export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
     private readonly SIZE_CXORIGIN = 50;    
+    private readonly SCARESOLVER_FILENAME = "\\ScaResolver.exe";   
     
     constructor(private readonly log: Logger) {
     }
@@ -246,6 +247,7 @@ export class ConfigReader {
                 } else {
                     proxyResult.proxyHost = proxy ? proxy.proxyUrl : '';
                     proxyResult.proxyPass = proxy ? proxy.proxyPassword : '';
+                    proxyResult.proxyUrl = proxy.proxyUrl;
                     proxyResult.proxyPort = '';
                     proxyResult.proxyUser = proxy ? proxy.proxyUsername : '';
                 }
@@ -532,8 +534,15 @@ Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
-    
-    if (config.scaConfig.pathToScaResolver == ''){    
+        
+    var isScaResolverFileExists= fs.existsSync(config.scaConfig.pathToScaResolver.concat(this.SCARESOLVER_FILENAME) );
+
+    if (!isScaResolverFileExists && config.scaConfig.pathToScaResolver != '' )
+    {
+        this.log.warning(`SCA Resolver tool doesn't exists on given SCA Resolver path. Latest SCA Resolver would be auto downloaded for usage in user directory.`);
+    }
+
+    if (config.scaConfig.pathToScaResolver == '' || !isScaResolverFileExists){    
         config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver);
     }
     this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
