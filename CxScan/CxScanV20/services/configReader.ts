@@ -539,7 +539,7 @@ if(config.scaConfig.isEnableScaResolver) {
 
     if (!isScaResolverFileExists && config.scaConfig.pathToScaResolver != '' )
     {
-        this.log.warning(`SCA Resolver file not found at path:${config.scaConfig.pathToScaResolver}`);
+        this.log.warning(`Invalid SCA Resolver path provided. Latest SCA Resolver would be auto downloaded for usage in user directory.`);
     }
 
     if (config.scaConfig.pathToScaResolver == '' || !isScaResolverFileExists){    
