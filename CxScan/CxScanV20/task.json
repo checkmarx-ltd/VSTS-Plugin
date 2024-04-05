@@ -553,26 +553,6 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
     },
-    
-    {
-      "name": "scaExploitablePath",
-      "type": "boolean",
-      "label": "Enable Exploitable Path",
-      "required": false,
-      "defaultValue": "false",
-      "helpMarkDown": "Exploitable Path feature will attempt to co-relate CxSCA scan with the available CxSAST scan results. In this section, provide details like CxSAST server url, credentials. At the job level, two more parameters need to be configured. These project full path name and/or project id from CxSAST.Example of Project Full Path: CxServer/team1/projectname",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
-    },
-    {
-      "name": "CheckmarxServiceForSca",
-      "type": "connectedService:Checkmarx-Endpoint",
-      "label": "Checkmarx SAST Endpoint",
-      "required": false,
-      "helpMarkDown": "The CX server endpoint.",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
-    },
     {
       "name": "dependencyAccessControlURL",
       "type": "string",
@@ -601,24 +581,6 @@
       "helpMarkDown": "Account name of your CxSCA credentials",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = ignore"
-    },
-    {
-      "name": "scaProjectFullPath",
-      "type": "string",
-      "label": "Project Full Path",
-      "required": false,
-      "helpMarkDown": "Project Full Path with team value",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
-    },
-    {
-      "name": "scaProjectId",
-      "type": "string",
-      "label": "Project ID",
-      "required": false,
-      "helpMarkDown": "Project ID",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true "
     },
     {
       "name": "scaEnablePolicyViolations",
