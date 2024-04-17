@@ -130,7 +130,7 @@
               {
                 "id": "preset",
                 "name": "Preset",
-                "description": "Predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).In Service Connection if preset(optional) value is added , then it will igonres Preset available in pipeline and uses preset available in service connection only.If  Preset is blank in service connection then it will use pipelines preset.",
+                "description": "Predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).In Service Connection if preset(optional) value is added, then it will igonres Preset available in pipeline and uses preset available in service connection only.If Preset is blank in service connection then it will use pipelines preset.",
                 "inputMode": "textbox",
                 "isConfidential": false,
                 "validation": {
