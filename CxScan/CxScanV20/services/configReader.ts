@@ -91,6 +91,8 @@ export class ConfigReader {
         let vulnerabilityThresholdEnabled = false;
         let failBuildForNewVulnerabilitiesEnabled = false;
         let failBuildForNewVulnerabilitiesSeverity = '';
+        let enableBranching  = false;
+        let parentBranchProjectName  = '';
 
         let buildId = taskLib.getVariable('Build.BuildId') || '';
 
@@ -107,6 +109,9 @@ export class ConfigReader {
             presetSASTServiceCon = taskLib.getEndpointAuthorizationParameter(endpointId, 'preset', true) || '';
             sastPassword = taskLib.getEndpointAuthorizationParameter(endpointId, 'password', false) || '';
             isIncremental = taskLib.getBoolInput('incScan', false) || false;
+            enableBranching = taskLib.getBoolInput('enableSastBranching', false) || false;
+            if(enableBranching)
+                parentBranchProjectName = taskLib.getInput('masterBranchProjectName', false) || '';
             // adding 
             if(isIncremental) {
             isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
@@ -412,6 +417,8 @@ export class ConfigReader {
             engineConfigurationId: ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName: postScanAction,
             avoidDuplicateProjectScans: avoidDuplicateProjectScans,
+            enableSastBranching : enableBranching,
+            masterBranchProjectName : parentBranchProjectName
         };
 
         const result: ScanConfig = {
@@ -472,7 +479,9 @@ Preset name: ${config.sastConfig.presetName}
 Deny project creation: ${config.sastConfig.denyProject}
 Force scan : ${config.sastConfig.forceScan}
 Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
-Is incremental scan: ${config.sastConfig.isIncremental}`);
+Is incremental scan: ${config.sastConfig.isIncremental}
+Enable SAST Branching : ${config.sastConfig.enableSastBranching}
+Master Branch Project Name : ${config.sastConfig.masterBranchProjectName}`);
 if (config.sastConfig.isIncremental) {
     let isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
     let scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
