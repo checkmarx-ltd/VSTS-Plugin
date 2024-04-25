@@ -99,7 +99,7 @@
       "type": "boolean",
       "label": "Enable SAST Branching",
       "required": true,
-      "helpMarkDown": "Enable to support branching.",
+      "helpMarkDown": "Enable to support branching.This supports only for creating new project.",
       "groupName": "scanSettings",
       "defaultValue": false,
 	    "visibleRule": "enableSastScan = true"
@@ -109,7 +109,7 @@
       "type": "string",
       "label": "Master Branch Project Name",
       "required": true,
-      "helpMarkDown": "The SAST project will be created from the branch name provided in this parameter value. This parameter is mandatory if the Enable SAST Branching parameter is enabled.",
+      "helpMarkDown": "The SAST project will be created from the branch name provided in this parameter value. This parameter is mandatory if the Enable SAST Branching parameter is enabled.This supports only for creating new project.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true && enableSastBranching = true"
     },
