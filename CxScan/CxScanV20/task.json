@@ -345,8 +345,18 @@
       "options": {
         "HIGH": "HIGH",
         "MEDIUM": "MEDIUM",
-        "LOW": "LOW"
+        "LOW": "LOW",
+        "CRITICAL": "CRITICAL"
       }
+    },
+    {
+      "name": "critical",
+      "type": "string",
+      "label": "CxSAST Critical",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. ",
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
     },
     {
       "name": "high",

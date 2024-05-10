@@ -590,6 +590,7 @@ table.cve-table td {
     padding: 11px;
 }
 
+table.cve-table td.sast-cve-table-critical,
 table.cve-table td.sast-cve-table-high,
 table.cve-table td.sast-cve-table-med,
 table.cve-table td.sast-cve-table-low {

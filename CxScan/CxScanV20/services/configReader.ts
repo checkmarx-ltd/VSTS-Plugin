@@ -399,6 +399,7 @@ export class ConfigReader {
 
             generatePDFReport: generatePDFReport,
             vulnerabilityThreshold: vulnerabilityThresholdEnabled,
+            criticalThreshold: ConfigReader.getNumericInput('critical'),
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
@@ -500,6 +501,7 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
             if (config.sastConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSAST fail build for new vulnerabilities enabled: ${config.sastConfig.failBuildForNewVulnerabilitiesEnabled}`);
                 this.log.info(`CxSAST fail build for the following severity or greater: ${config.sastConfig.failBuildForNewVulnerabilitiesSeverity}`);                    
+                this.log.info(`CxSAST critical threshold: ${formatOptionalNumber(config.sastConfig.criticalThreshold)}`);
                 this.log.info(`CxSAST high threshold: ${formatOptionalNumber(config.sastConfig.highThreshold)}`);
                 this.log.info(`CxSAST medium threshold: ${formatOptionalNumber(config.sastConfig.mediumThreshold)}`);
                 this.log.info(`CxSAST low threshold: ${formatOptionalNumber(config.sastConfig.lowThreshold)}`);

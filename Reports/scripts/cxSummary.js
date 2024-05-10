@@ -49,6 +49,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     HIGH: {value: 0, name: "high"},
                                     MED: {value: 1, name: "medium"},
                                     LOW: {value: 2, name: "low"},
+                                    CRITICAL: {value: 6, name: "critical"},
                                     OSA_HIGH: {value: 3, name: "high"},
                                     OSA_MED: {value: 4, name: "medium"},
                                     OSA_LOW: {value: 5, name: "low"}
@@ -60,6 +61,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //thresholds
                                 var thresholdsEnabled = resultObject.thresholdEnabled;
+                                var criticalThreshold = resultObject.criticalThreshold;
                                 var highThreshold = resultObject.highThreshold;
                                 var medThreshold = resultObject.mediumThreshold;
                                 var lowThreshold = resultObject.lowThreshold;
@@ -74,6 +76,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                 //counts
+                                var criticalCount = resultObject.criticalResults;
                                 var highCount = resultObject.highResults;
                                 var medCount = resultObject.mediumResults;
                                 var lowCount = resultObject.lowResults;
@@ -152,12 +155,14 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("sast-summary-html-link").setAttribute("href", sastScanResultsLink);
 
                                             //set bars height and count
+                                            document.getElementById("bar-count-critical").innerHTML = criticalCount;
                                             document.getElementById("bar-count-high").innerHTML = highCount;
                                             document.getElementById("bar-count-med").innerHTML = medCount;
                                             document.getElementById("bar-count-low").innerHTML = lowCount;
 
-                                            var maxCount = Math.max(highCount, medCount, lowCount);
+                                            var maxCount = Math.max(criticalCount,highCount, medCount, lowCount);
                                             var maxHeight = maxCount * 100 / 90;
+                                            document.getElementById("bar-critical").setAttribute("style", "height:" + criticalCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-high").setAttribute("style", "height:" + highCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-med").setAttribute("style", "height:" + medCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-low").setAttribute("style", "height:" + lowCount * 100 / maxHeight + "%");
@@ -170,6 +175,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             try {
                                                 var isThresholdExceeded = false;
                                                 var thresholdExceededComplianceElement = document.getElementById("threshold-exceeded-compliance");
+
+                                                if (criticalThreshold != null && criticalThreshold != "" && criticalCount > criticalThreshold) {
+                                                    document.getElementById("tooltip-critical").innerHTML = tooltipGenerator(SEVERITY.CRITICAL);
+                                                    isThresholdExceeded = true;
+                                                }
 
                                                 if (highThreshold != null && highThreshold != "" && highCount > highThreshold) {
                                                     document.getElementById("tooltip-high").innerHTML = tooltipGenerator(SEVERITY.HIGH);
@@ -301,6 +311,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     //if low - ...
 
                                     switch (severity) {
+                                        case SEVERITY.CRITICAL:
+                                            threshold = criticalThreshold;
+                                            count = criticalCount;
+                                            break;
                                         case SEVERITY.HIGH:
                                             threshold = highThreshold;
                                             count = highCount;
