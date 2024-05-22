@@ -339,14 +339,14 @@
       "type": "pickList",
       "label": "Fail for the following severity or greater",
       "required": false,
-      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail) ",
+      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail). SAST 9.7 and higher version will support critical severity features and for lower SAST version it will skipped",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && failBuildForNewVulnerabilitiesEnabled = true",    
       "options": {
+        "CRITICAL": "CRITICAL",
         "HIGH": "HIGH",
         "MEDIUM": "MEDIUM",
-        "LOW": "LOW",
-        "CRITICAL": "CRITICAL"
+        "LOW": "LOW"
       }
     },
     {
@@ -354,7 +354,7 @@
       "type": "string",
       "label": "CxSAST Critical",
       "required": false,
-      "helpMarkDown": "Define a threshold for the critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. ",
+      "helpMarkDown": "Define a threshold for the critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. SAST 9.7 and higher version will support critical severity features and for lower SAST version it will skipped.",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
     },

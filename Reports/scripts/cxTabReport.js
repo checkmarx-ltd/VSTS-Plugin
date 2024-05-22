@@ -318,12 +318,24 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("sast-code-viewer-link").setAttribute("href", sastScanResultsLink);
 
                                             //set bars height and count
+                                            if(criticalCount == undefined)
+                                            {
+                                                document.getElementById("critical-summary").style.display = "none";
+                                            }
                                             document.getElementById("bar-count-critical").innerHTML = criticalCount;
                                             document.getElementById("bar-count-high").innerHTML = highCount;
                                             document.getElementById("bar-count-med").innerHTML = medCount;
                                             document.getElementById("bar-count-low").innerHTML = lowCount;
 
-                                            var maxCount = Math.max(criticalCount,highCount, medCount, lowCount);
+                                            var maxCount;
+                                            if(criticalCount == undefined)
+                                            {
+                                                maxCount = Math.max(highCount, medCount, lowCount);
+                                            }
+                                            else
+                                            {
+                                                maxCount = Math.max(criticalCount,highCount, medCount, lowCount);
+                                            }
                                             var maxHeight = maxCount * 100 / 90;
                                             document.getElementById("bar-critical").setAttribute("style", "height:" + criticalCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-high").setAttribute("style", "height:" + highCount * 100 / maxHeight + "%");
@@ -452,6 +464,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 console.error("Element missing in OSA threshold section " + e.message);
                                             }
                                         }
+                                        document.getElementById("sast-summary").setAttribute("class", "sast-summary chart-small");
                                     }
                                     else {
                                         document.getElementById("sast-summary").setAttribute("class", "sast-summary chart-large");
