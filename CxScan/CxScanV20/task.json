@@ -278,6 +278,15 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "waitingTimeBeforeRetryScan",
+      "type": "string",
+      "label": "Waiting Time Before Retry Scan In Seconds",
+      "required": false,
+      "helpMarkDown": "Wait for specified time before retry scan in seconds.If value is not added then by default waiting time before retry scan in 10 seconds.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "projectcustomfields",
       "type": "string",
       "label": "Project Level Custom Fields",
@@ -654,6 +663,15 @@
       "label": "Scan Timeout In Minutes",
       "required": false,
       "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "waitingTimeBeforeRetrySCAScan",
+      "type": "string",
+      "label": "Waiting Time Before Retry SCA Scan In Seconds",
+      "required": false,
+      "helpMarkDown": "Wait for specified time before retry SCA scan in seconds.If value is not added then by default waiting time before retry SCA scan in 5 seconds.",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     }

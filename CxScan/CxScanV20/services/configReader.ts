@@ -336,6 +336,12 @@ export class ConfigReader {
 
         const postScanAction = taskLib.getInput('postScanAction', false) || '';
         const avoidDuplicateProjectScans = taskLib.getBoolInput('avoidDuplicateScans', false);
+        
+        let rawWaitTime = taskLib.getInput('waitingTimeBeforeRetryScan', false) as any;
+        let retryWaitTime = +rawWaitTime;
+        
+        let rawSCAWaitTime = taskLib.getInput('waitingTimeBeforeRetrySCAScan', false) as any;
+        let retrySCAWaitTime = +rawSCAWaitTime;
 
         let rawTimeout = taskLib.getInput('scanTimeout', false) as any;
 
@@ -378,7 +384,8 @@ export class ConfigReader {
             isEnableScaResolver:taskLib.getBoolInput('isEnableScaResolver', false) || false,
             pathToScaResolver:taskLib.getInput('pathToScaResolver', false) || '',
             scaResolverAddParameters:taskLib.getInput('scaResolverAddParameters', false) || '',
-            scaScanTimeoutInMinutes: scaScanTimeoutInMinutes || undefined
+            scaScanTimeoutInMinutes: scaScanTimeoutInMinutes || undefined,
+            scaWaitTimeForRetryScan: retrySCAWaitTime || undefined
         };       
         
         var isSyncMode = taskLib.getBoolInput('syncMode', false);
@@ -418,7 +425,8 @@ export class ConfigReader {
             postScanActionName: postScanAction,
             avoidDuplicateProjectScans: avoidDuplicateProjectScans,
             enableSastBranching : enableBranching,
-            masterBranchProjectName : parentBranchProjectName
+            masterBranchProjectName : parentBranchProjectName,
+            waitTimeForRetryScan : retryWaitTime || undefined
         };
 
         const result: ScanConfig = {
@@ -491,6 +499,9 @@ if (config.sastConfig.isIncremental) {
 if(config.sastConfig.scanTimeoutInMinutes != undefined){
     this.log.info(`Scan timeout in minutes: ${config.sastConfig.scanTimeoutInMinutes}`);
     }
+    if(config.sastConfig.waitTimeForRetryScan != undefined){
+        this.log.info(`Waiting Time Before Retry Scan In Seconds: ${config.sastConfig.waitTimeForRetryScan}`);
+        }
 this.log.info(`Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
 Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
 Is synchronous scan: ${config.isSyncMode}
@@ -559,6 +570,9 @@ if(config.scaConfig.isEnableScaResolver) {
 if(config.scaConfig.scaScanTimeoutInMinutes != undefined) {
     this.log.info(`Scan timeout in minutes: ${config.scaConfig.scaScanTimeoutInMinutes}`);
     }
+    if(config.scaConfig.scaWaitTimeForRetryScan != undefined) {
+        this.log.info(`Waiting time before retry SCA scan in seconds: ${config.scaConfig.scaWaitTimeForRetryScan}`);
+        }
             if (config.scaConfig.vulnerabilityThreshold) {
                 this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
 CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
