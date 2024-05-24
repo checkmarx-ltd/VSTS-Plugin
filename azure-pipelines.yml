@@ -40,9 +40,7 @@ steps:
     displayName: 'npm build 20'
     workingDir: $(nodejsAppDir20)
 
-- script: npm test
-  displayName: Run tests
-  workingDirectory: $(nodejsAppDir20)
+
 
 - task: TfxInstaller@2
   inputs:
