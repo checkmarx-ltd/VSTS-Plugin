@@ -19,12 +19,12 @@ steps:
   inputs:
     targetType: inline
     script: |
-      npm install -g typescript@4.1.6
+      npm install -g typescript@5.1.6
       echo "TypeScript $(tsc -v)"
         
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '16.x'
   displayName: 'Install Node.js'
   
 - task: Npm@1
