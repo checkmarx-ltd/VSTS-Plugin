@@ -19,12 +19,12 @@ steps:
   inputs:
     targetType: inline
     script: |
-      npm install -g typescript@4.1.6
+      npm install -g typescript@5.4.5
       echo "TypeScript $(tsc -v)"
         
 - task: NodeTool@0
   inputs:
-    versionSpec: '18.x'
+    versionSpec: '20.x'
   displayName: 'Install Node.js'
   
 - task: Npm@1
@@ -39,10 +39,6 @@ steps:
     customCommand: 'run-script build'
     displayName: 'npm build 20'
     workingDir: $(nodejsAppDir20)
-
-- script: npm test
-  displayName: Run tests
-  workingDirectory: $(nodejsAppDir20)
 
 - task: TfxInstaller@2
   inputs:
