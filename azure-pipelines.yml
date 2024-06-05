@@ -26,7 +26,8 @@ steps:
   inputs:
     versionSpec: '20.x'
   displayName: 'Install Node.js'
-  
+
+
 - task: Npm@1
   inputs:
     command: 'custom'
