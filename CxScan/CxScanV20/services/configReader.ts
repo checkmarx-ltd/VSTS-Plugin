@@ -656,7 +656,6 @@ Proxy Pass: ******`);
                 const child_process = require('child_process');
                 const userHomeDir = os.homedir();         
                 pathToScaResolver = userHomeDir;
-
                 this.log.debug("Downloading SCA Resolver and extracting it to user home directory.");
                 let osType = os.type();
                 switch(osType) {
