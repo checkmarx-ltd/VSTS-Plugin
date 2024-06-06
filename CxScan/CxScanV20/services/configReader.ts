@@ -656,13 +656,13 @@ Proxy Pass: ******`);
                 const child_process = require('child_process');
                 const userHomeDir = os.homedir();         
                 pathToScaResolver = userHomeDir;
-                
+
                 this.log.debug("Downloading SCA Resolver and extracting it to user home directory.");
                 let osType = os.type();
                 switch(osType) {
                 case 'Darwin':
                 this.log.debug("Downloading and extracting SCA Resolver for Mac operating system");
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";  
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-macos64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";   
                 this.log.debug("Sca Resolver gets downloaded at location: "+userHomeDir);     
                 break;
                 case 'Linux': 
@@ -672,7 +672,7 @@ Proxy Pass: ******`);
                 break;
                 case 'Windows_NT':
                 this.log.debug("Downloading and extracting SCA Resolver for windows operating system");        
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";
+                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";  
                 this.log.debug("Sca Resolver gets downloaded at location: "+userHomeDir);         
                 break;          
                 }  
