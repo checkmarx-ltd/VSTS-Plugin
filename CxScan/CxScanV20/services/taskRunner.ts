@@ -3,10 +3,7 @@ import {ConsoleLogger} from "./consoleLogger";
 import {ConfigReader} from "./configReader";
 import * as fs from "fs";
 import {tmpNameSync} from "tmp";
-import {CxClient, ScanConfig} from "@checkmarx/cx-common-js-client";
-import {ScanResults} from "@checkmarx/cx-common-js-client";
-import {TaskSkippedError} from "@checkmarx/cx-common-js-client";
-import {Logger} from "@checkmarx/cx-common-js-client";
+import {CxClient, ScanConfig,Logger,TaskSkippedError,ScanResults} from "@checkmarx/cx-common-js-client";
 import * as path from "path";
 
 export class TaskRunner {

@@ -120,7 +120,6 @@ td {
     max-width: 709px;
     margin-right: auto;
     margin-left: auto;
-    /*margin-left: calc(250px + 8%);*/
 }
 
 .results-report .sast-summary.chart-large .chart li span {
@@ -175,9 +174,6 @@ td {
     animation: draw 1s ease-in-out;
 }
 
-.results-report .sast-summary.chart-large .chart .bar-count {
-    /*width: 53px;*/
-}
 
 .results-report .chart .bar-count {
     margin-left: 2px;
@@ -414,7 +410,6 @@ td {
 
 .main-column {
     width: 77%;
-    /*max-width: 709px;*/
     min-width: 500px;
 }
 
@@ -456,7 +451,6 @@ td {
     font-size: 16px;
     display: table-cell;
     vertical-align: middle;
-    /*width: 75%;*/
 }
 
 .graph {
@@ -473,7 +467,6 @@ td {
 .detailed-report {
     margin-top: 12px;
     display: block;
-    /*padding: 0 11px;*/
 }
 
 .detailed-report-ttl {
