@@ -19,7 +19,8 @@ export class ConfigReader {
     private readonly devAzure = 'dev.azure.com';
     private readonly MAX_SIZE_CXORIGINURL = 128;
     private readonly SIZE_CXORIGIN = 50;    
-    private readonly SCARESOLVER_FILENAME = "\\ScaResolver.exe";   
+    private readonly SCARESOLVER_FILENAME_WINDOWS = "\\ScaResolver.exe";  
+    private readonly SCARESOLVER_FILENAME_OTHER_OS = "ScaResolver";  
     
     constructor(private readonly log: Logger) {
     }
@@ -556,16 +557,26 @@ Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
 Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
-        
-    var isScaResolverFileExists= fs.existsSync(config.scaConfig.pathToScaResolver.concat(this.SCARESOLVER_FILENAME) );
+    
+    var isScaResolverFileExists= false;
+    let osTypeDetails = os.type();
 
+    if(osTypeDetails == 'Windows_NT')
+    {
+        isScaResolverFileExists = fs.existsSync(config.scaConfig.pathToScaResolver.concat(this.SCARESOLVER_FILENAME_WINDOWS)); 
+    }
+    else if(osTypeDetails == 'Darwin' || osTypeDetails == 'Linux') 
+    {
+        isScaResolverFileExists = fs.existsSync(path.join(config.scaConfig.pathToScaResolver, this.SCARESOLVER_FILENAME_OTHER_OS));
+    }
+    
     if (!isScaResolverFileExists && config.scaConfig.pathToScaResolver != '' )
     {
         this.log.warning(`SCA Resolver tool doesn't exists on given SCA Resolver path. Latest SCA Resolver would be auto downloaded for usage in user directory.`);
     }
 
     if (config.scaConfig.pathToScaResolver == '' || !isScaResolverFileExists){    
-        config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver);
+        config.scaConfig.pathToScaResolver = this.getPathToScaResolver(config.scaConfig.pathToScaResolver,config.enableProxy,config.proxyConfig?.scaProxyUrl);
     }
     this.log.info(`Path To SCA Resolver:${config.scaConfig.pathToScaResolver}`);
     }
@@ -649,30 +660,63 @@ Proxy Pass: ******`);
     }
 
     //To get path of SCA Resolver
-    public getPathToScaResolver(config : string){  
+    public getPathToScaResolver(config : string,enableProxy :boolean,proxyUrl :string = ''){  
         let pathToScaResolver;    
         try {
                 let SCAResDowonloadCommand = '';
                 const child_process = require('child_process');
                 const userHomeDir = os.homedir();         
                 pathToScaResolver = userHomeDir;
-                    
+                
                 this.log.debug("Downloading SCA Resolver and extracting it to user home directory.");
+
+                if (enableProxy) {
+                    this.log.info(`scanConfig.enableProxy is TRUE`);
+                }
+        
+                if (proxyUrl != undefined && proxyUrl != '') {
+        
+                    this.log.info(`proxyConfig.proxyUrl is TRUE`);
+                    this.log.info(`SCA proxy URL: ` + proxyUrl);
+                }
+
                 let osType = os.type();
                 switch(osType) {
                 case 'Darwin':
                 this.log.debug("Downloading and extracting SCA Resolver for Mac operating system");
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-macos64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";   
+                if (enableProxy && proxyUrl !=undefined && proxyUrl != '')
+                {
+                    SCAResDowonloadCommand = `curl -L  -x ${proxyUrl} https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-macos64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver ` + userHomeDir + ` && rm ScaResolver.tar.gz`;   
+                }
+                else
+                {
+                    SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-macos64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";   
+                }
                 this.log.debug("Sca Resolver gets downloaded at location: "+userHomeDir);     
                 break;
                 case 'Linux': 
                 this.log.debug("Downloading and extracting SCA Resolver for linux operating system");
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";
+                if (enableProxy && proxyUrl !=undefined && proxyUrl != '')
+                {
+                    SCAResDowonloadCommand = `curl -L  -x ${proxyUrl} https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver ` + userHomeDir + ` && rm ScaResolver.tar.gz`;
+                }
+                else
+                {
+                    SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-linux64.tar.gz -o ScaResolver.tar.gz && tar -vxzf ScaResolver.tar.gz && sudo mv ScaResolver " + userHomeDir + " && rm ScaResolver.tar.gz";
+                }
                 this.log.debug("Sca Resolver gets downloaded at location: "+userHomeDir);  
                 break;
                 case 'Windows_NT':
                 this.log.debug("Downloading and extracting SCA Resolver for windows operating system");        
-                SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";  
+                
+                if (enableProxy && proxyUrl !=undefined && proxyUrl != '')
+                {
+                    SCAResDowonloadCommand = `curl -L -x ${proxyUrl} https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe ` + userHomeDir + ` && del ScaResolver.zip`;  
+                }
+                else
+                {
+                    SCAResDowonloadCommand = "curl -L https://sca-downloads.s3.amazonaws.com/cli/latest/ScaResolver-win64.zip -o ScaResolver.zip && tar -xf ScaResolver.zip && move ScaResolver.exe " + userHomeDir + " && del ScaResolver.zip";  
+                }
                 this.log.debug("Sca Resolver gets downloaded at location: "+userHomeDir);         
                 break;          
                 }  
