@@ -660,7 +660,7 @@ Proxy Pass: ******`);
     }
 
     //To get path of SCA Resolver
-    public getPathToScaResolver(config : string){  
+    public getPathToScaResolver(config : string,enableProxy :boolean,proxyUrl :string = ''){  
         let pathToScaResolver;    
         try {
                 let SCAResDowonloadCommand = '';
