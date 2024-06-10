@@ -717,7 +717,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
                                 function generateSastCveTable(severity) {
-                                    var severityCount;
+                                    var severityCount ;
                                     var severityCveList;
                                     var tableElementId = "";
 
