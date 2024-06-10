@@ -3,7 +3,7 @@ import {ConsoleLogger} from "./consoleLogger";
 import {ConfigReader} from "./configReader";
 import * as fs from "fs";
 import {tmpNameSync} from "tmp";
-import {CxClient} from "@checkmarx/cx-common-js-client";
+import {CxClient, ScanConfig} from "@checkmarx/cx-common-js-client";
 import {ScanResults} from "@checkmarx/cx-common-js-client";
 import {TaskSkippedError} from "@checkmarx/cx-common-js-client";
 import {Logger} from "@checkmarx/cx-common-js-client";
@@ -17,6 +17,8 @@ export class TaskRunner {
     private static readonly REPORT_SCA_SUMMARY = 'cxSCASummary';
     private static readonly CxSAST = 'SAST';
     private static readonly CxDependency = 'SCA';
+    private readonly MinValue = 1;
+    private readonly MaxValue = 60;
 
     private readonly log: Logger = new ConsoleLogger();
 
@@ -43,12 +45,15 @@ export class TaskRunner {
             const reader = new ConfigReader(this.log);
             const config = reader.readConfig();
 
-            const cxClient = new CxClient(this.log);
-            const scanResults: ScanResults = await cxClient.scan(config);
-            await this.attachJsonReport(scanResults);
-
-            if (scanResults.buildFailed) {
-                taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
+            if(this.validateConfigParameter(config))
+            {
+                this.log.info('Inside validateConfigParameter');
+                const cxClient = new CxClient(this.log);
+                const scanResults: ScanResults = await cxClient.scan(config);
+                await this.attachJsonReport(scanResults);
+                if (scanResults.buildFailed) {
+                    taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
+                }
             }
         } catch (err) {
             if (err instanceof TaskSkippedError) {
@@ -203,4 +208,38 @@ export class TaskRunner {
                                            
 Starting Checkmarx scan`);
     }
+
+    private validateConfigParameter(config :ScanConfig) : boolean
+    {
+        let sastWaitTime = taskLib.getInput('waitingTimeBeforeRetryScan', false) as any;
+        let scaWaitTime = taskLib.getInput('waitingTimeBeforeRetrySCAScan', false) as any;
+        if(config.enableSastScan && sastWaitTime!=undefined && sastWaitTime.trim() != '')
+        {
+            if(isNaN(sastWaitTime))
+            {
+                taskLib.setResult(taskLib.TaskResult.Failed, 'Waiting time before retry scan input is invalid value.');
+                return false;
+            }
+            else if (sastWaitTime <= this.MinValue || sastWaitTime >= this.MaxValue) {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry scan value must be a between ${this.MinValue} and ${this.MaxValue}.`);
+                return false;
+            }
+        }  
+
+        if(config.enableDependencyScan && scaWaitTime!= undefined && scaWaitTime.trim() != '')
+        {
+            this.log.info('inside function');
+            if(isNaN(scaWaitTime))
+            {
+                taskLib.setResult(taskLib.TaskResult.Failed, 'Waiting time before retry sca scan input is invalid value.');
+                return false;
+            }
+            else if (scaWaitTime <= this.MinValue || scaWaitTime >= this.MaxValue) {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry sca scan value must be a between ${this.MinValue} and ${this.MaxValue}.`);
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

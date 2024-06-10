@@ -99,7 +99,7 @@
       "type": "boolean",
       "label": "Enable SAST Branching",
       "required": true,
-      "helpMarkDown": "Enable to support branching.This supports only for creating new project.",
+      "helpMarkDown": "Enable to support branching. This supports only for creating new project.",
       "groupName": "scanSettings",
       "defaultValue": false,
 	    "visibleRule": "enableSastScan = true"
@@ -109,7 +109,7 @@
       "type": "string",
       "label": "Master Branch Project Name",
       "required": true,
-      "helpMarkDown": "The SAST project will be created from the branch name provided in this parameter value. This parameter is mandatory if the Enable SAST Branching parameter is enabled.This supports only for creating new project.",
+      "helpMarkDown": "The SAST project will be created from the branch name provided in this parameter value. This parameter is mandatory if the Enable SAST Branching parameter is enabled. This supports only for creating new project.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true && enableSastBranching = true"
     },
@@ -120,7 +120,7 @@
       "required": false,
       "groupName": "scanSettings",
       "defaultValue": "Checkmarx Default",
-      "helpMarkDown": "Predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).In Service Connection if preset(optional) value is added, then it will igonres Preset available in pipeline and uses preset available in service connection only.If Preset is blank in service connection then it will use pipelines preset.",
+      "helpMarkDown": "Predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server). In Service Connection if preset(optional) value is added, then it will ignores Preset available in pipeline and uses preset available in service connection only. If Preset is blank in service connection then it will use pipelines preset.",
       "options": {
         "Checkmarx Default": "Checkmarx Default",
         "All": "All",
@@ -187,7 +187,7 @@
       "type": "string",
       "label": "Team",
       "required": false,
-      "helpMarkDown": "The full team name(for example, CxServer\\SP\\Company\\Users).In Service Connection if Team(optional) value is added, then it will igonres Team available in pipeline and uses Team available in service connection only.If Team is blank in service connection then it will use pipelines Team.",
+      "helpMarkDown": "The full team name(for example, CxServer\\SP\\Company\\Users). In Service Connection if Team(optional) value is added, then it will ignores Team available in pipeline and uses Team available in service connection only. If Team is blank in service connection then it will use pipelines Team.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -282,7 +282,7 @@
       "type": "string",
       "label": "Waiting Time Before Retry Scan In Seconds",
       "required": false,
-      "helpMarkDown": "Wait for specified time before retry scan in seconds.If value is not added then by default waiting time before retry scan in 10 seconds.",
+      "helpMarkDown": "Wait for specified time before retry scan in seconds. If value is not added then by default waiting time before retry scan in 10 seconds. The maximum value we can add is 60 seconds.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -367,7 +367,7 @@
       "type": "pickList",
       "label": "Fail for the following severity or greater",
       "required": false,
-      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail). SAST 9.7 and higher version will support critical severity features and for lower SAST version it will skipped",
+      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail). SAST 9.6 and lower version will not support critical severity features.",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && failBuildForNewVulnerabilitiesEnabled = true",    
       "options": {
@@ -382,7 +382,7 @@
       "type": "string",
       "label": "CxSAST Critical",
       "required": false,
-      "helpMarkDown": "Define a threshold for the critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. SAST 9.7 and higher version will support critical severity features and for lower SAST version it will skipped.",
+      "helpMarkDown": "Define a threshold for the critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. SAST 9.6 and lower version will not support critical severity features.",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
     },
@@ -678,10 +678,10 @@
     },
     {
       "name": "waitingTimeBeforeRetrySCAScan",
-      "type": "string",
+      "type": "number",
       "label": "Waiting Time Before Retry SCA Scan In Seconds",
       "required": false,
-      "helpMarkDown": "Wait for specified time before retry SCA scan in seconds.If value is not added then by default waiting time before retry SCA scan in 5 seconds.",
+      "helpMarkDown": "Wait for specified time before retry SCA scan in seconds.If value is not added then by default waiting time before retry SCA scan in 5 seconds. The maximum value we can add is 60 seconds.",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     }
