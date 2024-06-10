@@ -667,7 +667,18 @@ Proxy Pass: ******`);
                 const child_process = require('child_process');
                 const userHomeDir = os.homedir();         
                 pathToScaResolver = userHomeDir;
+                
                 this.log.debug("Downloading SCA Resolver and extracting it to user home directory.");
+
+                if (enableProxy) {
+                    this.log.info(`scanConfig.enableProxy is TRUE`);
+                }
+        
+                if (proxyUrl != undefined && proxyUrl != '') {
+        
+                    this.log.info(`proxyConfig.proxyUrl is TRUE`);
+                    this.log.info(`SCA proxy URL: ` + proxyUrl);
+                }
 
                 let osType = os.type();
                 switch(osType) {
