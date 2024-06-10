@@ -558,7 +558,7 @@ Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
 `);
 if(config.scaConfig.isEnableScaResolver) {
     
-    var isScaResolverFileExists= false;
+    let isScaResolverFileExists= false;
     let osTypeDetails = os.type();
 
     if(osTypeDetails == 'Windows_NT')
