@@ -36,15 +36,12 @@ export class TaskRunner {
         const errorMessage = "cannot be completed";
         const avoidDuplicateErrorMessage = "Project scan is already in progress";
         try {
-            this.printHeader();
-
-            this.log.info('Entering CxScanner...');
-            const reader = new ConfigReader(this.log);
-            const config = reader.readConfig();
-
-            if(this.validateConfigParameter(config))
+            if(this.validateConfigParameter())
             {
-                this.log.info('Inside validateConfigParameter');
+                this.printHeader();
+                this.log.info('Entering CxScanner...');
+                const reader = new ConfigReader(this.log);
+                const config = reader.readConfig();
                 const cxClient = new CxClient(this.log);
                 const scanResults: ScanResults = await cxClient.scan(config);
                 await this.attachJsonReport(scanResults);
@@ -206,37 +203,46 @@ export class TaskRunner {
 Starting Checkmarx scan`);
     }
 
-    private validateConfigParameter(config :ScanConfig) : boolean
+    private validateConfigParameter() : boolean
     {
         let sastWaitTime = taskLib.getInput('waitingTimeBeforeRetryScan', false) as any;
         let scaWaitTime = taskLib.getInput('waitingTimeBeforeRetrySCAScan', false) as any;
-        if(config.enableSastScan && sastWaitTime!=undefined && sastWaitTime.trim() != '')
+        const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
+        const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
+        let failedCount = 0;
+        if(sastEnabled && sastWaitTime!=undefined && sastWaitTime.trim() != '')
         {
             if(isNaN(sastWaitTime))
             {
-                taskLib.setResult(taskLib.TaskResult.Failed, 'Waiting time before retry scan input is invalid value.');
-                return false;
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry scan input is invalid value:${sastWaitTime}.`);
+                failedCount++;
             }
-            else if (sastWaitTime <= this.MinValue || sastWaitTime >= this.MaxValue) {
-                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry scan value must be a between ${this.MinValue} and ${this.MaxValue}.`);
-                return false;
+            else if (sastWaitTime < this.MinValue || sastWaitTime > this.MaxValue) {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry scan value(${sastWaitTime}) must be a between ${this.MinValue} and ${this.MaxValue}.`);
+                failedCount++;
             }
         }  
 
-        if(config.enableDependencyScan && scaWaitTime!= undefined && scaWaitTime.trim() != '')
+        if(dependencyScanEnabled && scaWaitTime!= undefined && scaWaitTime.trim() != '')
         {
-            this.log.info('inside function');
             if(isNaN(scaWaitTime))
             {
-                taskLib.setResult(taskLib.TaskResult.Failed, 'Waiting time before retry sca scan input is invalid value.');
-                return false;
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry sca scan input is invalid value:${scaWaitTime}.`);
+                failedCount++;
             }
-            else if (scaWaitTime <= this.MinValue || scaWaitTime >= this.MaxValue) {
-                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry sca scan value must be a between ${this.MinValue} and ${this.MaxValue}.`);
-                return false;
+            else if (scaWaitTime < this.MinValue || scaWaitTime > this.MaxValue) {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry sca scan value(${scaWaitTime}) must be a between ${this.MinValue} and ${this.MaxValue}.`);
+                failedCount++;
             }
         }
-        return true;
+        if(failedCount > 0) 
+        {
+            return false;
+        }
+        else 
+        {
+            return true;
+        }
     }
 
 }
