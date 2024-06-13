@@ -210,6 +210,14 @@ Starting Checkmarx scan`);
         const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
         const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
         let failedCount = 0;
+        let projectName = taskLib.getInput('projectName', false) || '';
+        let masterBranchProject = taskLib.getInput('masterBranchProjectName', false) || '';
+        let enableSastBranching = taskLib.getBoolInput('enableSastBranching', false);
+        if(enableSastBranching && projectName == masterBranchProject)
+        {
+            taskLib.setResult(taskLib.TaskResult.Failed, `Project name(${projectName}) and master branch project name(${masterBranchProject}) should not be same.`);
+            failedCount++;
+        }
         if(sastEnabled && sastWaitTime!=undefined && sastWaitTime.trim() != '')
         {
             if(isNaN(sastWaitTime))
