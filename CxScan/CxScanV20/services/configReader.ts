@@ -367,6 +367,7 @@ export class ConfigReader {
             scanCustomTags: taskLib.getInput('scanCustomTags', false) || '',
             sourceLocationType: SourceLocationType.LOCAL_DIRECTORY,
             vulnerabilityThreshold: taskLib.getBoolInput('scaVulnerabilityThreshold', false) || false,
+            criticalThreshold: ConfigReader.getNumericInput('scaCritical'),
             highThreshold: ConfigReader.getNumericInput('scaHigh'),
             mediumThreshold: ConfigReader.getNumericInput('scaMedium'),
             lowThreshold: ConfigReader.getNumericInput('scaLow'),
@@ -587,7 +588,8 @@ if(config.scaConfig.scaScanTimeoutInMinutes != undefined) {
         this.log.info(`Waiting time before retry SCA scan in seconds: ${config.scaConfig.scaWaitTimeForRetryScan}`);
         }
             if (config.scaConfig.vulnerabilityThreshold) {
-                this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}
+                this.log.info(`CxSCA Critical Threshold: ${config.scaConfig.criticalThreshold}
+CxSCA High Threshold: ${config.scaConfig.highThreshold}
 CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
 CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`)
             }

@@ -89,7 +89,7 @@ export class TaskRunner {
 
         if(scanResults.scaResults){
             scaPackages = JSON.stringify(scanResults.scaResults.packages);
-            scaFindings = JSON.stringify(scanResults.scaResults.dependencyHighCVEReportTable.concat(scanResults.scaResults.dependencyMediumCVEReportTable,scanResults.scaResults.dependencyLowCVEReportTable));
+            scaFindings = JSON.stringify(scanResults.scaResults.dependencyCriticalCVEReportTable.concat(scanResults.scaResults.dependencyHighCVEReportTable,scanResults.scaResults.dependencyMediumCVEReportTable,scanResults.scaResults.dependencyLowCVEReportTable));
             scaSummary = JSON.stringify(scanResults.scaResults.summary)
             scaPackagesPath= TaskRunner.generateJsonReportPath(TaskRunner.REPORT_SCA_PACKAGES);
             scaFindingsPath= TaskRunner.generateJsonReportPath(TaskRunner.REPORT_SCA_FINDINGS);
