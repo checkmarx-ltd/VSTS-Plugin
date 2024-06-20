@@ -74,7 +74,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     CRITICAL: {value: 6, name: "critical"},
                                     OSA_HIGH: {value: 3, name: "high"},
                                     OSA_MED: {value: 4, name: "medium"},
-                                    OSA_LOW: {value: 5, name: "low"}
+                                    OSA_LOW: {value: 5, name: "low"},
+                                    OSA_CRITICAL: {value: 7, name: "critical"},
                                 };
 
                                 //-------------------------- sast vars --------------------------------------
@@ -117,6 +118,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                     //thresholds
                                     var osaThresholdsEnabled = resultObject.osaThresholdEnabled;
+                                    var osaCriticalThreshold = resultObject.osaCriticalThreshold;
                                     var osaHighThreshold = resultObject.osaHighThreshold;
                                     var osaMedThreshold = resultObject.osaMediumThreshold;
                                     var osaLowThreshold = resultObject.osaLowThreshold;
@@ -125,6 +127,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var osaSummaryResultsLink = resultObject.osaSummaryResultsLink;
 
                                     //counts
+                                    var osaCriticalCount = resultObject.osaCriticalResults;
                                     var osaHighCount = resultObject.osaHighResults;
                                     var osaMedCount = resultObject.osaMediumResults;
                                     var osaLowCount = resultObject.osaLowResults;
@@ -156,6 +159,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                     var criticalCveList;
+                                    var criticalCveList;
                                     var highCveList;
                                     var medCveList;
                                     var lowCveList;
@@ -186,6 +190,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var osaNumFiles;
 
                                     //cve lists
+                                    var osaCriticalCveList;
                                     var osaHighCveList;
                                     var osaMedCveList;
                                     var osaLowCveList;
@@ -195,6 +200,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                     if(scaResults || osaEnabled) {
                                         var scaResultReady = scaResults._resultReady;
+                                        var scaCriticalVulnerability = scaResults._criticalVulnerability;
                                         var scaHighVulnerability = scaResults._highVulnerability;
                                         var scaMediumVulnerability = scaResults._mediumVulnerability;
                                         var scaLowVulnerability = scaResults._lowVulnerability;
@@ -203,11 +209,13 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         var scaNonVulnerableLibraries = scaResults._nonVulnerableLibraries;
                                         var scaScanStartTime = scaResults._scanStartTime;
                                         var scaScanEndTime = scaResults._scanEndTime;
+                                        var scaDependencyCriticalCVEReportTable = scaResults._dependencyCriticalCVEReportTable;
                                         var scaDependencyHighCVEReportTable = scaResults._dependencyHighCVEReportTable;
                                         var scaDependencyMediumCVEReportTable = scaResults._dependencyMediumCVEReportTable;
                                         var scaDependencyLowCVEReportTable = scaResults._dependencyLowCVEReportTable;
                                         var scaTotalLibraries = scaResults._totalLibraries;
                                         var scaThresholdEnabled = scaResults._vulnerabilityThreshold;
+                                        var scaCriticalThreshold = scaResults._criticalThreshold;
                                         var scaHighThreshold = scaResults._highThreshold;
                                         var scaMediumThreshold = scaResults._mediumThreshold;
                                         var scaLowThreshold = scaResults._lowThreshold;
@@ -215,6 +223,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                         //---------------------------- Dependency Results Variables ---------------
 
+                                        var dependencyCriticalVulnerability;
                                         var dependencyHighVulnerability;
                                         var dependencyMediumVulnerability;
                                         var dependencyLowVulnerability;
@@ -223,12 +232,14 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         var dependencyNonVulnerableLibraries;
                                         var dependencyScanStartTime;
                                         var dependencyScanEndTime;
+                                        var dependencyCriticalCVEReportTable;
                                         var dependencyHighCVEReportTable;
                                         var dependencyMediumCVEReportTable;
                                         var dependencyLowCVEReportTable;
                                         var dependencyTotalLibraries;
                                         var dependencyLibraries;
                                         var dependencyThresholdEnabled;
+                                        var dependencyCriticalThreshold;
                                         var dependencyHighThreshold;
                                         var dependencyMediumThreshold;
                                         var dependencyLowThreshold;
@@ -236,6 +247,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         var isDependencyResultReady = isOsaFullReady || (scaResults != null && scaResultReady);
 
                                         if (scaResults != null && scaResultReady) {
+                                            dependencyCriticalVulnerability = scaCriticalVulnerability;
                                             dependencyHighVulnerability = scaHighVulnerability;
                                             dependencyMediumVulnerability = scaMediumVulnerability;
                                             dependencyLowVulnerability = scaLowVulnerability;
@@ -244,17 +256,20 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             dependencyNonVulnerableLibraries = scaNonVulnerableLibraries;
                                             dependencyScanStartTime = scaScanStartTime;
                                             dependencyScanEndTime = "";
+                                            dependencyCriticalCVEReportTable = scaDependencyCriticalCVEReportTable;
                                             dependencyHighCVEReportTable = scaDependencyHighCVEReportTable;
                                             dependencyMediumCVEReportTable = scaDependencyMediumCVEReportTable;
                                             dependencyLowCVEReportTable = scaDependencyLowCVEReportTable;
                                             dependencyTotalLibraries = scaTotalLibraries;
                                             dependencyLibraries = dependencyLowCVEReportTable.concat(dependencyMediumCVEReportTable, dependencyLowCVEReportTable);
                                             dependencyThresholdEnabled = scaThresholdEnabled;
+                                            dependencyCriticalThreshold = scaCriticalThreshold;
                                             dependencyHighThreshold = scaHighThreshold;
                                             dependencyMediumThreshold = scaMediumThreshold;
                                             dependencyLowThreshold =scaLowThreshold;
 
                                         } else if (osaEnabled && !osaFailed) {
+                                            dependencyCriticalVulnerability = osaCriticalCount;
                                             dependencyHighVulnerability = osaHighCount;
                                             dependencyMediumVulnerability = osaMedCount;
                                             dependencyLowVulnerability = osaLowCount;
@@ -263,12 +278,14 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             dependencyNonVulnerableLibraries = okLibraries;
                                             dependencyScanStartTime = osaStartDate;
                                             dependencyScanEndTime = osaEndDate;
+                                            dependencyCriticalCVEReportTable = osaCriticalCveList;
                                             dependencyHighCVEReportTable = osaHighCveList;
                                             dependencyMediumCVEReportTable = osaMedCveList;
                                             dependencyLowCVEReportTable = osaLowCveList;
                                             dependencyTotalLibraries = osaLibraries.length;
                                             dependencyLibraries = osaLibraries;
                                             dependencyThresholdEnabled = osaThresholdsEnabled;
+                                            dependencyCriticalThreshold = osaCriticalThreshold;
                                             dependencyHighThreshold = osaHighThreshold;
                                             dependencyMediumThreshold = osaMedThreshold;
                                             dependencyLowThreshold =osaLowThreshold;
@@ -408,14 +425,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("osa-summary-html-link").setAttribute("href", dependencySummaryLink);
 
                                             //set bars height and count
+                                            document.getElementById("osa-bar-count-critical").innerHTML = dependencyCriticalVulnerability;
                                             document.getElementById("osa-bar-count-high").innerHTML = dependencyHighVulnerability;
                                             document.getElementById("osa-bar-count-med").innerHTML = dependencyMediumVulnerability;
                                             document.getElementById("osa-bar-count-low").innerHTML = dependencyLowVulnerability;
 
 
-                                            var dependencyMaxCount = Math.max(dependencyHighVulnerability, dependencyMediumVulnerability, dependencyLowVulnerability);
+                                            var dependencyMaxCount = Math.max(dependencyCriticalVulnerability,dependencyHighVulnerability, dependencyMediumVulnerability, dependencyLowVulnerability);
                                             var dependencyMaxHeight = dependencyMaxCount * 100 / 90;
 
+                                            document.getElementById("osa-bar-critical").setAttribute("style", "height:" + dependencyCriticalVulnerability * 100 / dependencyMaxHeight + "%");
                                             document.getElementById("osa-bar-high").setAttribute("style", "height:" + dependencyHighVulnerability * 100 / dependencyMaxHeight + "%");
                                             document.getElementById("osa-bar-med").setAttribute("style", "height:" + dependencyMediumVulnerability * 100 / dependencyMaxHeight + "%");
                                             document.getElementById("osa-bar-low").setAttribute("style", "height:" + dependencyLowVulnerability * 100 / dependencyMaxHeight + "%");
@@ -433,6 +452,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 var isDependencyThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
 
+                                                if (dependencyCriticalThreshold != null  && dependencyCriticalVulnerability > dependencyCriticalThreshold) {
+                                                    document.getElementById("osa-tooltip-critical").innerHTML = tooltipGenerator(SEVERITY.OSA_CRITICAL);
+                                                    isDependencyThresholdExceeded = true;
+                                                }
 
                                                 if (dependencyHighThreshold != null  && dependencyHighVulnerability > dependencyHighThreshold) {
                                                     document.getElementById("osa-tooltip-high").innerHTML = tooltipGenerator(SEVERITY.OSA_HIGH);
@@ -524,6 +547,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                         document.getElementById("osa-full").setAttribute("style", "display: block");
                                         if(osaEnabled){
                                             //cve lists
+                                            dependencyCriticalCVEReportTable = generateOsaCveList(SEVERITY.OSA_CRITICAL);
                                             dependencyHighCVEReportTable = generateOsaCveList(SEVERITY.OSA_HIGH);
                                             dependencyMediumCVEReportTable = generateOsaCveList(SEVERITY.OSA_MED);
                                             dependencyLowCVEReportTable = generateOsaCveList(SEVERITY.OSA_LOW);
@@ -555,6 +579,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             if (dependencyLowCVEReportTable.length == 0 && dependencyMediumCVEReportTable.length == 0 && dependencyLowCVEReportTable.length == 0) {
                                                 document.getElementById("osa-full").setAttribute("style", "display: none");
                                             } else {
+                                                if (dependencyCriticalCVEReportTable.length > 0) {
+                                                    generateCveTable(SEVERITY.OSA_CRITICAL);
+                                                }
                                                 if (dependencyHighCVEReportTable.length > 0) {
                                                     generateCveTable(SEVERITY.OSA_HIGH);
                                                 }
@@ -615,6 +642,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             count = lowCount;
                                             break;
 
+                                        case SEVERITY.OSA_CRITICAL:
+                                            threshold = dependencyCriticalThreshold;
+                                            count = dependencyCriticalVulnerability;
+                                            break;
+                                            
                                         case SEVERITY.OSA_HIGH:
                                             threshold = dependencyHighThreshold;
                                             count = dependencyHighVulnerability;
@@ -652,6 +684,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var severityNameTtl;
                                     var severityCountTtl;
                                     var svgCriticalIcon = '<svg width="16" height="20" viewBox="0 0 16 19" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>Critical</title><path d="M0 10V4.31302C0 2.19129 1.0015 0.184893 3.11764 0.030931C3.39036 0.0110888 3.68409 0 4 0H11.5C12.0072 0 12.462 0.0210035 12.8688 0.0569225C14.9823 0.243543 16 2.19129 16 4.31302V10C16 12.3957 12.4926 16.7045 11.0796 18.3432C10.7135 18.7678 10.1808 19 9.6202 19H6.3798C5.81919 19 5.28652 18.7678 4.92042 18.3432C3.50742 16.7045 0 12.3957 0 10Z" fill="#F8788F"/>' +
+                                                        '<rect id="Rectangle-22" fill="#BB1A34" mask="url(#mask-2)" x="8" y="0" width="8" height="20"></rect>' +
                                                         '<path d="M0 10V4.31302C0 2.19129 1.0015 0.184893 3.11764 0.030931C3.39036 0.0110888 3.68409 0 4 0H11.5C12.0072 0 12.462 0.0210035 12.8688 0.0569225C14.9823 0.243543 16 2.19129 16 4.31302V10C16 12.3957 12.4926 16.7045 11.0796 18.3432C10.7135 18.7678 10.1808 19 9.6202 19H6.3798C5.81919 19 5.28652 18.7678 4.92042 18.3432C3.50742 16.7045 0 12.3957 0 10Z" fill="#A00909" fill-opacity="0.5"/>' + 
                                                         '<path d="M8 0L14.186 0.883717C14.659 0.951285 15.0181 1.34399 15.0432 1.82111L15.5 10.5L11 18L8 19V0Z" fill="#F8788F"/>' + 
                                                         '<path d="M8 0L14.186 0.883717C14.659 0.951285 15.0181 1.34399 15.0432 1.82111L15.5 10.5L11 18L8 19V0Z" fill="#A00909" fill-opacity="0.9"/>' + 
@@ -673,6 +706,12 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             svgIcon = svgHighIcon;
                                             severityNameTtl = "High";
                                             severityCountTtl = highCount;
+                                            break;
+
+                                        case SEVERITY.OSA_CRITICAL:
+                                            svgIcon = svgCriticalIcon;
+                                            severityNameTtl = "Critical";
+                                            severityCountTtl = dependencyCriticalVulnerability;
                                             break;
 
                                         case SEVERITY.OSA_HIGH:
@@ -808,6 +847,12 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var tableElementId = "";
 
                                     switch (severity) {
+                                        case SEVERITY.OSA_CRITICAL:
+                                            severityCount = dependencyCriticalVulnerability;
+                                            severityCveList = dependencyCriticalCVEReportTable;
+                                            tableElementId = "osa-cve-table-critical";
+                                            break;
+
                                         case SEVERITY.OSA_HIGH:
                                             severityCount = dependencyHighVulnerability;
                                             severityCveList = dependencyHighCVEReportTable;
@@ -912,6 +957,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             generateSastCveTable(severity);
                                             break;
 
+                                        case SEVERITY.OSA_CRITICAL:
                                         case SEVERITY.OSA_HIGH:
                                         case SEVERITY.OSA_MED:
                                         case SEVERITY.OSA_LOW:

@@ -52,7 +52,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     CRITICAL: {value: 6, name: "critical"},
                                     OSA_HIGH: {value: 3, name: "high"},
                                     OSA_MED: {value: 4, name: "medium"},
-                                    OSA_LOW: {value: 5, name: "low"}
+                                    OSA_LOW: {value: 5, name: "low"},
+                                    OSA_CRITICAL: {value: 7, name: "critical"},
                                 };
 
                                 //-------------------------- sast vars --------------------------------------
@@ -92,6 +93,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //thresholds
                                 var osaThresholdsEnabled = resultObject.osaThresholdEnabled;
+                                var osaCriticalThreshold = resultObject.osaCriticalThreshold;
                                 var osaHighThreshold = resultObject.osaHighThreshold;
                                 var osaMedThreshold = resultObject.osaMediumThreshold;
                                 var osaLowThreshold = resultObject.osaLowThreshold;
@@ -100,6 +102,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var osaSummaryResultsLink = resultObject.osaSummaryResultsLink;
 
                                 //counts
+                                var osaCriticalCount = resultObject.osaCriticalResults;
                                 var osaHighCount = resultObject.osaHighResults;
                                 var osaMedCount = resultObject.osaMediumResults;
                                 var osaLowCount = resultObject.osaLowResults;
@@ -107,6 +110,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 //-------------------------- sca vars --------------------------------------
                                 var scaResults = resultObject.scaResults;
                                 var scaResultReady = scaResults.resultReady;
+                                var scaCriticalVulnerability = scaResults.criticalVulnerability;
                                 var scaHighVulnerability = scaResults.highVulnerability;
                                 var scaMediumVulnerability = scaResults.mediumVulnerability;
                                 var scaLowVulnerability = scaResults.lowVulnerability;
@@ -115,6 +119,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var scaNonVulnerableLibraries = scaResults.nonVulnerableLibraries;
                                 var scaScanStartTime = scaResults.scanStartTime;
                                 var scaScanEndTime = scaResults.scanEndTime;
+                                var scaDependencyCriticalCVEReportTable =scaResults.dependencyCriticalCVEReportTable;
                                 var scaDependencyHighCVEReportTable =scaResults.dependencyHighCVEReportTable;
                                 var scaDependencyMediumCVEReportTable = scaResults.dependencyMediumCVEReportTable;
                                 var scaDependencyLowCVEReportTable = scaResults.dependencyLowCVEReportTable;
@@ -233,14 +238,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("osa-summary-html-link").setAttribute("href", osaSummaryResultsLink);
 
                                             //set bars height and count
+                                            document.getElementById("osa-bar-count-critical").innerHTML = osaCriticalCount;
                                             document.getElementById("osa-bar-count-high").innerHTML = osaHighCount;
                                             document.getElementById("osa-bar-count-med").innerHTML = osaMedCount;
                                             document.getElementById("osa-bar-count-low").innerHTML = osaLowCount;
 
 
-                                            var osaMaxCount = Math.max(osaHighCount, osaMedCount, osaLowCount);
+                                            var osaMaxCount = Math.max(osaCriticalCount,osaHighCount, osaMedCount, osaLowCount);
                                             var osaMaxHeight = osaMaxCount * 100 / 90;
 
+                                            document.getElementById("osa-bar-critical").setAttribute("style", "height:" + osaCriticalCount * 100 / osaMaxHeight + "%");
                                             document.getElementById("osa-bar-high").setAttribute("style", "height:" + osaHighCount * 100 / osaMaxHeight + "%");
                                             document.getElementById("osa-bar-med").setAttribute("style", "height:" + osaMedCount * 100 / osaMaxHeight + "%");
                                             document.getElementById("osa-bar-low").setAttribute("style", "height:" + osaLowCount * 100 / osaMaxHeight + "%");
@@ -258,6 +265,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 var isOsaThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
 
+                                                if (osaCriticalThreshold != null && osaCriticalThreshold != "" && osaCriticalCount > osaCriticalThreshold) {
+                                                    document.getElementById("osa-tooltip-critical").innerHTML = tooltipGenerator(SEVERITY.OSA_CRITICAL);
+                                                    isOsaThresholdExceeded = true;
+                                                }
 
                                                 if (osaHighThreshold != null && osaHighThreshold != "" && osaHighCount > osaHighThreshold) {
                                                     document.getElementById("osa-tooltip-high").innerHTML = tooltipGenerator(SEVERITY.OSA_HIGH);
@@ -341,6 +352,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             count = lowCount;
                                             break;
 
+                                        case SEVERITY.OSA_CRITICAL:
+                                            threshold = osaCriticalThreshold;
+                                            count = osaCriticalCount;
+                                            break;
                                         case SEVERITY.OSA_HIGH:
                                             threshold = osaHighThreshold;
                                             count = osaHighCount;

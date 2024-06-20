@@ -641,6 +641,15 @@
       "visibleRule": "enableDependencyScan = true"
     },
     {
+      "name": "scaCritical",
+      "type": "string",
+      "label": "CxSCA Critical",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the Critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
+    },
+    {
       "name": "scaHigh",
       "type": "string",
       "label": "CxSCA High",
