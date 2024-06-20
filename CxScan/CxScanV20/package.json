@@ -10,7 +10,7 @@
   "author": "MajdM",
   "license": "SEE LICENSE IN checkmarx-license-terms.md",
   "dependencies": {
-    "@checkmarx/cx-common-js-client": "0.1.86",
+    "@checkmarx/cx-common-js-client": "0.1.87",
     "degenerator": "3.0.4",
     "azure-pipelines-task-lib": "^3.1.7",
     "cookiejar": "2.1.4",
