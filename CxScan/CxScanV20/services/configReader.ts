@@ -593,7 +593,6 @@ CxSCA High Threshold: ${config.scaConfig.highThreshold}
 CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
 CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`)
             }
-            this.log.info('Enable Exploitable Path:' + config.scaConfig.isExploitable);
             if (config.scaConfig.isExploitable) {
                 this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}
 Checkmarx SAST Username: ${config.scaConfig.sastUsername}
