@@ -492,6 +492,7 @@ Force scan : ${config.sastConfig.forceScan}
 Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
 Is incremental scan: ${config.sastConfig.isIncremental}
 Enable SAST Branching : ${config.sastConfig.enableSastBranching}
+Enable SAST Project's Policy Enforcement:${config.sastConfig.enablePolicyViolations}
 Master Branch Project Name : ${config.sastConfig.masterBranchProjectName}`);
 if (config.sastConfig.isIncremental) {
     let isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
