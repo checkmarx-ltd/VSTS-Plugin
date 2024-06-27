@@ -10,9 +10,9 @@
   ],
   "author": "Checkmarx",
   "version": {
-    "Major": 2023,
-    "Minor": 3,
-    "Patch": 3
+    "Major": 2024,
+    "Minor": 2,
+    "Patch": 5
   },
   "demands": [],
   "minimumAgentVersion": "2.144.0",
@@ -95,13 +95,32 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "enableSastBranching",
+      "type": "boolean",
+      "label": "Enable SAST Branching",
+      "required": true,
+      "helpMarkDown": "Enable to support branching. This supports only for creating new project.",
+      "groupName": "scanSettings",
+      "defaultValue": false,
+	    "visibleRule": "enableSastScan = true"
+    },
+    {
+      "name": "masterBranchProjectName",
+      "type": "string",
+      "label": "Master Branch Project Name",
+      "required": true,
+      "helpMarkDown": "The SAST project will be created from the branch name provided in this parameter value. This parameter is mandatory if the Enable SAST Branching parameter is enabled. This supports only for creating new project.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true && enableSastBranching = true"
+    },
+    {
       "name": "preset",
       "type": "pickList",
       "label": "Preset",
       "required": false,
       "groupName": "scanSettings",
       "defaultValue": "Checkmarx Default",
-      "helpMarkDown": "predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server).If preset is mentioned in Service connection, then this will get overridden with Service connection Preset",
+      "helpMarkDown": "Predefined sets of queries that you can select when Creating, Configuring and Branching Projects. Predefined presets are provided by Checkmarx and you can configure your own. You can also import and export presets (on the server). In Service Connection if preset(optional) value is added, then it will ignores Preset available in pipeline and uses preset available in service connection only. If Preset is blank in service connection then it will use pipelines preset.",
       "options": {
         "Checkmarx Default": "Checkmarx Default",
         "All": "All",
@@ -168,7 +187,7 @@
       "type": "string",
       "label": "Team",
       "required": false,
-      "helpMarkDown": "The full team name (for example, CxServer\\SP\\Company\\Users). If team is mentioned in Service connection,then this will get overridden with Service connection Team",
+      "helpMarkDown": "The full team name(for example, CxServer\\SP\\Company\\Users). In Service Connection if Team(optional) value is added, then it will ignores Team available in pipeline and uses Team available in service connection only. If Team is blank in service connection then it will use pipelines Team.",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
@@ -259,6 +278,15 @@
       "visibleRule": "enableSastScan = true"
     },
     {
+      "name": "waitingTimeBeforeRetryScan",
+      "type": "string",
+      "label": "Waiting Time Before Retry Scan In Seconds",
+      "required": false,
+      "helpMarkDown": "Wait for specified time before retry scan in seconds. If value is not added then by default waiting time before retry scan in 10 seconds. The maximum value we can add is 60 seconds.",
+      "groupName": "scanSettings",
+      "visibleRule": "enableSastScan = true"
+    },
+    {
       "name": "projectcustomfields",
       "type": "string",
       "label": "Project Level Custom Fields",
@@ -339,14 +367,24 @@
       "type": "pickList",
       "label": "Fail for the following severity or greater",
       "required": false,
-      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail) ",
+      "helpMarkDown": "This will fail the build for following severity or greater. (e.g. if 'MEDIUM' is selected then any new vulnerabilities found for 'MEDIUM' and 'HIGH' severity will cause the build to fail). SAST 9.6 and lower version will not support critical severity features.",
       "groupName": "scanSettings",
       "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true && failBuildForNewVulnerabilitiesEnabled = true",    
       "options": {
+        "CRITICAL": "CRITICAL",
         "HIGH": "HIGH",
         "MEDIUM": "MEDIUM",
         "LOW": "LOW"
       }
+    },
+    {
+      "name": "critical",
+      "type": "string",
+      "label": "CxSAST Critical",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. SAST 9.6 and lower version will not support critical severity features.",
+      "groupName": "scanSettings",
+      "visibleRule": "vulnerabilityThreshold = true && enableSastScan = true"
     },
     {
       "name": "high",
@@ -553,26 +591,6 @@
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
     },
-    
-    {
-      "name": "scaExploitablePath",
-      "type": "boolean",
-      "label": "Enable Exploitable Path",
-      "required": false,
-      "defaultValue": "false",
-      "helpMarkDown": "Exploitable Path feature will attempt to co-relate CxSCA scan with the available CxSAST scan results. In this section, provide details like CxSAST server url, credentials. At the job level, two more parameters need to be configured. These project full path name and/or project id from CxSAST.Example of Project Full Path: CxServer/team1/projectname",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && isEnableScaResolver=false"
-    },
-    {
-      "name": "CheckmarxServiceForSca",
-      "type": "connectedService:Checkmarx-Endpoint",
-      "label": "Checkmarx SAST Endpoint",
-      "required": false,
-      "helpMarkDown": "The CX server endpoint.",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
-    },
     {
       "name": "dependencyAccessControlURL",
       "type": "string",
@@ -603,24 +621,6 @@
       "visibleRule": "enableDependencyScan = ignore"
     },
     {
-      "name": "scaProjectFullPath",
-      "type": "string",
-      "label": "Project Full Path",
-      "required": false,
-      "helpMarkDown": "Project Full Path with team value",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true"
-    },
-    {
-      "name": "scaProjectId",
-      "type": "string",
-      "label": "Project ID",
-      "required": false,
-      "helpMarkDown": "Project ID",
-      "groupName": "dependencyScan",
-      "visibleRule": "enableDependencyScan = true && scaExploitablePath = true "
-    },
-    {
       "name": "scaEnablePolicyViolations",
       "type": "boolean",
       "label": "Enable CxSCA Project's Policy Enforcement",
@@ -639,6 +639,15 @@
       "helpMarkDown": "Set the maximum number of CxSCA vulnerabilities of given severity before the scan fails (Only available if synchronous mode is enabled)",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "scaCritical",
+      "type": "string",
+      "label": "CxSCA Critical",
+      "required": false,
+      "helpMarkDown": "Define a threshold for the Critical severity vulnerabilities. The build will be marked as failed  if the number of the critical severity vulnerabilities is larger than the threshold. ",
+      "groupName": "dependencyScan",
+      "visibleRule": "scaVulnerabilityThreshold = true && enableDependencyScan = true"
     },
     {
       "name": "scaHigh",
@@ -673,6 +682,15 @@
       "label": "Scan Timeout In Minutes",
       "required": false,
       "helpMarkDown": "Abort the scan if exceeds specified timeout in minutes ",
+      "groupName": "dependencyScan",
+      "visibleRule": "enableDependencyScan = true"
+    },
+    {
+      "name": "waitingTimeBeforeRetrySCAScan",
+      "type": "number",
+      "label": "Waiting Time Before Retry SCA Scan In Seconds",
+      "required": false,
+      "helpMarkDown": "Wait for specified time before retry SCA scan in seconds.If value is not added then by default waiting time before retry SCA scan in 5 seconds. The maximum value we can add is 60 seconds.",
       "groupName": "dependencyScan",
       "visibleRule": "enableDependencyScan = true"
     }

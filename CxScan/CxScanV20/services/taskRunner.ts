@@ -3,10 +3,7 @@ import {ConsoleLogger} from "./consoleLogger";
 import {ConfigReader} from "./configReader";
 import * as fs from "fs";
 import {tmpNameSync} from "tmp";
-import {CxClient} from "@checkmarx/cx-common-js-client";
-import {ScanResults} from "@checkmarx/cx-common-js-client";
-import {TaskSkippedError} from "@checkmarx/cx-common-js-client";
-import {Logger} from "@checkmarx/cx-common-js-client";
+import {CxClient, ScanConfig,Logger,TaskSkippedError,ScanResults} from "@checkmarx/cx-common-js-client";
 import * as path from "path";
 
 export class TaskRunner {
@@ -17,6 +14,8 @@ export class TaskRunner {
     private static readonly REPORT_SCA_SUMMARY = 'cxSCASummary';
     private static readonly CxSAST = 'SAST';
     private static readonly CxDependency = 'SCA';
+    private readonly MinValue = 1;
+    private readonly MaxValue = 60;
 
     private readonly log: Logger = new ConsoleLogger();
 
@@ -37,18 +36,18 @@ export class TaskRunner {
         const errorMessage = "cannot be completed";
         const avoidDuplicateErrorMessage = "Project scan is already in progress";
         try {
-            this.printHeader();
-
-            this.log.info('Entering CxScanner...');
-            const reader = new ConfigReader(this.log);
-            const config = reader.readConfig();
-
-            const cxClient = new CxClient(this.log);
-            const scanResults: ScanResults = await cxClient.scan(config);
-            await this.attachJsonReport(scanResults);
-
-            if (scanResults.buildFailed) {
-                taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
+            if(this.validateConfigParameter())
+            {
+                this.printHeader();
+                this.log.info('Entering CxScanner...');
+                const reader = new ConfigReader(this.log);
+                const config = reader.readConfig();
+                const cxClient = new CxClient(this.log);
+                const scanResults: ScanResults = await cxClient.scan(config);
+                await this.attachJsonReport(scanResults);
+                if (scanResults.buildFailed) {
+                    taskLib.setResult(taskLib.TaskResult.Failed, 'Build failed');
+                }
             }
         } catch (err) {
             if (err instanceof TaskSkippedError) {
@@ -90,7 +89,7 @@ export class TaskRunner {
 
         if(scanResults.scaResults){
             scaPackages = JSON.stringify(scanResults.scaResults.packages);
-            scaFindings = JSON.stringify(scanResults.scaResults.dependencyHighCVEReportTable.concat(scanResults.scaResults.dependencyMediumCVEReportTable,scanResults.scaResults.dependencyLowCVEReportTable));
+            scaFindings = JSON.stringify(scanResults.scaResults.dependencyCriticalCVEReportTable.concat(scanResults.scaResults.dependencyHighCVEReportTable,scanResults.scaResults.dependencyMediumCVEReportTable,scanResults.scaResults.dependencyLowCVEReportTable));
             scaSummary = JSON.stringify(scanResults.scaResults.summary)
             scaPackagesPath= TaskRunner.generateJsonReportPath(TaskRunner.REPORT_SCA_PACKAGES);
             scaFindingsPath= TaskRunner.generateJsonReportPath(TaskRunner.REPORT_SCA_FINDINGS);
@@ -203,4 +202,55 @@ export class TaskRunner {
                                            
 Starting Checkmarx scan`);
     }
+
+    private validateConfigParameter() : boolean
+    {
+        let sastWaitTime = taskLib.getInput('waitingTimeBeforeRetryScan', false) as any;
+        let scaWaitTime = taskLib.getInput('waitingTimeBeforeRetrySCAScan', false) as any;
+        const sastEnabled = taskLib.getBoolInput('enableSastScan', false);
+        const dependencyScanEnabled = taskLib.getBoolInput('enableDependencyScan', false);
+        let failedCount = 0;
+        let projectName = taskLib.getInput('projectName', false) || '';
+        let masterBranchProject = taskLib.getInput('masterBranchProjectName', false) || '';
+        let enableSastBranching = taskLib.getBoolInput('enableSastBranching', false);
+        if(enableSastBranching && projectName == masterBranchProject)
+        {
+            taskLib.setResult(taskLib.TaskResult.Failed, `Project name(${projectName}) and master branch project name(${masterBranchProject}) should not be same.`);
+            failedCount++;
+        }
+        if(sastEnabled && sastWaitTime!=undefined && sastWaitTime.trim() != '')
+        {
+            if(isNaN(sastWaitTime))
+            {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry scan input is invalid value:${sastWaitTime}.`);
+                failedCount++;
+            }
+            else if (sastWaitTime < this.MinValue || sastWaitTime > this.MaxValue) {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry scan value(${sastWaitTime}) must be a between ${this.MinValue} and ${this.MaxValue}.`);
+                failedCount++;
+            }
+        }  
+
+        if(dependencyScanEnabled && scaWaitTime!= undefined && scaWaitTime.trim() != '')
+        {
+            if(isNaN(scaWaitTime))
+            {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry sca scan input is invalid value:${scaWaitTime}.`);
+                failedCount++;
+            }
+            else if (scaWaitTime < this.MinValue || scaWaitTime > this.MaxValue) {
+                taskLib.setResult(taskLib.TaskResult.Failed, `Waiting time before retry sca scan value(${scaWaitTime}) must be a between ${this.MinValue} and ${this.MaxValue}.`);
+                failedCount++;
+            }
+        }
+        if(failedCount > 0) 
+        {
+            return false;
+        }
+        else 
+        {
+            return true;
+        }
+    }
+
 }

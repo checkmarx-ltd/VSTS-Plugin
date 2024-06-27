@@ -49,9 +49,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     HIGH: {value: 0, name: "high"},
                                     MED: {value: 1, name: "medium"},
                                     LOW: {value: 2, name: "low"},
+                                    CRITICAL: {value: 6, name: "critical"},
                                     OSA_HIGH: {value: 3, name: "high"},
                                     OSA_MED: {value: 4, name: "medium"},
-                                    OSA_LOW: {value: 5, name: "low"}
+                                    OSA_LOW: {value: 5, name: "low"},
+                                    OSA_CRITICAL: {value: 7, name: "critical"},
                                 };
 
                                 //-------------------------- sast vars --------------------------------------
@@ -60,6 +62,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //thresholds
                                 var thresholdsEnabled = resultObject.thresholdEnabled;
+                                var criticalThreshold = resultObject.criticalThreshold;
                                 var highThreshold = resultObject.highThreshold;
                                 var medThreshold = resultObject.mediumThreshold;
                                 var lowThreshold = resultObject.lowThreshold;
@@ -74,6 +77,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                 //counts
+                                var criticalCount = resultObject.criticalResults;
                                 var highCount = resultObject.highResults;
                                 var medCount = resultObject.mediumResults;
                                 var lowCount = resultObject.lowResults;
@@ -89,6 +93,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //thresholds
                                 var osaThresholdsEnabled = resultObject.osaThresholdEnabled;
+                                var osaCriticalThreshold = resultObject.osaCriticalThreshold;
                                 var osaHighThreshold = resultObject.osaHighThreshold;
                                 var osaMedThreshold = resultObject.osaMediumThreshold;
                                 var osaLowThreshold = resultObject.osaLowThreshold;
@@ -97,6 +102,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var osaSummaryResultsLink = resultObject.osaSummaryResultsLink;
 
                                 //counts
+                                var osaCriticalCount = resultObject.osaCriticalResults;
                                 var osaHighCount = resultObject.osaHighResults;
                                 var osaMedCount = resultObject.osaMediumResults;
                                 var osaLowCount = resultObject.osaLowResults;
@@ -104,6 +110,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 //-------------------------- sca vars --------------------------------------
                                 var scaResults = resultObject.scaResults;
                                 var scaResultReady = scaResults.resultReady;
+                                var scaCriticalVulnerability = scaResults.criticalVulnerability;
                                 var scaHighVulnerability = scaResults.highVulnerability;
                                 var scaMediumVulnerability = scaResults.mediumVulnerability;
                                 var scaLowVulnerability = scaResults.lowVulnerability;
@@ -112,6 +119,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 var scaNonVulnerableLibraries = scaResults.nonVulnerableLibraries;
                                 var scaScanStartTime = scaResults.scanStartTime;
                                 var scaScanEndTime = scaResults.scanEndTime;
+                                var scaDependencyCriticalCVEReportTable =scaResults.dependencyCriticalCVEReportTable;
                                 var scaDependencyHighCVEReportTable =scaResults.dependencyHighCVEReportTable;
                                 var scaDependencyMediumCVEReportTable = scaResults.dependencyMediumCVEReportTable;
                                 var scaDependencyLowCVEReportTable = scaResults.dependencyLowCVEReportTable;
@@ -151,13 +159,27 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             //link
                                             document.getElementById("sast-summary-html-link").setAttribute("href", sastScanResultsLink);
 
+                                            if(criticalCount == undefined)
+                                            {
+                                                document.getElementById("critical-summary").style.display = "none";
+                                            }
                                             //set bars height and count
+                                            document.getElementById("bar-count-critical").innerHTML = criticalCount;
                                             document.getElementById("bar-count-high").innerHTML = highCount;
                                             document.getElementById("bar-count-med").innerHTML = medCount;
                                             document.getElementById("bar-count-low").innerHTML = lowCount;
 
-                                            var maxCount = Math.max(highCount, medCount, lowCount);
+                                            var maxCount;
+                                            if(criticalCount == undefined)
+                                            {
+                                                maxCount = Math.max(highCount, medCount, lowCount);
+                                            }
+                                            else
+                                            {
+                                                maxCount = Math.max(criticalCount,highCount, medCount, lowCount);
+                                            }
                                             var maxHeight = maxCount * 100 / 90;
+                                            document.getElementById("bar-critical").setAttribute("style", "height:" + criticalCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-high").setAttribute("style", "height:" + highCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-med").setAttribute("style", "height:" + medCount * 100 / maxHeight + "%");
                                             document.getElementById("bar-low").setAttribute("style", "height:" + lowCount * 100 / maxHeight + "%");
@@ -170,6 +192,11 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             try {
                                                 var isThresholdExceeded = false;
                                                 var thresholdExceededComplianceElement = document.getElementById("threshold-exceeded-compliance");
+
+                                                if (criticalThreshold != null && criticalThreshold != "" && criticalCount > criticalThreshold) {
+                                                    document.getElementById("tooltip-critical").innerHTML = tooltipGenerator(SEVERITY.CRITICAL);
+                                                    isThresholdExceeded = true;
+                                                }
 
                                                 if (highThreshold != null && highThreshold != "" && highCount > highThreshold) {
                                                     document.getElementById("tooltip-high").innerHTML = tooltipGenerator(SEVERITY.HIGH);
@@ -211,14 +238,16 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("osa-summary-html-link").setAttribute("href", osaSummaryResultsLink);
 
                                             //set bars height and count
+                                            document.getElementById("osa-bar-count-critical").innerHTML = osaCriticalCount;
                                             document.getElementById("osa-bar-count-high").innerHTML = osaHighCount;
                                             document.getElementById("osa-bar-count-med").innerHTML = osaMedCount;
                                             document.getElementById("osa-bar-count-low").innerHTML = osaLowCount;
 
 
-                                            var osaMaxCount = Math.max(osaHighCount, osaMedCount, osaLowCount);
+                                            var osaMaxCount = Math.max(osaCriticalCount,osaHighCount, osaMedCount, osaLowCount);
                                             var osaMaxHeight = osaMaxCount * 100 / 90;
 
+                                            document.getElementById("osa-bar-critical").setAttribute("style", "height:" + osaCriticalCount * 100 / osaMaxHeight + "%");
                                             document.getElementById("osa-bar-high").setAttribute("style", "height:" + osaHighCount * 100 / osaMaxHeight + "%");
                                             document.getElementById("osa-bar-med").setAttribute("style", "height:" + osaMedCount * 100 / osaMaxHeight + "%");
                                             document.getElementById("osa-bar-low").setAttribute("style", "height:" + osaLowCount * 100 / osaMaxHeight + "%");
@@ -236,6 +265,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 var isOsaThresholdExceeded = false;
                                                 var osaThresholdExceededComplianceElement = document.getElementById("osa-threshold-exceeded-compliance");
 
+                                                if (osaCriticalThreshold != null && osaCriticalThreshold != "" && osaCriticalCount > osaCriticalThreshold) {
+                                                    document.getElementById("osa-tooltip-critical").innerHTML = tooltipGenerator(SEVERITY.OSA_CRITICAL);
+                                                    isOsaThresholdExceeded = true;
+                                                }
 
                                                 if (osaHighThreshold != null && osaHighThreshold != "" && osaHighCount > osaHighThreshold) {
                                                     document.getElementById("osa-tooltip-high").innerHTML = tooltipGenerator(SEVERITY.OSA_HIGH);
@@ -267,6 +300,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                                 console.error("Element missing in OSA threshold section " + e.message);
                                             }
                                         }
+                                        document.getElementById("sast-summary").setAttribute("class", "sast-summary chart-small");
                                     }
                                     else {
                                         document.getElementById("sast-summary").setAttribute("class", "sast-summary chart-large");
@@ -301,6 +335,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     //if low - ...
 
                                     switch (severity) {
+                                        case SEVERITY.CRITICAL:
+                                            threshold = criticalThreshold;
+                                            count = criticalCount;
+                                            break;
                                         case SEVERITY.HIGH:
                                             threshold = highThreshold;
                                             count = highCount;
@@ -314,6 +352,10 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             count = lowCount;
                                             break;
 
+                                        case SEVERITY.OSA_CRITICAL:
+                                            threshold = osaCriticalThreshold;
+                                            count = osaCriticalCount;
+                                            break;
                                         case SEVERITY.OSA_HIGH:
                                             threshold = osaHighThreshold;
                                             count = osaHighCount;

@@ -63,6 +63,7 @@ var ConfigReader = /** @class */ (function () {
             comment: taskLib.getInput('comment', false) || '',
             enablePolicyViolations: taskLib.getBoolInput('enablePolicyViolations', false),
             vulnerabilityThreshold: taskLib.getBoolInput('vulnerabilityThreshold', false),
+            criticalThreshold: ConfigReader.getNumericInput('critical'),
             highThreshold: ConfigReader.getNumericInput('high'),
             mediumThreshold: ConfigReader.getNumericInput('medium'),
             lowThreshold: ConfigReader.getNumericInput('low'),
@@ -94,6 +95,7 @@ var ConfigReader = /** @class */ (function () {
         var formatOptionalNumber = function (input) { return (typeof input === 'undefined' ? 'none' : input); };
         this.log.info("\n-------------------------------CxSAST Configurations:--------------------------------\nURL: " + config.serverUrl + "\nProject name: " + config.projectName + "\nSource location: " + config.sourceLocation + "\nFull team path: " + config.teamName + "\nPreset name: " + config.presetName + "\nScan timeout in minutes: " + config.scanTimeoutInMinutes + "\nDeny project creation: " + config.denyProject + "\n\nIs incremental scan: " + config.isIncremental + "\nFolder exclusions: " + formatOptionalString(config.folderExclusion) + "\nFile exclusions: " + formatOptionalString(config.fileExtension) + "\nIs synchronous scan: " + config.isSyncMode + "\n\nCxSAST thresholds enabled: " + config.vulnerabilityThreshold);
         if (config.vulnerabilityThreshold) {
+            this.log.info("CxSAST critical threshold: " + formatOptionalNumber(config.criticalThreshold));
             this.log.info("CxSAST high threshold: " + formatOptionalNumber(config.highThreshold));
             this.log.info("CxSAST medium threshold: " + formatOptionalNumber(config.mediumThreshold));
             this.log.info("CxSAST low threshold: " + formatOptionalNumber(config.lowThreshold));
