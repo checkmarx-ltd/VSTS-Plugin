@@ -445,7 +445,8 @@ export class ConfigReader {
             cxOriginUrl: cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
             proxyConfig: proxyResult,
-            version: CxPluginDetails.getPluginVersion()
+            version: CxPluginDetails.getPluginVersion(),
+            originName: "VSTS"
         };
         this.format(result);
         this.formatSCA(result);
