@@ -576,7 +576,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                         try {
                                             //generate full reports
-                                            if (dependencyLowCVEReportTable.length == 0 && dependencyMediumCVEReportTable.length == 0 && dependencyLowCVEReportTable.length == 0) {
+                                            if (dependencyCriticalCVEReportTable.length && dependencyHighCVEReportTable.length == 0 && dependencyMediumCVEReportTable.length == 0 && dependencyLowCVEReportTable.length == 0) {
                                                 document.getElementById("osa-full").setAttribute("style", "display: none");
                                             } else {
                                                 if (dependencyCriticalCVEReportTable.length > 0) {
