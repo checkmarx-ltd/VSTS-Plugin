@@ -563,9 +563,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                             //osa info
-                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(dependencyScanStartTime, "dd/mm/yy hh:mm");
+                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(dependencyScanStartTime, "dd/mm/yy hh:mm:ss");
                                             if(osaEnabled){
-                                                document.getElementById("osa-full-end-date").innerHTML = formatDate(dependencyScanEndTime, "dd/mm/yy hh:mm");
+                                                document.getElementById("osa-full-end-date").innerHTML = formatDate(dependencyScanEndTime, "dd/mm/yy hh:mm:ss");
                                             }else if (scaResults!=null && scaResultReady){
                                                 document.getElementById("osa-full-end-date").innerHTML = dependencyScanEndTime;
                                             }
