@@ -1005,7 +1005,7 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     //loop through queries and push the relevant query - by severity - to the new list (lookup table)
                                     for (var i = 0; i < queryList.length; i++) {
                                         if (queryList[i].severity.toLowerCase() == severity.name) {
-                                            severityQueryList[queryList[i].name] = queryList[i].resultLength ? queryList[i].resultLength : 1;
+                                            severityQueryList[queryList[i].name] = queryList[i].resultLength;
                                         }
                                     }
                                     return severityQueryList;
