@@ -68,14 +68,14 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
                                 //---------------------------------------------------------- vars ---------------------------------------------------------------
                                 var SEVERITY = {
-                                    HIGH: {value: 0, name: "high"},
-                                    MED: {value: 1, name: "medium"},
-                                    LOW: {value: 2, name: "low"},
-                                    CRITICAL: {value: 6, name: "critical"},
-                                    OSA_HIGH: {value: 3, name: "high"},
-                                    OSA_MED: {value: 4, name: "medium"},
-                                    OSA_LOW: {value: 5, name: "low"},
-                                    OSA_CRITICAL: {value: 7, name: "critical"},
+                                    HIGH: {value: 3, name: "high"},
+                                    MED: {value: 2, name: "medium"},
+                                    LOW: {value: 1, name: "low"},
+                                    CRITICAL: {value: 4, name: "critical"},
+                                    OSA_HIGH: {value: 6, name: "high"},
+                                    OSA_MED: {value: 7, name: "medium"},
+                                    OSA_LOW: {value: 8, name: "low"},
+                                    OSA_CRITICAL: {value: 5, name: "critical"},
                                 };
 
                                 //-------------------------- sast vars --------------------------------------
@@ -509,8 +509,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                             document.getElementById("sast-code-viewer-link").setAttribute("href", sastScanResultsLink);
 
                                             //sast info
-                                            document.getElementById("sast-full-start-date").innerHTML = formatDate(sastStartDate, "dd/mm/yy hh:mm");
-                                            document.getElementById("sast-full-end-date").innerHTML = formatDate(sastEndDate, "dd/mm/yy hh:mm");
+                                            document.getElementById("sast-full-start-date").innerHTML = formatDate(sastStartDate, "dd/mm/yy hh:mm:ss");
+                                            document.getElementById("sast-full-end-date").innerHTML = formatDate(sastEndDate, "dd/mm/yy hh:mm:ss");
                                             document.getElementById("sast-full-files").innerHTML = numberWithCommas(sastNumFiles);
                                             document.getElementById("sast-full-loc").innerHTML = numberWithCommas(sastLoc);
 
@@ -563,9 +563,9 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
 
 
                                             //osa info
-                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(dependencyScanStartTime, "dd/mm/yy hh:mm");
+                                            document.getElementById("osa-full-start-date").innerHTML = formatDate(dependencyScanStartTime, "dd/mm/yy hh:mm:ss");
                                             if(osaEnabled){
-                                                document.getElementById("osa-full-end-date").innerHTML = formatDate(dependencyScanEndTime, "dd/mm/yy hh:mm");
+                                                document.getElementById("osa-full-end-date").innerHTML = formatDate(dependencyScanEndTime, "dd/mm/yy hh:mm:ss");
                                             }else if (scaResults!=null && scaResultReady){
                                                 document.getElementById("osa-full-end-date").innerHTML = dependencyScanEndTime;
                                             }
@@ -821,22 +821,30 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                 }
 
                                 function formatDate(date, format) {
-                                    var d = new Date(date);
-                                    var day = addZero(d.getDate());
-                                    var month = addZero(d.getMonth() + 1); //starts from 0 (if the month is January getMonth returns 0)
-                                    var year = d.getFullYear();
-                                    var h = addZero(d.getHours());
-                                    var m = addZero(d.getMinutes());
+                                    if(!isNaN(Date.parse(date)))
+                                    {
+                                        var d = new Date(date);
+                                        var day = addZero(d.getDate());
+                                        var month = addZero(d.getMonth() + 1); //starts from 0 (if the month is January getMonth returns 0)
+                                        var year = d.getFullYear();
+                                        var h = addZero(d.getHours());
+                                        var m = addZero(d.getMinutes());
+                                        var s = addZero(d.getSeconds());
 
-                                    switch (format) {
-                                        case "date":
-                                        case "dd-mm-yyyy":
-                                            return day + "-" + month + "-" + year;
-                                            break;
-                                        case "dateTime":
-                                        case "dd/mm/yy hh:mm":
-                                            return day + "/" + month + "/" + year + " " + h + ":" + m;
-                                            break;
+                                        switch (format) {
+                                            case "date":
+                                            case "dd-mm-yyyy":
+                                                return day + "-" + month + "-" + year;
+                                                break;
+                                            case "dateTime":
+                                            case "dd/mm/yy hh:mm:ss":
+                                                return day + "/" + month + "/" + year + " " + h + ":" + m + ":" + s;
+                                                break;
+                                            }
+                                    }
+                                    else
+                                    {
+                                        return date;
                                     }
 
                                 }
@@ -1004,8 +1012,8 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var severityQueryList = {};
                                     //loop through queries and push the relevant query - by severity - to the new list (lookup table)
                                     for (var i = 0; i < queryList.length; i++) {
-                                        if (queryList[i].severity.toLowerCase() == severity.name) {
-                                            severityQueryList[queryList[i].name] = queryList[i].resultLength;
+                                        if (queryList[i].severity.toLowerCase() == severity.name || queryList[i].SeverityIndex == severity.value) {
+                                            severityQueryList[queryList[i].name] = queryList[i].resultLength ? queryList[i].resultLength : 1;
                                         }
                                     }
                                     return severityQueryList;
@@ -1040,8 +1048,39 @@ define(["require", "exports", "VSS/Controls", "TFS/DistributedTask/TaskRestClien
                                     var scanTimeSeconds = scanTime.substring(8, 10);
                                     var scanTimeMillis = scanTimeHours * 3600000 + scanTimeMinutes * 60000 + scanTimeSeconds * 1000;
 
-                                    return new Date(start.getTime() + scanTimeMillis);
+                                    if(!isNaN(Date.parse(startDate)))
+                                    {
+                                        return new Date(start.getTime() + scanTimeMillis);
+                                    }
+                                    else
+                                    {
+                                        return calculateEndDateOfOtherLanguages(startDate,scanTimeMillis);
+                                    }
 
+                                }
+
+                                function calculateEndDateOfOtherLanguages(startDate,scanTimeMillis)
+                                {
+                                    let timeParts = startDate.split(' ')[ startDate.split(' ').length -1].split(':');
+                                    let hours = parseInt(timeParts[0]);
+                                    let minutes = parseInt(timeParts[1]);
+                                    let seconds = parseInt(timeParts[2]);
+                                    let date = new Date();
+                                    date.setHours(hours, minutes, seconds, 0);
+                                    date.setMilliseconds(date.getMilliseconds() + scanTimeMillis);
+                                    return calculateDateUsingArray(startDate.split(' ')) + " " + date.toLocaleTimeString('en-US', { hour12: false})
+                                }
+
+                                function calculateDateUsingArray(startDate)
+                                {
+                                    let result = "";
+                                    for (let i = 0; i < startDate.length - 1; i++) {
+                                        result += startDate[i];
+                                        if (i < startDate.length - 1) {
+                                            result += " ";  // Add comma and space between elements
+                                        }
+                                    }
+                                    return result;
                                 }
 
                                 function adjustDateFormat(date) {
