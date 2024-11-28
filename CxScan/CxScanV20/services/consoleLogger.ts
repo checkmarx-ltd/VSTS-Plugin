@@ -3,7 +3,7 @@ import {Logger} from "@checkmarx/cx-common-js-client";
 
 export class ConsoleLogger implements Logger {
     info(message: string): void {
-        console.log(message);
+        console.log("[Info] " + message);
     }
 
     error(message: string): void {
