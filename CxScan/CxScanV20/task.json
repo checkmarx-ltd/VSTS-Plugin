@@ -11,8 +11,8 @@
   "author": "Checkmarx",
   "version": {
     "Major": 2024,
-    "Minor": 4,
-    "Patch": 1
+    "Minor": 3,
+    "Patch": 15
   },
   "demands": [],
   "minimumAgentVersion": "2.144.0",
