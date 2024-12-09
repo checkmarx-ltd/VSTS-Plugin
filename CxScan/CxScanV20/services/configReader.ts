@@ -12,6 +12,7 @@ import * as url from "url";
 import { homedir } from 'os';
 import path = require('path');
 import { config } from 'process';
+import { CxPluginDetails } from '../model/CxPluginDetails';
 const os = require("os");
 const fs = require('fs');
 
@@ -443,7 +444,9 @@ export class ConfigReader {
             cxOrigin: jobOrigin,
             cxOriginUrl: cxOriginUrl,
             projectName: taskLib.getInput('projectName', false) || '',
-            proxyConfig: proxyResult
+            proxyConfig: proxyResult,
+            version: CxPluginDetails.getPluginVersion(),
+            originName: "VSTS"
         };
         this.format(result);
         this.formatSCA(result);
