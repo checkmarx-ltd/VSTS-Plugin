@@ -12,7 +12,7 @@
   "version": {
     "Major": 2024,
     "Minor": 3,
-    "Patch": 37
+    "Patch": 38
   },
   "demands": [],
   "minimumAgentVersion": "2.144.0",
@@ -696,7 +696,7 @@
     }
   ],
   "execution": {
-    "Node16": {
+    "Node10": {
       "target": "target/index.js"
     }
   },
