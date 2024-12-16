@@ -483,20 +483,19 @@ export class ConfigReader {
         const formatOptionalString = (input: string) => input || 'none';
         const formatOptionalNumber = (input: number | undefined) => (typeof input === 'undefined' ? 'none' : input);
         if (config.enableSastScan && config.sastConfig != null) {
-            this.log.info(`
--------------------------------CxSAST Configurations:--------------------------------
-URL: ${config.sastConfig.serverUrl}
-Project name: ${config.projectName}
-Source location: ${config.sourceLocation}
-Full team path: ${config.sastConfig.teamName}
-Preset name: ${config.sastConfig.presetName}
-Deny project creation: ${config.sastConfig.denyProject}
-Force scan : ${config.sastConfig.forceScan}
-Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}
-Is incremental scan: ${config.sastConfig.isIncremental}
-Enable SAST Branching : ${config.sastConfig.enableSastBranching}
-Enable SAST Project's Policy Enforcement:${config.sastConfig.enablePolicyViolations}
-Master Branch Project Name : ${config.sastConfig.masterBranchProjectName}`);
+            this.log.info(`-------------------------------CxSAST Configurations:--------------------------------`);
+            this.log.info(`URL: ${config.sastConfig.serverUrl}`);
+            this.log.info(`Project name: ${config.projectName}`);
+            this.log.info(`Source location: ${config.sourceLocation}`);
+            this.log.info(`Full team path: ${config.sastConfig.teamName}`);
+            this.log.info(`Preset name: ${config.sastConfig.presetName}`);
+            this.log.info(`Deny project creation: ${config.sastConfig.denyProject}`);
+            this.log.info(`Force scan : ${config.sastConfig.forceScan}`);
+            this.log.info(`Is Override Project Settings: ${config.sastConfig.overrideProjectSettings}`);
+            this.log.info(`Is incremental scan: ${config.sastConfig.isIncremental}`);
+            this.log.info(`Enable SAST Branching : ${config.sastConfig.enableSastBranching}`);
+            this.log.info(`Enable SAST Project's Policy Enforcement:${config.sastConfig.enablePolicyViolations}`);
+            this.log.info(`Master Branch Project Name : ${config.sastConfig.masterBranchProjectName}`);
 if (config.sastConfig.isIncremental) {
     let isScheduledScan = taskLib.getBoolInput('fullScansScheduled', false) || false;
     let scheduleCycle = taskLib.getInput('fullScanCycle', false) || '';
@@ -509,19 +508,18 @@ if(config.sastConfig.scanTimeoutInMinutes != undefined){
     if(config.sastConfig.waitTimeForRetryScan != undefined){
         this.log.info(`Waiting Time Before Retry Scan In Seconds: ${config.sastConfig.waitTimeForRetryScan}`);
         }
-this.log.info(`Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}
-Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}
-Is synchronous scan: ${config.isSyncMode}
-SAST Comment: ${config.sastConfig.comment}
-Project Custom Fields: ${config.sastConfig.projectCustomFields}
-Scan Custom Fields: ${config.sastConfig.customFields}
-Engine Configuration Id: ${config.sastConfig.engineConfigurationId}
-Post Scan Action: ${config.sastConfig.postScanActionName}
-Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
+        this.log.info(`Folder exclusions: ${formatOptionalString(config.sastConfig.folderExclusion)}`);
+        this.log.info(`Include/Exclude Wildcard Patterns: ${formatOptionalString(config.sastConfig.fileExtension)}`);
+        this.log.info(`Is synchronous scan: ${config.isSyncMode}`);
+        this.log.info(`SAST Comment: ${config.sastConfig.comment}`);
+        this.log.info(`Project Custom Fields: ${config.sastConfig.projectCustomFields}`);
+        this.log.info(`Scan Custom Fields: ${config.sastConfig.customFields}`);
+        this.log.info(`Engine Configuration Id: ${config.sastConfig.engineConfigurationId}`);
+        this.log.info(`Post Scan Action: ${config.sastConfig.postScanActionName}`);
+        this.log.info(`Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
             if (config.isSyncMode) {
-                this.log.info(`
-Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}
-CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
+                this.log.info(`Generate PDF Report Enabled: ${config.sastConfig.generatePDFReport}`);
+                this.log.info(`CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
 
 
             if (config.sastConfig.vulnerabilityThreshold) {
@@ -541,26 +539,24 @@ CxSAST thresholds enabled: ${config.sastConfig.vulnerabilityThreshold}`);
         if (config.enableDependencyScan && config.scaConfig != null) {
             const ourMap = config.scaConfig.envVariables;
             const envVar = JSON.stringify(Array.from(ourMap.entries()));
-            this.log.info(`
--------------------------------SCA Configurations:--------------------------------
-AccessControl: ${config.scaConfig.accessControlUrl}
-ApiURL: ${config.scaConfig.apiUrl}
-WebAppUrl: ${config.scaConfig.webAppUrl}
-Account: ${config.scaConfig.tenant}
-Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}
-Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}
-Manifest Pattern(Include/Exclude): ${config.scaConfig.manifestPattern}
-Fingerprint Pattern(Include/Exclude): ${config.scaConfig.fingerprintPattern}
-CxSCA Full team path: ${config.scaConfig.scaSastTeam}
-Project custom tags: ${config.scaConfig.projectCustomTags}
-Scan custom tags: ${config.scaConfig.scanCustomTags}
-Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}
-Private Registry Environment Variable:${envVar}
-Include Sources:${config.scaConfig.includeSource}
-Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViolations}
-Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}
-Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}
-`);
+            this.log.info(`-------------------------------SCA Configurations:--------------------------------`);
+            this.log.info(`AccessControl: ${config.scaConfig.accessControlUrl}`);
+            this.log.info(`ApiURL: ${config.scaConfig.apiUrl}`);
+            this.log.info(`WebAppUrl: ${config.scaConfig.webAppUrl}`);
+            this.log.info(`Account: ${config.scaConfig.tenant}`);
+            this.log.info(`Include/Exclude Wildcard Patterns: ${config.scaConfig.dependencyFileExtension}`);
+            this.log.info(`Folder Exclusion: ${config.scaConfig.dependencyFolderExclusion}`);
+            this.log.info(`Manifest Pattern(Include/Exclude): ${config.scaConfig.manifestPattern}`);
+            this.log.info(`Fingerprint Pattern(Include/Exclude): ${config.scaConfig.fingerprintPattern}`);
+            this.log.info(`CxSCA Full team path: ${config.scaConfig.scaSastTeam}`);
+            this.log.info(`Project custom tags: ${config.scaConfig.projectCustomTags}`);
+            this.log.info(`Scan custom tags: ${config.scaConfig.scanCustomTags}`);
+            this.log.info(`Package Manager's Config File(s) Path:${config.scaConfig.configFilePaths}`);
+            this.log.info(`Private Registry Environment Variable:${envVar}`);
+            this.log.info(`Include Sources:${config.scaConfig.includeSource}`);
+            this.log.info(`Enable CxSCA Project's Policy Enforcement:${config.scaConfig.scaEnablePolicyViolations}`);
+            this.log.info(`Vulnerability Threshold: ${config.scaConfig.vulnerabilityThreshold}`);
+            this.log.info(`Enable SCA Resolver:${config.scaConfig.isEnableScaResolver}`);
 if(config.scaConfig.isEnableScaResolver) {
     
     let isScaResolverFileExists= false;
@@ -592,19 +588,17 @@ if(config.scaConfig.scaScanTimeoutInMinutes != undefined) {
         this.log.info(`Waiting time before retry SCA scan in seconds: ${config.scaConfig.scaWaitTimeForRetryScan}`);
         }
             if (config.scaConfig.vulnerabilityThreshold) {
-                this.log.info(`CxSCA Critical Threshold: ${config.scaConfig.criticalThreshold}
-CxSCA High Threshold: ${config.scaConfig.highThreshold}
-CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}
-CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`)
+                this.log.info(`CxSCA Critical Threshold: ${config.scaConfig.criticalThreshold}`);
+                this.log.info(`CxSCA High Threshold: ${config.scaConfig.highThreshold}`);
+                this.log.info(`CxSCA Medium Threshold: ${config.scaConfig.mediumThreshold}`);
+                this.log.info(`CxSCA Low Threshold: ${config.scaConfig.lowThreshold}`);
             }
             if (config.scaConfig.isExploitable) {
-                this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}
-Checkmarx SAST Username: ${config.scaConfig.sastUsername}
-Checkmarx SAST Password: *********
-Project Full Path: ${config.scaConfig.sastProjectName}
-
-
-Project ID: ${config.scaConfig.sastProjectId}`)
+                this.log.info(`Checkmarx SAST Endpoint:${config.scaConfig.sastServerUrl}`);
+                this.log.info(`Checkmarx SAST Username: ${config.scaConfig.sastUsername}`);
+                this.log.info(`Checkmarx SAST Password: *********`);
+                this.log.info(`Project Full Path: ${config.scaConfig.sastProjectName}`);
+                this.log.info(`Project ID: ${config.scaConfig.sastProjectId}`);
                 if (!config.scaConfig.sastProjectId && !config.scaConfig.sastProjectName) {
                     this.log.error("Must provide value for either 'Project Full Path' or 'Project Id'");
                     throw "Must provide value for either 'Project Full Path' or 'Project Id'";
@@ -617,14 +611,12 @@ Project ID: ${config.scaConfig.sastProjectId}`)
     }
 
     private formatProxy(config: ScanConfig): void {
-        this.log.info(`
--------------------------------Proxy Configurations:--------------------------------
-Proxy Enabled: ${config.enableProxy}`);
+        this.log.info(`-------------------------------Proxy Configurations:--------------------------------`);
+        this.log.info(`Proxy Enabled: ${config.enableProxy}`);
         if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyHost != '' && config.proxyConfig.proxyHost != null) {
             this.log.info(`Proxy URL: ${config.proxyConfig.proxyHost}`);
             if (config.proxyConfig.proxyUser != '' && config.proxyConfig.proxyUser != null) {
-                this.log.info(`Proxy username: ${config.proxyConfig.proxyUser}
-Proxy Pass: ******`);
+                this.log.info(`Proxy username: ${config.proxyConfig.proxyUser} Proxy Pass: ******`);
             }
         } else if (config.enableProxy && config.proxyConfig != null && config.proxyConfig.proxyUrl != null && config.proxyConfig.proxyUrl != '') {
             this.log.info('Entered Proxy Url ' + config.proxyConfig.proxyUrl);
