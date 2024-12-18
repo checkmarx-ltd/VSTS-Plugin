@@ -38,6 +38,7 @@
       "micromatch":"^4.0.8",
       "archiver":"^7.0.1",
       "superagent":"^10.0.0",
+	  "proxy-agent":"^5.0.0",
       "tmp":"0.2.3"
     }
   }
