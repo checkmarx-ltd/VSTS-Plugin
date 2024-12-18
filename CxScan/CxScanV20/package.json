@@ -1,6 +1,6 @@
 {
   "name": "cxsast",
-  "version": "2024.4.4",
+  "version": "2024.4.5",
   "description": "Add Secure Static Source Code Analysis inside your build process",
   "main": "index.js",
   "repository": "https://github.com/checkmarx-ltd/VSTS-Plugin",
@@ -38,6 +38,7 @@
       "micromatch":"^4.0.8",
       "archiver":"^7.0.1",
       "superagent":"^10.0.0",
+      "pac-resolver":"7.0.1",
       "tmp":"0.2.3"
     }
   }
