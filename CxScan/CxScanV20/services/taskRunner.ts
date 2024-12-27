@@ -181,26 +181,23 @@ export class TaskRunner {
     }
 
     private printHeader() {
-        this.log.info(`
-         CxCxCxCxCxCxCxCxCxCxCxCx          
-        CxCxCxCxCxCxCxCxCxCxCxCxCx         
-       CxCxCxCxCxCxCxCxCxCxCxCxCxCx        
-      CxCxCx                CxCxCxCx       
-      CxCxCx                CxCxCxCx       
-      CxCxCx  CxCxCx      CxCxCxCxC        
-      CxCxCx  xCxCxCx  .CxCxCxCxCx         
-      CxCxCx   xCxCxCxCxCxCxCxCx           
-      CxCxCx    xCxCxCxCxCxCx              
-      CxCxCx     CxCxCxCxCx   CxCxCx       
-      CxCxCx       xCxCxC     CxCxCx       
-      CxCxCx                 CxCxCx        
-       CxCxCxCxCxCxCxCxCxCxCxCxCxCx        
-        CxCxCxCxCxCxCxCxCxCxCxCxCx         
-          CxCxCxCxCxCxCxCxCxCxCx           
-                                           
-            C H E C K M A R X              
-                                           
-Starting Checkmarx scan`);
+        this.log.info(`         CxCxCxCxCxCxCxCxCxCxCxCx          `)
+        this.log.info(`        CxCxCxCxCxCxCxCxCxCxCxCxCx         `);
+        this.log.info(`       CxCxCxCxCxCxCxCxCxCxCxCxCxCx        `);
+        this.log.info(`      CxCxCx                CxCxCxCx       `);
+        this.log.info(`      CxCxCx                CxCxCxCx       `);
+        this.log.info(`      CxCxCx  CxCxCx      CxCxCxCxC        `);
+        this.log.info(`      CxCxCx  xCxCxCx  .CxCxCxCxCx         `);
+        this.log.info(`      CxCxCx   xCxCxCxCxCxCxCxCx           `);
+        this.log.info(`      CxCxCx    xCxCxCxCxCxCx              `);
+        this.log.info(`      CxCxCx     CxCxCxCxCx   CxCxCx       `);
+        this.log.info(`      CxCxCx       xCxCxC     CxCxCx       `);
+        this.log.info(`      CxCxCx                 CxCxCx        `);
+        this.log.info(`       CxCxCxCxCxCxCxCxCxCxCxCxCxCx        `);
+        this.log.info(`        CxCxCxCxCxCxCxCxCxCxCxCxCx         `);
+        this.log.info(`          CxCxCxCxCxCxCxCxCxCxCx           \n`);                                      
+        this.log.info(`            C H E C K M A R X              \n`);                              
+        this.log.info(`Starting Checkmarx scan`);
     }
 
     private validateConfigParameter() : boolean
