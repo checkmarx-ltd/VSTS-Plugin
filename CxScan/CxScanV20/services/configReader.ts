@@ -425,13 +425,15 @@ export class ConfigReader {
             cacert_chainFilePath: sastCertFilePath,
             projectCustomFields: taskLib.getInput('projectcustomfields', false) || '',
             customFields: ConfigReader.getCustomFieldJSONString(taskLib.getInput('customfields', false), this.log),
-            engineConfigurationId: ConfigReader.getNumericInput('engineConfigId'),
             postScanActionName: postScanAction,
             avoidDuplicateProjectScans: avoidDuplicateProjectScans,
             enableSastBranching : enableBranching,
             masterBranchProjectName : parentBranchProjectName,
-            waitTimeForRetryScan : retryWaitTime || undefined
+            waitTimeForRetryScan : retryWaitTime || undefined,
+            engineConfigurationName : taskLib.getInput('engineConfigId') || ''
         };
+        
+        this.log.info(`engineConfigurationName: ${sastResult.engineConfigurationName}`);
 
         const result: ScanConfig = {
             enableSastScan: taskLib.getBoolInput('enableSastScan', false),
@@ -514,7 +516,6 @@ if(config.sastConfig.scanTimeoutInMinutes != undefined){
         this.log.info(`SAST Comment: ${config.sastConfig.comment}`);
         this.log.info(`Project Custom Fields: ${config.sastConfig.projectCustomFields}`);
         this.log.info(`Scan Custom Fields: ${config.sastConfig.customFields}`);
-        this.log.info(`Engine Configuration Id: ${config.sastConfig.engineConfigurationId}`);
         this.log.info(`Post Scan Action: ${config.sastConfig.postScanActionName}`);
         this.log.info(`Avoid Duplicate Project Scan: ${config.sastConfig.avoidDuplicateProjectScans}`);
             if (config.isSyncMode) {
