@@ -173,11 +173,12 @@
       "defaultValue": "Default Configuration",
       "helpMarkDown": "Source character encoding for the project.",
       "options": {
-        "Default Configuration": "Default Configuration",
-        "Japanese (Shift-JIS)": "Japanese (Shift-JIS)",
-        "Korean": "Korean",
-        "Multi-language Scan": "Multi-language Scan",
-        "Fast Scan": "Fast Scan (Only for CxSAST Engine version 9.6.3 and above)"
+        "0": "Project Default (Only for CxSAST 9.3.0+)",
+        "1": "Default Configuration",
+        "2": "Japanese (Shift-JIS)",
+        "3": "Korean",
+        "5": "Multi-language Scan",
+        "6": "Fast Scan (Only for CxSAST Engine version 9.6.3+)"
       },
       "visibleRule": "enableSastScan = true"
     },
