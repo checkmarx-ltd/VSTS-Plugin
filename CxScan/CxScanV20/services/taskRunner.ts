@@ -33,6 +33,7 @@ export class TaskRunner {
          ...
     */
     async run() {
+        this.log.debug(`Running on Node.js version: ${process.version}`);
         const errorMessage = "cannot be completed";
         const avoidDuplicateErrorMessage = "Project scan is already in progress";
         try {
