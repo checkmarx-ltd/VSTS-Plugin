@@ -696,8 +696,14 @@
     }
   ],
   "execution": {
+    "Node10": {
+        "target": "target/index.js"
+    },
     "Node16": {
       "target": "target/index.js"
+    },
+    "Node20_1": {
+        "target": "target/index.js"
     }
   },
   "messages": {
