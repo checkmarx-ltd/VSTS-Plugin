@@ -170,7 +170,7 @@
       "label": "Source character encoding (Configuration)",
       "required": false,
       "groupName": "scanSettings",
-      "defaultValue": "Default Configuration",
+      "defaultValue": "1",
       "helpMarkDown": "Source character encoding for the project.",
       "options": {
         "0": "Project Default (Only for CxSAST 9.3.0+)",
