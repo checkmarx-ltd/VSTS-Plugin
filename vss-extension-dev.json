@@ -2,8 +2,8 @@
   "manifestVersion": 1,
   "id": "cxsast",
   "name": "Checkmarx SAST 9.x",
-  "version": "2025.1.1",
-  "publisher": "rahulpidde",
+  "version": "2025.1.2",
+  "publisher": "Checkmarx-Prerelease",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
