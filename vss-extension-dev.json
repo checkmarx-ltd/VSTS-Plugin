@@ -3,7 +3,7 @@
   "id": "cxsast",
   "name": "Checkmarx SAST 9.x",
   "version": "2025.1.2",
-  "publisher": "Checkmarx-Prerelease",
+  "publisher": "AmolMane",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
