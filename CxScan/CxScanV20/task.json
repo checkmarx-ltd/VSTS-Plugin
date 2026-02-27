@@ -166,20 +166,11 @@
     },
     {
       "name": "engineConfigId",
-      "type": "pickList",
+      "type": "string",
       "label": "Source character encoding (Configuration)",
       "required": false,
-      "groupName": "scanSettings",
-      "defaultValue": 1,
       "helpMarkDown": "Source character encoding for the project.",
-      "options": {
-        "0": "Project Default (Only for CxSAST 9.3.0+)",
-        "1": "Default Configuration",
-        "2": "Japanese (Shift-JIS)",
-        "3": "Korean",
-        "5": "Multi-language Scan",
-        "6": "Fast Scan (Only for CxSAST Engine version 9.6.3+)"
-      },
+      "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
     {

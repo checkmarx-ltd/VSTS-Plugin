@@ -351,7 +351,7 @@ export class ConfigReader {
         
         let scaScanTimeout = taskLib.getInput('scaScanTimeout', false) as any;
         let scaScanTimeoutInMinutes = +scaScanTimeout;        
-        
+
         const scaResult: ScaConfig = {
             scaSastTeam: TeamApiClient.normalizeTeamName(scaTeamName) || '',
             apiUrl: scaServerUrl || '',
@@ -397,6 +397,16 @@ export class ConfigReader {
             generatePDFReport=false;
         }        
 
+        const customValue = taskLib.getInput('customEngineConfigId', false);
+
+        let engineConfigurationId: number;
+
+        if (customValue !== undefined && customValue !== null && customValue.trim() !== '') {
+            engineConfigurationId = Number(customValue);
+        } else {
+            engineConfigurationId = ConfigReader.getNumericInput('engineConfigId')!;
+        }
+
         const sastResult: SastConfig = {
             serverUrl: sastServerUrl || '',
             username: sastUsername || '',
@@ -425,7 +435,7 @@ export class ConfigReader {
             cacert_chainFilePath: sastCertFilePath,
             projectCustomFields: taskLib.getInput('projectcustomfields', false) || '',
             customFields: ConfigReader.getCustomFieldJSONString(taskLib.getInput('customfields', false), this.log),
-            engineConfigurationId: ConfigReader.getNumericInput('engineConfigId'),
+            engineConfigurationId: engineConfigurationId,
             postScanActionName: postScanAction,
             avoidDuplicateProjectScans: avoidDuplicateProjectScans,
             enableSastBranching : enableBranching,
