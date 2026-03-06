@@ -169,7 +169,7 @@
       "type": "string",
       "label": "Source character encoding (Configuration)",
       "required": false,
-      "helpMarkDown": "Source character encoding for the project.",
+      "helpMarkDown": "Engine Configuration ID for the project. Default values are: \n 0-Project Default \n 1-Default Configuration \n 2-Japanese (Shift-JIS) \n 3-Korean \n 5-Multi-language Scan \n 6-Fast Scan (Only for CxSAST Engine version 9.6.3+)",
       "groupName": "scanSettings",
       "visibleRule": "enableSastScan = true"
     },
