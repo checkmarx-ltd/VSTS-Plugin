@@ -15,23 +15,39 @@ variables:
 steps:
 
 - task: Bash@3
+  displayName: 'Verify single lockfile (Supply Chain Policy)'
+  inputs:
+    targetType: inline
+    workingDirectory: $(nodejsAppDir20)
+    script: |
+      if [ -f package-lock.json ] && [ -f yarn.lock ]; then
+        echo "ERROR: Both package-lock.json and yarn.lock found."
+        exit 1
+      fi
+      if [ ! -f package-lock.json ]; then
+        echo "ERROR: package-lock.json not found. This repository must use npm with a committed package-lock.json."
+        exit 1
+      fi
+      echo "Lockfile policy check passed: package-lock.json and yarn.lock do not coexist."
+
+- task: Bash@3
   displayName: 'Install TypeScript'
   inputs:
     targetType: inline
     script: |
-      npm install -g typescript@4.1.6
+      npm install -g typescript@4.1.6 --ignore-scripts
       echo "TypeScript $(tsc -v)"
         
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '20.x'
   displayName: 'Install Node.js'
 
 
 - task: Npm@1
   inputs:
     command: 'custom'
-    customCommand: 'install --no-optional'
+    customCommand: 'ci --ignore-scripts'
     workingDir: $(nodejsAppDir20)
       
 - task: Npm@1
